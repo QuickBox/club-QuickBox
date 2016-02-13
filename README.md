@@ -3,7 +3,7 @@ club-Swizards is a fresh and modernized skin for rTorrent GUI, ruTorrent. This t
 
 ## Install
 
-You will need to navigate to your plugins/themes directory, typically located at ```../../rutorrent/plugins/themes```
+You will need to navigate to your plugins/themes directory, typically located at ```../../rutorrent/plugins/theme/themes```
 
 Next, simply clone the club-Swizards skin to your themes
 ```
