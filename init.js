@@ -1,7 +1,8 @@
 /*
- *  QuickBox skin for ruTorrent
- *  Author: Jason Matthews - https://jmsolodesigns.com/
- */ 
+ *  club-Swizards skin for ruTorrent
+ *  Author: JMSolo Designs - https://jmsolodesigns.com/
+ *  Provider: Solution Wizards - https://swizards.net/
+ */
 
 plugin.QuickBoxAllDone = plugin.allDone;
 plugin.allDone = function()

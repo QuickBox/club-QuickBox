@@ -13,7 +13,7 @@ div#preload {
     background-image: url(./images/toolbar.png);
     background-image: url(./images/status_icons.png);
     background-image: url(./images/r_bg.gif);
-    background-image: url("./images/asc.gif"); 
+    background-image: url("./images/asc.gif");
     background-image: url(./images/desc.gif);
     background-image: url(./images/pnl_open.png) !important;
     background-image: url(./images/pnl_close.png) !important;
@@ -863,7 +863,7 @@ span#ul {
 span.det {
     color: #6C7A89;
 }
-div#HDivider { 
+div#HDivider {
     background: #444 none repeat scroll 0 0;
     cursor: e-resize;
     height: 0;
@@ -976,7 +976,7 @@ ul.CMenu li:hover ul {
 	width: 150px;
 }
 
-/* for QuickBox */
+/* for club-Swizards */
 .meter-value-start-color { background-color: #96281B !important;}
 .meter-value-end-color { background-color: #1E824C !important;}
 ::-webkit-scrollbar {width:12px;height:12px;padding:0px;margin:0px;}
