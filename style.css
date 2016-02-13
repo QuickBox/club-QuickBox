@@ -284,11 +284,26 @@ div#t div#chat {
 div#t div#chat:hover {
     background: transparent url(./images/toolbar.png) no-repeat -421px -30px
 }
+div#t a#mnu_go::before {
+    margin: 3px 0 0 0;
+    padding: 3px;
+    content: "GO";
+}
 #go {
     background: transparent !important;
+    *margin: 3px 0 0 0;
+    *padding: 3px;
+    *background: #222 !important;
+    *border-radius: 2px;
+    height: 12px !important;
+    *color: #fff;
+    width: 2px !important;
+    *border: 1px solid #333;
 }
 #go:hover {
     background: transparent !important;
+    *background: #111 !important;
+    *border-color: #222;
 }
 .stg_con td input {
     padding: 1px 4px;
