@@ -181,7 +181,7 @@ div#t {
     background: #2a2a2a none repeat scroll 0 0;
     border-bottom: 1px solid #222;
     height: 42px;
-    line-height: 42px;
+    line-height: 0px;
     white-space: nowrap;
     width: 100%;
 }
