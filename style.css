@@ -658,7 +658,6 @@ ul#tabbar li.selected a {
     font-family: inherit;
     line-height: 24px;
     margin: -2px 1px 0;
-    padding: 4px 12px 3px 6px;
     text-shadow: none;
     top: 0;
     transition: all 0.25s ease 0s;
