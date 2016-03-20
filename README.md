@@ -7,6 +7,6 @@ You will need to navigate to your plugins/themes directory, typically located at
 
 Next, simply clone the club-Swizards skin to your themes
 ```
-git clone https://github.com/JMSDOnline/club-Swizards.git club-Swizards
+git clone https://github.com/Swizards/club-Swizards.git club-Swizards
 chown -R www-data: club-Swizards
 ```
