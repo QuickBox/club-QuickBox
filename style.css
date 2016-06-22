@@ -109,7 +109,7 @@ ul.CMenu li.menuitem:last-child {
 ul.CMenu li a {
 	background: transparent url("./images/menus.png") no-repeat scroll 0 0;
 	color: #999;
-	padding: 3px 4px 3px 21px;
+	padding: 3px 4px 3px 9px;
 }
 ul.CMenu li a:hover {
     color: #757571;
