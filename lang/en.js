@@ -3,7 +3,7 @@
  *
  * English language file.
  *
- * Author: Jason Matthews - https://jmsolodesigns.com/
+ * Author: JMSolo - https://plaza.quickbox.io/
  */
 
  theUILang.themeStandard	= "QuickBox";

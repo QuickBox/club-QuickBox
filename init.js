@@ -1,7 +1,6 @@
 /*
  *  club-Swizards skin for ruTorrent
- *  Author: JMSolo Designs - https://jmsolodesigns.com/
- *  Provider: Solution Wizards - https://swizards.net/
+ *  Author: JMSolo - https://plaza.quickbox.io/
  */
 
 plugin.QuickBoxAllDone = plugin.allDone;
