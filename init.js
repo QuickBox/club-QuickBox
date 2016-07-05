@@ -7,7 +7,7 @@ plugin.QuickBoxAllDone = plugin.allDone;
 plugin.allDone = function()
 {
 	plugin.QuickBoxAllDone.call(this);
-	$.each(["diskspace","quotaspace","cpuload"], function(ndx,name)
+	$.each(["diskapceh","diskspace","quotaspace","cpuload"], function(ndx,name)
 	{
 		var plg = thePlugins.get(name);
 		if(plg && plg.enabled)
