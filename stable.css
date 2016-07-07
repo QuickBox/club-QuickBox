@@ -10,7 +10,7 @@
 }
 .stable-head {
     background: #2a2a2a none repeat scroll 0 0;
-	*background: #2a2a2a url("./images/headers.png") repeat-x scroll 0 -91px;
+	  /*background: #2a2a2a url("./images/headers.png") repeat-x scroll 0 -91px;*/
     border: medium none;
     color: #999;
     font-family: inherit;
@@ -27,7 +27,7 @@ div#tdcont .stable {
     border: none;
 }
 .stable-head table tr td {
-    background: transparent url("./images/blank.gif") no-repeat scroll right center;
+    /*background: transparent url("./images/blank.gif") no-repeat scroll right center;*/
     border-color: #222;
     border-style: none solid solid none;
     border-width: 0 1px 1px 0;
