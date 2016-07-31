@@ -87,9 +87,11 @@ ul.CMenu {
 	border-width: 1px;
 	opacity: 0.98;
 	padding: 0;
+  width: 180px;
 }
 ul.CMenu li {
-    background: #3a3a3a
+    background: #3a3a3a;
+    width: 180px;
 }
 ul.CMenu li:hover {
     background: #333
@@ -109,7 +111,7 @@ ul.CMenu li.menuitem:last-child {
 ul.CMenu li a {
 	background: transparent url("./images/menus.png") no-repeat scroll 0 0;
 	color: #999;
-	padding: 3px 4px 3px 9px;
+	padding: 3px 4px 3px 18px;
 }
 ul.CMenu li a:hover {
     color: #757571;
@@ -285,9 +287,20 @@ div#t div#chat:hover {
     background: transparent url(./images/toolbar.png) no-repeat -421px -30px
 }
 div#t a#mnu_go::before {
-    margin: 3px 0 0 0;
-    padding: 3px;
     content: "GO";
+}
+div#t a#mnu_go {
+    margin: 6px 12px 0 6px;
+    padding: 3px;
+    background: #65878F;
+    padding: 4px;
+    line-height: 12px;
+    border-radius: 3px;
+    color: #fff;
+    font-weight: 400;
+}
+div#t a#mnu_go:hover {
+    background: #59A9C2;
 }
 #go {
     background: transparent !important;
@@ -556,7 +569,8 @@ div#stg {
 input.disabled {
     background-color: #111;
     border: 1px solid #111;
-    color: #222;
+    color: #555;
+    cursor: not-allowed;
 }
 td.disabled, label.disabled, span.disabled, div.disabled {
 	color: #96281b;
@@ -641,7 +655,7 @@ ul#tabbar li.selected a {
 }
 .tabbar {
     background: #222 none repeat scroll 0 0;
-    border-color: #2a2a2a #2a2a2a -moz-use-text-color;
+    border-color: #2a2a2a;
     border-style: solid solid none;
     border-width: 1px 1px medium;
     color: #038ba9;
@@ -675,7 +689,7 @@ ul#tabbar li.selected a {
     -moz-border-right-colors: none;
     -moz-border-top-colors: none;
     background: #333 none repeat scroll 0 0;
-    border-color: #333 #333 -moz-use-text-color;
+    border-color: #333;
     border-image: none;
     border-radius: 4px;
     border-style: solid solid none;
@@ -984,10 +998,10 @@ li.cat.tracker {
 
 ul.CMenu li:hover ul {
 	display: block;
-	left: 150px;
+	left: 180px;
 	position: absolute;
 	top: -1px;
-	width: 150px;
+	width: 180px;
 }
 
 /* for club-Swizards */
