@@ -1,12 +1,12 @@
-# club-Swizards
-club-Swizards is a fresh and modernized skin for rTorrent GUI, ruTorrent. This theme has been featured and on such projects as QuickBox and has been made exclusively for Swizards.net. Welcome to club-Swizards!
+# club-QuickBox
+club-QuickBox is a fresh and modernized skin for rTorrent GUI, ruTorrent. This theme has been featured on projects such as Swizards and has been made exclusively for QuickBox.IO. Welcome to club-QuickBox!
 
 ## Install
 
 You will need to navigate to your plugins/themes directory, typically located at ```../../rutorrent/plugins/theme/themes```
 
-Next, simply clone the club-Swizards skin to your themes
+Next, simply clone the club-QuickBox skin to your themes
 ```
-git clone https://lab.quickbox.io/Swizards/club-Swizards.git club-Swizards
-chown -R www-data: club-Swizards
+git clone https://github.com/QuickBox/club-QuickBox.git club-QuickBox
+chown -R www-data: club-QuickBox
 ```
