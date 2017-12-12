@@ -439,6 +439,11 @@ hr {
   width: 200px;
   height: 270px;
 }
+
+#autodl-filters-list-buttons {
+  width: 200px;
+}
+
 #autodl-filters-tabs {
   margin-top: 5px;
 }
