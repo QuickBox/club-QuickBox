@@ -431,13 +431,19 @@ hr {
 #autodl-filters-left {
   float: left;
   margin: 0 5px 10px 5px;
+  width: 170px;
 }
 #autodl-filters-right {
-  margin-top: 5px;
+  margin: 0 5px 10px 5px;
+  float: right;
+  vertical-align: top;
 }
 #autodl-filters-list {
   width: 200px;
   height: 270px;
+}
+#autodl-filters-list-buttons {
+  width: 200px;
 }
 #autodl-filters-tabs {
   margin-top: 5px;
