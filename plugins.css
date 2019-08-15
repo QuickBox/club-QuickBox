@@ -452,6 +452,9 @@ hr {
   margin: 3px;
   padding: 0;
 }
+#autodl-filters-contents-wol {
+  position: absolute;
+}
 .watchdir-button {
   width: 30px;
 }
