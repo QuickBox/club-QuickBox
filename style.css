@@ -481,15 +481,18 @@ div#CatList {
   border: 1px solid #222;
 }
 
+div#CatList .label-prefix {
+  font-size: 20px;
+}
+
 div#CatList ul li {
   background-repeat: no-repeat;
-  border: 1px solid #222;
   cursor: pointer;
   font-family: Open Sans;
   font-size: 12px;
   line-height: 16px;
   margin: 0;
-  padding: 3px 25px;
+  padding: 4px 9px;
 }
 
 div#CatList ul li:hover {
@@ -504,13 +507,16 @@ div#CatList ul li.sel {
   text-shadow: none;
 }
 
-#-_-_-all-_-_-,
-#-_-_-dls-_-_-,
-#-_-_-com-_-_-,
-#-_-_-act-_-_-,
-#-_-_-iac-_-_-,
-#-_-_-err-_-_- {
-  background-image: url(./images/status_icons.png)
+.label-icon {
+  background-image: url(./images/status_icons.png);
+  background-position: 0px -534px;
+  min-width: 18px;
+  min-height: 18px;
+}
+
+.label-count, .label-size {
+  background-color: #2a2a2a;
+  color: #A0A0A0;
 }
 
 .catpanel {
@@ -528,42 +534,36 @@ div#CatList ul li.sel {
   text-shadow: none;
 }
 
-#-_-_-all-_-_- {
-  background-position: 4px -300px;
+.-_-_-all-_-_- .label-icon, #-_-_-all-_-_- .label-icon {
+  background-position: 0px -305px;
 }
 
-#-_-_-dls-_-_- {
-  background-position: 4px 2px;
+#-_-_-dls-_-_- .label-icon {
+  background-position: 0px 0px;
 }
 
-#-_-_-com-_-_- {
-  background-position: 4px -28px;
+#-_-_-com-_-_- .label-icon {
+  background-position: 0px -30px;
 }
 
-#-_-_-act-_-_- {
-  background-position: 4px -276px;
+#-_-_-act-_-_- .label-icon {
+  background-position: 0px -278px;
 }
 
-#-_-_-iac-_-_- {
-  background-position: 4px -55px;
+#-_-_-iac-_-_- .label-icon {
+  background-position: 0px -57px;
 }
 
-#-_-_-err-_-_- {
-  background-position: 4px -167px;
+#-_-_-err-_-_- .label-icon {
+  background-position: 0px -169px;
 }
 
-#-_-_-nlb-_-_- {
-  background-position: 4px -640px !important;
-  padding: 3px 4px !important;
+#-_-_-nlb-_-_- .label-icon {
+  background-position: 0px -644px;
 }
 
-div#CatList ul li.RSS {
-  background-image: url(./images/status_icons.png);
-  background-position: 4px -355px;
-}
-
-div#CatList ul li.disRSS {
-  background-image: url(./images/status_icons.png);
+.RSS .label-icon, .disRSS .label-icon, .RSSGroup .label-icon {
+  background-position: 0px -360px !important;
 }
 
 .stable-icon {
@@ -578,14 +578,8 @@ div#CatList ul li.disRSS {
   background: transparent url(./images/dir.gif) no-repeat left center
 }
 
-div#plabel_cont ul li {
-  background-image: url(./images/status_icons.png);
-  background-position: 4px -532px;
-}
-
-div#flabel_cont ul li {
-  background-image: url(./images/status_icons.png);
-  background-position: 4px -352px;
+div#flabel_cont ul li:not(.-_-_-all-_-_-) .label-icon {
+  background-position: 0px -360px;
 }
 
 div.tab {
@@ -625,6 +619,17 @@ div.graph_tab {
   border-color: #2a2a2a;
   background-color: #222;
   top: -2px;
+}
+
+.graph_tab_legend {
+	color: #aaa;
+	background-color: #222;
+}
+
+.graph_tab_tooltip {
+	color: #FFF;
+	background-color: #606060;
+	border: 1px solid #606060;
 }
 
 div.table_tab {
@@ -1211,10 +1216,6 @@ div#gcont table {
   font-family: Open Sans;
   font-size: 12px;
   line-height: 13px;
-}
-
-li.cat.tracker {
-  padding: 3px 4px !important;
 }
 
 ul.CMenu li:hover ul {
