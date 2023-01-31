@@ -432,7 +432,7 @@ select {
 input[type="text"][disabled],
 input[type="password"][disabled],
 input[type="file"][disabled],
-input[type="number"],
+input[type="number"][disabled],
 select[disabled] {
   background: #212121 none repeat scroll 0 0;
   border: 1px solid #313131;
