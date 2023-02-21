@@ -440,7 +440,8 @@ select[disabled] {
 }
 
 input.Button0,
-input[type="button"] {
+input[type="button"],
+input.Button {
   background: #222 none repeat scroll 0 0;
   border: 1px solid #333;
   border-radius: 3px;
