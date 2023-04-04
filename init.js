@@ -2,6 +2,7 @@
  *  club-Swizards skin for ruTorrent
  *  Author: JMSolo - https://plaza.quickbox.io/
  */
+TR_HEIGHT = 26;
 
 plugin.QuickBoxAllDone = plugin.allDone;
 plugin.allDone = function()
