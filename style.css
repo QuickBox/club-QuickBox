@@ -422,6 +422,7 @@ textarea[disabled] {
 input[type="text"],
 input[type="password"],
 input[type="file"],
+input[type="number"],
 select {
   background: #212121 none repeat scroll 0 0;
   border: 1px solid #313131;
@@ -431,12 +432,15 @@ select {
 input[type="text"][disabled],
 input[type="password"][disabled],
 input[type="file"][disabled],
+input[type="number"][disabled],
 select[disabled] {
   background: #212121 none repeat scroll 0 0;
   border: 1px solid #313131;
   color: black;
 }
 
+input.Button0,
+input[type="button"],
 input.Button {
   background: #222 none repeat scroll 0 0;
   border: 1px solid #333;
@@ -453,7 +457,9 @@ input.Button {
 }
 
 input.Button:hover,
-input.Button:focus {
+input.Button:focus,
+input[type="button"]:hover
+input[type="button"]:focus {
   background: #3a3a3a none repeat scroll 0 0;
   text-shadow: 0 0 4px #999;
   color: #999;
@@ -964,6 +970,10 @@ div#t div#ind {
 
 span#loadimg {
   background: transparent url(./images/ajax-loader.png) no-repeat center center;
+}
+
+#fltlist li {
+    margin: 3px;
 }
 
 /*Scrollbars*/
