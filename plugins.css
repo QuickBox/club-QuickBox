@@ -47,19 +47,8 @@
     font-size: 11px;
     font-family: inherit;
 }
-#meter-cpu-holder {
-  *background: rgba(0, 0, 0, 0) url("./images/status_icons.png") no-repeat scroll 3px -616px;
-  border-right: medium none;
-  height: 16px;
-  line-height: 16px;
-  margin-left: 25px;
-  padding-left: 25px;
-  width: 100px;
-}
 #meter-cpu-td {
-  background: rgba(0, 0, 0, 0) url("./images/status_icons.png") no-repeat scroll 3px -612px !important;
-  height: 16px;
-  line-height: 18px;
+  background: rgba(0, 0, 0, 0) url("./images/status_icons.png") no-repeat scroll 0px -616px !important;
 } 
 
 div.graph_tab {
