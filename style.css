@@ -458,8 +458,10 @@ input.Button {
 
 input.Button:hover,
 input.Button:focus,
+input.Button:active,
 input[type="button"]:hover
-input[type="button"]:focus {
+input[type="button"]:focus
+input[type="button"]:active {
   background: #3a3a3a none repeat scroll 0 0;
   text-shadow: 0 0 4px #999;
   color: #999;
