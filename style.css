@@ -464,6 +464,8 @@ input[type="button"]:focus {
   text-shadow: 0 0 4px #999;
   color: #999;
 }
+.pview_custom_view .label-icon { background-color: #2a2a2a; line-height: 13px; }
+.pview_custom_view .label-icon > span { color: #A0A0A0 !important; }
 
 div#CatList {
   border: none;
