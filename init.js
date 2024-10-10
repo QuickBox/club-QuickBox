@@ -1,6 +1,5 @@
 /*
- *  club-Swizards skin for ruTorrent
- *  Author: JMSolo - https://plaza.quickbox.io/
+ *  club-QuickBox skin for ruTorrent
  */
 
 plugin.QuickBoxAllDone = plugin.allDone;
