@@ -336,3 +336,17 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	height: auto;
 	padding: 15px 15px 15px 0;
 }
+
+/*Logoff */
+
+div#logoff {
+	background-image: url(images/logoff.png)
+}
+
+div#logoff:hover {
+	background-image: url(images/logoff3.png)
+}
+
+div#logoffDlg div.dlg-header {
+	background-image: url(images/logoff2.png)
+}
