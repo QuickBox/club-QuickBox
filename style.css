@@ -702,6 +702,16 @@ div[part="heading"] {
 	background-color: #333;
 }
 
+.tabbar li.nav-item.selected a.nav-link {
+	border-top: 2px solid #1e824c;
+	color: unset;
+}
+
+.tabbar li.nav-item a.nav-link:hover {
+	border-top: 2px solid #1e824c;
+	color: unset;
+}
+
 div.tab {
 	background-color: #2a2a2a;
 	font-family: inherit;
