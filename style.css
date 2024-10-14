@@ -1,6 +1,35 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800');
 
 /* Global Styles */
+
+:root {
+	--main-bg-color: #2a2a2a;
+	--main-text-color: #ccc;
+	--main-border-color: #333;
+	--main-link-color: #3498db;
+	--main-link-hover-color: #1e824c;
+	--main-link-visited-color: #3498db;
+	--main-link-visited-hover-color: #1e824c;
+	--main-button-color: #6c7a89;
+	--main-button-hover-color: #999;
+	--main-button-shadow-color: #999;
+	--main-button-border-color: #333;
+	--main-button-border-hover-color: #333;
+	--main-button-bg-color: #222;
+	--main-button-bg-hover-color: #3a3a3a;
+	--main-button-bg-shadow-color: #000;
+	--main-button-bg-shadow-hover-color: #000;
+	--main-button-text-color: #ccc;
+	--main-button-text-hover-color: #999;
+	--main-button-text-shadow: #000;
+	--bs-heading-color: #fff;
+	--bs-heading-bg-color: #222;
+	--bs-heading-border-color: #333;
+	--btn-bg-color: #2a2a2a;
+	--bs-nav-link-color: #1e824c;
+}
+
+
 body,
 html {
 	background-color: #2a2a2a;
@@ -78,6 +107,14 @@ panel-label[icon="search"] {
 	background-repeat: no-repeat;
 }
 
+/* Loading Indicator */
+#ind {
+	background: transparent url('images/ajax-loader.png') no-repeat 0px center;
+	width: 32px;
+	height: 32px;
+	cursor: default;
+}
+
 /* Dialog Close Button */
 a.dlg-close {
 	background: transparent url('images/close.png') no-repeat left center;
@@ -104,6 +141,26 @@ a:hover,
 a:focus {
 	color: #3498db;
 	text-decoration: underline;
+}
+
+/* Navbar */
+.navbar-toggler-icon {
+	background-image: url('data:image/svg+xml,%3csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30"%3e%3cpath stroke="rgba(0, 0, 0, 0.5)" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22" /%3e%3c/svg%3e');
+	background-color: transparent !important;
+}
+
+/* Navigation Links */
+div#t .nav-link {
+	border: 0px solid #2a2a2a;
+	border-radius: 3px;
+}
+
+.nav-link {
+	color: #ccc;
+}
+
+.nav-link:hover {
+	color: #1e824c;
 }
 
 /* Horizontal Rule */
@@ -299,12 +356,12 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 #t div.TB_Separator {
-	background-color: #111 !important
+	background-color: #2a2a2a !important
 }
 
 div#t {
 	background-color: #222;
-	border-bottom-color: #111;
+	border-bottom-color: #2a2a2a;
 }
 
 #t div {
@@ -317,13 +374,10 @@ div#t {
 	background-color: #222
 }
 
-#t div:hover {
-	background-position-y: -30px;
-}
-
 #t div.nav-icon {
 	height: 30px;
 	width: 30px;
+	background-color: transparent;
 }
 
 #t div#add {
@@ -453,8 +507,11 @@ div#t {
 	background-position: -271px -30px !important;
 }
 
-#t a#mnu_go::before {
-	content: "GO";
+/* Only show on desktop */
+@media (min-width: 769px) {
+	#t a#mnu_go::before {
+		content: "GO";
+	}
 }
 
 #t a#mnu_go {
@@ -469,7 +526,7 @@ div#t {
 }
 
 #t a#mnu_go:hover {
-	background-color: #59a9c2;
+	background-color: #59a9c2 !important;
 }
 
 #go {
@@ -530,6 +587,12 @@ input.Button:focus {
 	background-color: #3a3a3a;
 	color: #999;
 	text-shadow: 0 0 4px #999;
+}
+
+input:focus-visible,
+select:focus-visible {
+	background-color: #1a1a1a;
+	outline: 1px solid #2a2a2a;
 }
 
 /* Textarea */
@@ -642,6 +705,10 @@ category-list {
 }
 
 /* Panels */
+#offcanvas-sidepanel {
+	background-color: #222;
+}
+
 #side-panel {
 	border: 1px solid #222;
 }
@@ -661,6 +728,7 @@ category-panel::part(heading) {
 	font-weight: 700;
 	text-shadow: 0 -1px 0 #000;
 	border: none;
+	background-color: #2a2a2a;
 }
 
 div[part="heading"] {
@@ -700,6 +768,8 @@ div[part="heading"] {
 .tabbar li.nav-item a.nav-link {
 	border: 1px solid #222;
 	background-color: #333;
+	margin-bottom: 0px;
+	margin-top: 6px;
 }
 
 .tabbar li.nav-item.selected a.nav-link {
@@ -724,8 +794,9 @@ div.table_tab {
 	font-family: inherit;
 }
 
-#modalbg {
-	background-color: #222;
+li#tab_lcont {
+	width: fit-content;
+	display: inline-flex;
 }
 
 /* Lists */
@@ -780,6 +851,14 @@ div#gcont table tr td {
 }
 
 /* Modals */
+#modalbg {
+	background-color: #000;
+}
+
+div#modalbg {
+	background-color: #000;
+}
+
 div.dlg-window {
 	background-color: #2a2a2a;
 	border: 1px solid #333;
@@ -1001,20 +1080,20 @@ span.det {
 #meter-disk-value,
 #qmeter-band-value,
 #qmeter-disk-value {
-	border: inset 1px #eee;
-	float: left;
+	border: inset 1px #212121;
+	/*float: left;*/
 }
 
 #meter-band-text,
 #meter-disk-text,
 #qmeter-disk-text {
 	color: #6c7a89;
-	float: left;
 	font-family: inherit;
 	font-size: 11px;
+	/*float: left;
 	position: relative;
 	left: 40%;
-	text-align: left;
+	text-align: left;*/
 	text-shadow: 0 0 2px #6c7a89;
 	z-index: 1;
 }
@@ -1025,6 +1104,10 @@ span.det {
 
 .legendLabel {
 	color: #999 !important;
+}
+
+legend {
+	color: #999;
 }
 
 #PluginList {
@@ -1058,6 +1141,7 @@ input[type=submit],
 	border: 1px solid #222;
 	border-radius: 3px;
 	margin: 0.25rem;
+	/*margin: 0.75rem 0.25rem 0 0.25rem;*/
 	padding: 1px 10px;
 	background: #333;
 	width: 80px;

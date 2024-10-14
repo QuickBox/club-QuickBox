@@ -8,12 +8,12 @@
 
 /* Cell Styling */
 .cCell {
-	color: #000;
+	color: #ccc;
 }
 
 .status-cell {
 	padding: 0 3px 0 3px;
-	border: 0;
+	border-right: solid 2px #222;
 }
 
 /* Meters */
@@ -31,10 +31,10 @@
 #qmeter-disk-text {
 	color: #fff;
 	text-shadow: 0 0 2px #000;
-	position: relative;
+	/*position: relative;
 	text-align: left;
 	float: left;
-	left: 40%;
+	left: 40%;*/
 	font-size: 11px;
 	font-family: inherit;
 	z-index: 1;
@@ -47,15 +47,19 @@
 	/* background: url(images/status_icons.png) no-repeat 3px -336px; */
 	height: 16px;
 	line-height: 16px;
-	width: 100px;
+	/*width: 100px;*/
 	border: 0;
-	display: flex;
+	/*display: flex;*/
 	padding-right: 12px;
 }
 
+#meter-disk-pane .icon {
+	background: url('images/status_icons.png') no-repeat 0px -336px;
+}
+
 #meter-cpu-text {
-	position: absolute;
-	left: 45px;
+	/*position: absolute;*/
+	/*left: 45px;*/
 	top: 0;
 	color: #fff;
 	text-shadow: 0 0 2px #000;
@@ -67,11 +71,15 @@
 	height: 16px;
 	line-height: 16px;
 	padding-left: 25px;
-	width: 100px;
+	/*width: 100px;*/
+}
+
+#meter-cpu-pane .icon {
+	background: url('images/status_icons.png') no-repeat 0px -320px !important;
 }
 
 #meter-cpu-td {
-	background: url('images/status_icons.png') no-repeat 3px -320px !important;
+	background: url('images/status_icons.png') no-repeat 0px -320px !important;
 	height: 16px;
 	line-height: 18px;
 }
@@ -237,6 +245,13 @@ div.graph_tab {
 	background-color: #212121;
 }
 
+/* _getdir */
+
+.browseFrame {
+	border: 1px solid #2a2a2a;
+	background-color: #222;
+}
+
 /*AutoDL Filters*/
 div#autodl-filters {
 	width: auto;
@@ -293,6 +308,7 @@ div#autodl-filters-contents-wol {
 /* AutoDL IRC Servers */
 div#autodl-ircsrvs {
 	height: fit-content;
+	width: fit-content;
 }
 
 fieldset#autodl-ircsrvs-servers-fieldset {
@@ -309,7 +325,7 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 
 /* AutoDL Prefs */
 #autodl-prefs {
-	width: 500px;
+	width: fit-content;
 	height: auto;
 }
 
@@ -332,9 +348,144 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 }
 
 #autodl-help:not(.dlg-window) {
-	width: 250px;
+	width: fit-content;
 	height: auto;
 	padding: 15px 15px 15px 0;
+}
+
+/* File Manager */
+input#flm-nav-refresh {
+    border: 1px solid #333;
+}
+
+.sprite-archive {
+	width: 16px;
+	height: 16px;
+	background-position: -5px -5px;
+}
+
+.sprite-console {
+	width: 16px;
+	height: 16px;
+	background-position: -31px -5px;
+}
+
+.sprite-copy {
+	width: 16px;
+	height: 16px;
+	background-position: -57px -5px;
+}
+
+.sprite-curdir {
+	width: 16px;
+	height: 16px;
+	background-position: -83px -5px !important;
+}
+
+.sprite-delete {
+	width: 16px;
+	height: 16px;
+	background-position: -5px -31px;
+}
+
+.flm-sprite-dir_up {
+	width: 16px;
+	height: 16px;
+	background-position: -31px -31px;
+}
+
+.sprite-extract {
+	width: 16px;
+	height: 16px;
+	background-position: -57px -31px;
+}
+
+.sprite-image {
+	width: 16px;
+	height: 16px;
+	background-position: -83px -31px;
+}
+
+.sprite-move {
+	width: 16px;
+	height: 16px;
+	background-position: -5px -57px;
+}
+
+.sprite-mp3 {
+	width: 16px;
+	height: 16px;
+	background-position: -31px -57px;
+}
+
+.sprite-mkdir {
+	width: 16px;
+	height: 16px;
+	background-attachment: scroll;
+	background-position: -57px -57px !important;
+}
+
+.sprite-nfo,
+.sprite-nfo_view {
+	width: 16px;
+	height: 16px;
+	background-position: -83px -57px;
+}
+
+.sprite-rar {
+	width: 16px;
+	height: 16px;
+	background-position: -5px -83px;
+}
+
+.sprite-rarpart {
+	width: 16px;
+	height: 16px;
+	background-position: -31px -83px;
+}
+
+.sprite-refresh {
+	width: 16px;
+	height: 16px;
+	background-position: -57px -83px;
+}
+
+.sprite-rename {
+	width: 16px;
+	height: 16px;
+	background-position: -83px -83px;
+}
+
+.sprite-sfv,
+.sprite-sfv_create,
+.sprite-sfv_check {
+	width: 16px;
+	height: 16px;
+	background-position: -109px -5px;
+}
+
+.sprite-torrent {
+	width: 16px;
+	height: 16px;
+	background-position: -109px -31px;
+}
+
+.sprite-video {
+	width: 16px;
+	height: 16px;
+	background-position: -109px -57px;
+}
+
+.sprite-vplay {
+	width: 16px;
+	height: 16px;
+	background-position: -109px -83px;
+}
+
+.sprite-zip {
+	width: 16px;
+	height: 16px;
+	background-position: -5px -109px;
 }
 
 /*Logoff */
@@ -344,7 +495,7 @@ div#logoff {
 }
 
 div#logoff:hover {
-	background-image: url(images/logoff3.png)
+	background-image: url(images/logoff3.png);
 }
 
 div#logoffDlg div.dlg-header {
