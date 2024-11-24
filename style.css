@@ -103,7 +103,7 @@ panel-label[icon="search"] {
 	display: none;
 	background-image: url('images/menus.png'), url('images/toolbar.png'), url('images/status_icons.png'),
 		url('images/r_bg.gif'), url('images/asc.gif'), url('images/desc.gif'),
-		url('images/pnl_open.png'), url('images/pnl_close.png'), url('images/headers.png');
+		url('images/pnl_open.gif'), url('images/pnl_close.gif'), url('images/headers.png');
 	background-repeat: no-repeat;
 }
 
@@ -654,9 +654,6 @@ category-list {
 
 .catpanel {
 	background-color: #222;
-	background-image: url('images/pnl_open.gif');
-	background-repeat: no-repeat;
-	background-position: 0 0;
 	border-top: 1px solid #2a2a2a;
 	color: #ccc;
 	font-family: 'Open Sans', sans-serif;
@@ -706,7 +703,8 @@ category-list {
 
 /* Panels */
 #offcanvas-sidepanel {
-	background-color: #222;
+	background-color: #222 !important;
+	border: 1px solid #222 !important;
 }
 
 #side-panel {
@@ -715,14 +713,15 @@ category-list {
 
 category-panel {
 	color: #dcdcdc;
-	--open-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_open.gif');
-	--close-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_close.gif');
+	--open-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_open.png');
+	--close-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_close.png');
 	--heading-background-color: #1A1A1A;
+	--heading-border-color: transparent;
 }
 
 category-panel::part(heading) {
 	font-size: 12px;
-	padding: 2px 14px 2px 30px;
+	/*padding: 2px 14px 2px 30px;*/
 	height: 22px;
 	line-height: 25px;
 	font-weight: 700;
@@ -741,6 +740,17 @@ div[part="heading"] {
 	line-height: 16px;
 	cursor: pointer;
 	user-select: none;
+}
+
+div[part=heading]::before {
+    content: "";
+    display: block;
+    height: 28px !important;
+    background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_open.png') !important;
+}
+
+:host([closed]) div[part="heading"]::before {
+    background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_closed.png') !important;
 }
 
 [part="count"],
@@ -857,6 +867,7 @@ div#gcont table tr td {
 
 div#modalbg {
 	background-color: #000;
+	opacity: 0.75;
 }
 
 div.dlg-window {
