@@ -297,8 +297,6 @@ ul.CMenu li a:hover {
 	background-color: #222;
 	color: #ccc;
 	font-family: 'Open Sans', sans-serif;
-	/* font-weight: 600; */
-	/* text-shadow: 0 0 2px #000; */
 }
 
 ul.CMenu li:hover ul li a {
