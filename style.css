@@ -310,12 +310,12 @@ ul.CMenu li:hover ul li a:hover {
 }
 
 ul.CMenu li ul li a.dis {
-	color: #333;
+	color: #626262;
 }
 
 ul.CMenu li ul li a.dis:hover {
 	background-color: #eee;
-	color: #333;
+	color: #626262;
 }
 
 /* Dividers */
