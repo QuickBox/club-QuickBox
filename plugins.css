@@ -491,20 +491,20 @@ input#flm-nav-refresh {
 /* Filemanager */
 #flm-nav-refresh {
 	background: #333;
-    border-color: #111;
+    border-color: #2a2a2a;
     box-shadow: none;
     padding: .25rem !important;
 }
 
 #flm-navigation-head .input-group-text {
 	background: #333;
-	border-color: #111;
+	border-color: #2a2a2a;
 	color: #fff;
 }
 
 #flm-navpath {
 	background: #333;
-	border-color: #111;
+	border-color: #2a2a2a;
 	color: #fff;
 }
 
