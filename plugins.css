@@ -488,6 +488,26 @@ input#flm-nav-refresh {
 	background-position: -5px -109px;
 }
 
+/* Filemanager */
+#flm-nav-refresh {
+	background: #333;
+    border-color: #111;
+    box-shadow: none;
+    padding: .25rem !important;
+}
+
+#flm-navigation-head .input-group-text {
+	background: #333;
+	border-color: #111;
+	color: #fff;
+}
+
+#flm-navpath {
+	background: #333;
+	border-color: #111;
+	color: #fff;
+}
+
 /*Logoff */
 
 div#logoff {

@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,800');
 
+body,
+html {
+	background-color: #2a2a2a;
+	color: #ccc;
+	font-family: 'Open Sans', sans-serif;
+	text-shadow: none;
+	margin: 0;
+	padding: 0;
+	line-height: 1.5;
+}
+
 /* Global Styles */
 
 :root {
@@ -29,16 +40,12 @@
 	--bs-nav-link-color: #1e824c;
 }
 
-
-body,
-html {
-	background-color: #2a2a2a;
-	color: #ccc;
-	font-family: 'Open Sans', sans-serif;
-	text-shadow: none;
-	margin: 0;
-	padding: 0;
-	line-height: 1.5;
+category-panel {
+	color: #dcdcdc;
+	--open-background-image: url('../club-QuickBox/images/pnl_open.png');
+	--close-background-image: url('../club-QuickBox/images/pnl_close.png');
+	--heading-background-color: #1A1A1A;
+	--heading-border-color: transparent;
 }
 
 /* Panel Labels */
@@ -711,14 +718,6 @@ category-list {
 	border: 1px solid #222;
 }
 
-category-panel {
-	color: #dcdcdc;
-	--open-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_open.png');
-	--close-background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_close.png');
-	--heading-background-color: #1A1A1A;
-	--heading-border-color: transparent;
-}
-
 category-panel::part(heading) {
 	font-size: 12px;
 	/*padding: 2px 14px 2px 30px;*/
@@ -746,11 +745,11 @@ div[part=heading]::before {
     content: "";
     display: block;
     height: 28px !important;
-    background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_open.png') !important;
+    background-image: url('../club-QuickBox/images/pnl_open.png') !important;
 }
 
 :host([closed]) div[part="heading"]::before {
-    background-image: url('../plugins/theme/themes/club-QuickBox/images/pnl_closed.png') !important;
+    background-image: url('../club-QuickBox/images/pnl_closed.png') !important;
 }
 
 [part="count"],
