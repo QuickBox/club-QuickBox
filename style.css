@@ -156,6 +156,16 @@ a:focus {
 	background-color: transparent !important;
 }
 
+.dropdown-menu {
+    --bs-dropdown-border-color: #333;
+    --bs-dropdown-bg: #222;
+    --bs-dropdown-link-color: #ccc;
+    --bs-dropdown-link-active-color: #fff;
+    --bs-dropdown-link-active-bg: #111;
+    --bs-dropdown-link-hover-color: #fff;
+    --bs-dropdown-link-hover-bg: #111;
+}
+
 /* Navigation Links */
 div#t .nav-link {
 	border: 0px solid #2a2a2a;
@@ -721,12 +731,12 @@ category-list {
 category-panel::part(heading) {
 	font-size: 12px;
 	/*padding: 2px 14px 2px 30px;*/
-	height: 22px;
+	/*height: 22px;
 	line-height: 25px;
 	font-weight: 700;
 	text-shadow: 0 -1px 0 #000;
 	border: none;
-	background-color: #2a2a2a;
+	background-color: #2a2a2a;*/
 }
 
 div[part="heading"] {
