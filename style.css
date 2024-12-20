@@ -265,6 +265,7 @@ ul.CMenu li a {
 	color: #999;
 	padding: 3px 18px;
 	display: block;
+	text-decoration: none;
 }
 
 ul.CMenu li a:hover {
@@ -274,6 +275,7 @@ ul.CMenu li a:hover {
 
 ul.CMenu li a.dis {
 	color: #333;
+	text-decoration: none;
 }
 
 ul.CMenu li a.dis:hover {
@@ -295,6 +297,8 @@ ul.CMenu li a.exp {
 
 ul.CMenu li a.exp:hover {
 	background-position: right -44px;
+	background-color: #cfdeef;
+	color: #333;
 }
 
 ul.CMenu li a.sel {
@@ -310,8 +314,6 @@ ul.CMenu li a:hover {
 	background-color: #222;
 	color: #ccc;
 	font-family: 'Open Sans', sans-serif;
-	font-weight: 600;
-	text-shadow: 0 0 2px #000;
 }
 
 ul.CMenu li:hover ul li a {
@@ -322,16 +324,15 @@ ul.CMenu li:hover ul li a {
 ul.CMenu li:hover ul li a:hover {
 	background-color: #222;
 	color: #ccc;
-	text-shadow: 0 0 2px #000;
 }
 
 ul.CMenu li ul li a.dis {
-	color: #333;
+	color: #626262;
 }
 
 ul.CMenu li ul li a.dis:hover {
 	background-color: #eee;
-	color: #333;
+	color: #626262;
 }
 
 /* Dividers */
