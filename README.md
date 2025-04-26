@@ -7,6 +7,6 @@ You will need to navigate to your plugins/themes directory, typically located at
 
 Next, simply clone the club-QuickBox skin to your themes
 ```
-git clone https://lab.quickbox.io/QuickBox/club-QuickBox.git club-QuickBox
+git clone https://github.com/QuickBox/club-QuickBox.git club-QuickBox
 chown -R www-data: club-QuickBox
 ```
