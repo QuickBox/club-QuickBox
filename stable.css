@@ -101,7 +101,7 @@ div#tdcont .stable {
 .stable tbody tr td div {
 	font-family: var(--font-family) !important;
 	font-size: 11px;
-	height: 21px !important;
+	height: 18px !important;
 }
 
 .stable-body td {
@@ -113,7 +113,7 @@ div#tdcont .stable {
 	font-family: var(--font-family) !important;
 	font-size: 11px;
 	height: 21px !important;
-	line-height: 21px;
+	line-height: 11px;
 }
 
 .stable-body tr {
