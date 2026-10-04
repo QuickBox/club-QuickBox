@@ -1,15 +1,22 @@
-Material Design Icons
-=====================
+club-QuickBox icon library
+===========================
 
-The SVG icons in this directory are derived from Material Design Icons
-by Pictogrammers (https://github.com/Templarian/MaterialDesign).
+The glyph path data in `library.json` is a curated subset of Material Design
+Icons (MDI), redistributed under the Apache License 2.0.
 
-License: Apache 2.0 (Apache-2.0)
-https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+  Project: Material Design Icons (Templarian/MaterialDesign)
+  Source:  https://github.com/Templarian/MaterialDesign
+  License: Apache-2.0
+           https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
 
-Each icon is a single glyph path extracted from the Material Design Icons
-set and rewritten as a minimal, monochrome, 24x24 viewBox SVG for use with
-CSS mask-image. Color is supplied by the theme's own CSS custom properties;
-the source glyph artwork is unmodified in shape.
+Each entry stores the MDI glyph body (a 24x24 viewBox path) together with a
+QuickBox name, a category, and search tags. The icons are tinted at render
+time with the active theme token, so no original colour is retained.
 
-No endorsement by the Material Design Icons project is implied.
+No third-party brand or application logos (for example the *arr media tools)
+are included; those names resolve to their neutral category glyph instead.
+
+Apache License 2.0 — summary of the redistribution terms honoured here:
+  - the work is provided "AS IS", without warranties or conditions;
+  - this NOTICE preserves the attribution and license pointer required when
+    redistributing the licensed material.

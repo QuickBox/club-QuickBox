@@ -18,8 +18,8 @@
 ;(function () {
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
-	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras"];
-	var JS_MODULES = ["topbar", "sidebar", "table", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras"];
+	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
+	var JS_MODULES = ["topbar", "sidebar", "table", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
 	var root = document.documentElement;
 	var variantListeners = [];
 	var jsModulesLoaded = false;
