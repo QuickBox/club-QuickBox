@@ -74,7 +74,7 @@
 
 	function wide(label, control) {
 		var f = el("div", "cqb-field-wide");
-		f.appendChild(labelNode(label));
+		if (label != null && label !== "") f.appendChild(labelNode(label));
 		f.appendChild(control);
 		return f;
 	}
@@ -109,11 +109,34 @@
 		return (n && n.tagName === "LABEL") ? n : null;
 	}
 
-	/* Mount new content inside a fieldset (after its legend) and drop the now
-	 * empty Bootstrap .row it replaces. */
-	function mount(fs, node, oldRow) {
+	/* The caption label for a control -- adjacent, by for=, in the same column,
+	 * or in the next column (the Autotools checkbox/label split-column case). */
+	function captionFor(input) {
+		if (!input) return null;
+		if (input.id) {
+			var byFor = document.querySelector('label[for="' + input.id + '"]');
+			if (byFor) return byFor;
+		}
+		var n = input.nextElementSibling;
+		if (n && n.tagName === "LABEL") return n;
+		var col = input.closest("[class*=col]");
+		if (col) {
+			var inCol = col.querySelector("label");
+			if (inCol) return inCol;
+			var nx = col.nextElementSibling;
+			if (nx && nx.querySelector) { var l = nx.querySelector("label"); if (l) return l; }
+		}
+		return null;
+	}
+
+	/* Mount new content inside a fieldset (after its legend) and drop every
+	 * now-empty Bootstrap .row it replaced (a page can carry several). */
+	function mount(fs, node) {
 		fs.appendChild(node);
-		if (oldRow && oldRow.parentNode) oldRow.parentNode.removeChild(oldRow);
+		var rows = fs.querySelectorAll(".row");
+		for (var i = 0; i < rows.length; i++) {
+			if (!node.contains(rows[i]) && rows[i].parentNode) rows[i].parentNode.removeChild(rows[i]);
+		}
 	}
 
 	/* ============================================================
@@ -152,7 +175,7 @@
 		var wrap = el("div");
 		wrap.appendChild(cg);
 		wrap.appendChild(pair);
-		mount(fs, wrap, row);
+		mount(fs, wrap);
 	}
 
 	function pAutotools(pane) {
@@ -160,12 +183,23 @@
 		var row = fs && fs.querySelector(".row");
 		if (!fs || !row) return;
 
-		function subcard(cbId, title) {
+		/* The enable checkbox + its own descriptive label become the sub-card
+		 * header (the label is the caption core ships for the toggle), so no
+		 * orphan text can float above the cards. */
+		function subcard(cbId, fallbackTitle) {
 			var card = el("div", "cqb-subcard");
 			var head = el("div", "cqb-subcard-head");
 			var cb = g(cbId);
 			if (cb) head.appendChild(cb);
-			var lab = mk("label", "cqb-subcard-title", title);
+			var cap = captionFor(g(cbId));
+			var lab;
+			if (cap) {
+				lab = cap;
+				lab.className = "cqb-subcard-title";
+				lab.textContent = (lab.textContent || "").replace(/,[^,]*:?\s*$/, "").trim();
+			} else {
+				lab = mk("label", "cqb-subcard-title", fallbackTitle);
+			}
 			lab.setAttribute("for", cbId);
 			head.appendChild(lab);
 			card.appendChild(head);
@@ -178,11 +212,11 @@
 
 		/* AutoLabel */
 		var bL = subcard("enable_label", L.qbAutoLabel);
-		if (g("label_template")) bL.appendChild(wide(stripUnit(nextLabel(g("enable_label"))), g("label_template")));
+		if (g("label_template")) bL.appendChild(wide("", g("label_template")));
 
 		/* AutoMove */
 		var bM = subcard("enable_move", L.qbAutoMove);
-		if (g("automove_filter")) bM.appendChild(wide(nextLabel(g("enable_move")), g("automove_filter")));
+		if (g("automove_filter")) bM.appendChild(wide("", g("automove_filter")));
 		if (g("skip_move_for_files")) bM.appendChild(wide(g("lbl_skip_move_for_files"), g("skip_move_for_files")));
 		if (g("path_to_finished")) bM.appendChild(wideBrowse(g("lbl_path_to_finished"), g("path_to_finished"), g("path_to_finished_btn")));
 		if (g("fileop_type")) { var gm = grid(); gm.appendChild(tile(g("lbl_fileop_type"), g("fileop_type"))); bM.appendChild(gm); }
@@ -201,7 +235,7 @@
 		cards.appendChild(bL.parentNode);
 		cards.appendChild(bM.parentNode);
 		cards.appendChild(bW.parentNode);
-		mount(fs, cards, row);
+		mount(fs, cards);
 	}
 
 	function pXmpp(pane) {
@@ -219,7 +253,7 @@
 			var msgWrap = el("div");
 			msgWrap.appendChild(gm);
 			if (g("message")) msgWrap.appendChild(wide(msgLabel(pane), g("message")));
-			mount(sets[0], msgWrap, row0);
+			mount(sets[0], msgWrap);
 		}
 		/* Advanced */
 		if (sets[1]) {
@@ -232,7 +266,7 @@
 				if (g("jabberPort")) ga.appendChild(tile(g("lbl_jabberPort"), g("jabberPort")));
 				if (ga.childNodes.length) wrap.appendChild(ga);
 				if (g("useEncryption")) { var c1 = checkGrid(); c1.appendChild(check(g("useEncryption"), g("lbl_useEncryption"))); wrap.appendChild(c1); }
-				mount(sets[1], wrap, row1);
+				mount(sets[1], wrap);
 			}
 		}
 	}
@@ -265,7 +299,7 @@
 			cg.appendChild(check(g("rss_show_errors_delayed"), nextLabel(g("rss_show_errors_delayed"))));
 			wrap.appendChild(cg);
 		}
-		mount(fs, wrap, row);
+		mount(fs, wrap);
 	}
 
 	function pScheduler(pane) {
@@ -282,7 +316,7 @@
 				var inp = g(id); if (!inp) return;
 				gm.appendChild(tile(stripUnit(g("lbl_" + id)), inp, uKbs()));
 			});
-			mount(fs, gm, row);
+			mount(fs, gm);
 		}
 		/* Stand the three restricted-rate cards side by side. */
 		if (sets[1] && sets[1].parentNode) {
@@ -300,7 +334,7 @@
 			if (r0 && g("exs_limit")) {
 				var gm = grid();
 				gm.appendChild(tile(g("lbl_exs_limit"), g("exs_limit")));
-				mount(sets[0], gm, r0);
+				mount(sets[0], gm);
 			}
 		}
 		/* Each engine block (public + private) -> checks + limit tile. */
@@ -332,7 +366,7 @@
 				if (g("unpack_enabled")) { var cg = checkGrid(); cg.appendChild(check(g("unpack_enabled"), nextLabel(g("unpack_enabled")))); wrap.appendChild(cg); }
 				if (g("edit_filter")) wrap.appendChild(wide("", g("edit_filter")));
 				if (g("edit_unpack1")) wrap.appendChild(wideBrowse(g("lbl_edit_unpack1"), g("edit_unpack1"), g("edit_unpack1_btn")));
-				mount(sets[0], wrap, r0);
+				mount(sets[0], wrap);
 			}
 		}
 		if (sets[1]) {
@@ -341,7 +375,7 @@
 				var cg2 = checkGrid();
 				if (g("unpack_label")) cg2.appendChild(check(g("unpack_label"), nextLabel(g("unpack_label"))));
 				if (g("unpack_name")) cg2.appendChild(check(g("unpack_name"), nextLabel(g("unpack_name"))));
-				mount(sets[1], cg2, r1);
+				mount(sets[1], cg2);
 			}
 		}
 	}
@@ -435,7 +469,7 @@
 			var inp = g(p[0]); if (!inp) return;
 			gm.appendChild(tile(stripUnit(prevLabel(inp)), inp, p[1]));
 		});
-		mount(fs, gm, row);
+		mount(fs, gm);
 	}
 
 	function pUploadEta(pane) {
@@ -454,7 +488,7 @@
 		if (note && (note.textContent || "").trim()) {
 			wrap.appendChild(help(note.textContent.trim()));
 		}
-		mount(fs, wrap, row);
+		mount(fs, wrap);
 	}
 
 	function pHistory(pane) {
@@ -470,7 +504,7 @@
 					if (g(id)) cg.appendChild(check(g(id), nextLabel(g(id))));
 				});
 				if (cg.childNodes.length) wrap.appendChild(cg);
-				mount(sets[0], wrap, r0);
+				mount(sets[0], wrap);
 			}
 		}
 		/* Desktop notifications: keep the tip + button, tidy the auto-close row */
@@ -500,7 +534,7 @@
 					if (g(id)) c4.appendChild(check(g(id), g("lbl_" + id)));
 				});
 				if (c4.childNodes.length) wrap3.appendChild(c4);
-				mount(sets[2], wrap3, r2);
+				mount(sets[2], wrap3);
 			}
 		}
 	}
@@ -549,7 +583,7 @@
 		if (legend.childNodes.length) wrap.appendChild(legend);
 		if (preview.childNodes.length) wrap.appendChild(preview);
 
-		mount(fs, wrap, row);
+		mount(fs, wrap);
 	}
 
 	var TRANSFORMS = {
