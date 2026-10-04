@@ -965,7 +965,9 @@
 	}
 
 	/* Wrap the graph's own resize (driven by the core from #tdcont size) so the
-	 * plot height excludes the toolbar box plus a small inset for the labels. */
+	 * plot fits the pane: recompute the height LIVE from #tdcont minus the
+	 * toolbar box minus x-axis label room, rather than trusting the passed-in
+	 * height (which is the full pane and goes stale once the toolbar is added). */
 	function wrapSpeedResize() {
 		try {
 			var sg = window.theWebUI && theWebUI.speedGraph;
@@ -975,9 +977,11 @@
 			sg.resize = function (w, h) {
 				try {
 					var bar = document.getElementById("cqb-speed-toolbar");
-					if (h && bar && bar.offsetParent !== null) {
+					var tdc = document.getElementById("tdcont");
+					if (bar && bar.offsetParent !== null && tdc) {
+						if (!w) w = tdc.clientWidth;
 						var mb = parseFloat(getComputedStyle(bar).marginBottom) || 0;
-						h = Math.max(1, h - bar.offsetHeight - mb - 10);
+						h = Math.max(1, tdc.clientHeight - bar.offsetHeight - mb - 22);
 					}
 				} catch (e) {}
 				return orig(w, h);
@@ -985,12 +989,18 @@
 		} catch (e) {}
 	}
 
+	/* Size the plot now and again on the next frame, once the toolbar is laid
+	 * out and the pane has settled to its final height. */
 	function resizeSpeed() {
-		try {
-			if (window.theWebUI && typeof theWebUI.resizeGraph === "function") theWebUI.resizeGraph();
-			var sg = window.theWebUI && theWebUI.speedGraph;
-			if (sg && sg.draw) sg.draw(true);
-		} catch (e) {}
+		var go = function () {
+			try {
+				if (window.theWebUI && typeof theWebUI.resizeGraph === "function") theWebUI.resizeGraph();
+				var sg = window.theWebUI && theWebUI.speedGraph;
+				if (sg && sg.draw) sg.draw(true);
+			} catch (e) {}
+		};
+		go();
+		try { requestAnimationFrame(go); } catch (e) {}
 	}
 
 	function enhanceSpeedToolbar() {
