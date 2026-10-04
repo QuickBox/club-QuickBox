@@ -247,7 +247,7 @@
 	rates.appendChild(dRate.row);
 	rates.appendChild(uRate.row);
 	var spark = document.createElementNS(SVGNS, "svg");
-	spark.setAttribute("class", "cqb-spark");
+	spark.setAttribute("class", "cqb-topbar-spark");
 	spark.setAttribute("viewBox", "0 0 72 26");
 	spark.setAttribute("preserveAspectRatio", "none");
 	var baseLine = document.createElementNS(SVGNS, "line");

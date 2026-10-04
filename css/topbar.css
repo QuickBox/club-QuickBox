@@ -507,7 +507,7 @@
 	mask-image: url(../images/icons/statusbar-upload.svg);
 }
 
-.cqb-spark {
+.cqb-topbar-spark {
 	display: block;
 	width: 72px;
 	height: 26px;
@@ -639,7 +639,7 @@
 		width: 168px;
 	}
 
-	.cqb-spark {
+	.cqb-topbar-spark {
 		display: none;
 	}
 }

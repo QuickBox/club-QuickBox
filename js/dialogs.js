@@ -533,7 +533,7 @@
 				header.appendChild(sub);
 			}
 			var pill = document.createElement("span");
-			pill.className = "cqb-status-pill cqb-status-" + status;
+			pill.className = "cqb-task-status-pill cqb-status-" + status;
 			pill.textContent = status === "running"
 				? t("tskRunning", "Running")
 				: status === "failed" ? t("tskFailed", "Failed") : t("tskDone", "Done");
@@ -546,7 +546,7 @@
 
 		var hObs = new MutationObserver(function () {
 			if (writing) return;
-			if (header.querySelector(".cqb-status-pill")) return;
+			if (header.querySelector(".cqb-task-status-pill")) return;
 			var s = statusFromText((header.textContent || "").trim());
 			renderHeader(s || "running");
 		});

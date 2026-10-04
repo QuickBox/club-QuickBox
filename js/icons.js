@@ -403,10 +403,10 @@
 		/* --- upload panel --- */
 		var uploadPanel = el("div", "cqb-panel"); uploadPanel.hidden = true;
 		var upBody = el("div", "cqb-upload-body");
-		var drop = el("div", "cqb-dropzone", { tabindex: "0", role: "button", "aria-label": t("cqb_icons_upload_aria", "Upload a PNG image") });
-		var dropIcon = el("div", "cqb-dropzone-icon"); dropIcon.setAttribute("aria-hidden", "true");
-		var dropTitle = el("div", "cqb-dropzone-title"); dropTitle.textContent = t("cqb_icons_drop_title", "Drop a PNG here or click to browse");
-		var dropHint = el("div", "cqb-dropzone-hint"); dropHint.textContent = t("cqb_icons_drop_hint", "PNG only. Shown in plain ruTorrent too.");
+		var drop = el("div", "cqb-icons-dropzone", { tabindex: "0", role: "button", "aria-label": t("cqb_icons_upload_aria", "Upload a PNG image") });
+		var dropIcon = el("div", "cqb-icons-dropzone-icon"); dropIcon.setAttribute("aria-hidden", "true");
+		var dropTitle = el("div", "cqb-icons-dropzone-title"); dropTitle.textContent = t("cqb_icons_drop_title", "Drop a PNG here or click to browse");
+		var dropHint = el("div", "cqb-icons-dropzone-hint"); dropHint.textContent = t("cqb_icons_drop_hint", "PNG only. Shown in plain ruTorrent too.");
 		drop.appendChild(dropIcon); drop.appendChild(dropTitle); drop.appendChild(dropHint);
 		var fileInput = el("input", null, { type: "file", accept: ".png,image/png" });
 		fileInput.style.display = "none";

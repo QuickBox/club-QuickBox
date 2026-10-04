@@ -670,7 +670,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	gap: 14px;
 }
 
-.cqb-dropzone {
+.cqb-icons-dropzone {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -686,13 +686,13 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	transition: border-color 0.12s ease, background-color 0.12s ease;
 }
 
-.cqb-dropzone.is-drag {
+.cqb-icons-dropzone.is-drag {
 	border-color: var(--qb-primary);
 	background: color-mix(in srgb, var(--qb-primary) 10%, transparent);
 	color: var(--qb-foreground);
 }
 
-.cqb-dropzone-icon {
+.cqb-icons-dropzone-icon {
 	width: 30px;
 	height: 30px;
 	background-color: var(--qb-fg-muted);
@@ -700,13 +700,13 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
 }
 
-.cqb-dropzone-title {
+.cqb-icons-dropzone-title {
 	font-size: 14px;
 	font-weight: 500;
 	color: var(--qb-foreground);
 }
 
-.cqb-dropzone-hint {
+.cqb-icons-dropzone-hint {
 	font-size: 12px;
 }
 
