@@ -1,83 +1,439 @@
 /*
- *  club-QuickBox skin for ruTorrent -- details surface -- the details drawer, its tabs and stat text.
- *  Moved out of style.css; every color reads from a --qb-* token.
+ *  club-QuickBox skin for ruTorrent -- details drawer.
+ *  Underline tabs with SVG glyphs, the General pane as stat cards, a
+ *  monospace Log console, pane empty states, and the plugin-pane toolbars
+ *  (file-manager path bar, RSS/Tasks/Chunks/Traffic/History). Token-only.
  */
 
+/* ============================================================
+ * Drawer shell
+ * ============================================================ */
 div#tdetails {
 	background-color: var(--qb-surface);
-}
-
-div#lcont {
-	line-height: 1rem;
-	background: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	display: flex;
+	flex-direction: column;
+	position: relative;
 }
 
 div#tdcont {
 	background: var(--qb-surface);
-	border: 1px solid var(--qb-border);
+	border: none;
+	padding: 16px !important;
 }
 
-/* Tabs */
-.nav-tabs {
-	--bs-nav-tabs-border-width: 1px;
-	--bs-nav-tabs-border-color: var(--qb-border);
-	--bs-nav-tabs-border-radius: var(--qb-radius);
-	--bs-nav-tabs-link-hover-border-color: var(--qb-border) var(--qb-border) var(--qb-border);
+/* ============================================================
+ * Underline tab strip (v4 Tabs idiom) -- 40px, 13px, SVG glyph,
+ * active = 2px primary underline + foreground; scrolls horizontally.
+ * ============================================================ */
+.nav-tabs,
+.tabbar.nav-tabs {
+	--bs-nav-tabs-border-width: 0;
+	--bs-nav-tabs-border-color: transparent;
+	--bs-nav-tabs-link-hover-border-color: transparent;
 	--bs-nav-tabs-link-active-color: var(--qb-foreground);
-	--bs-nav-tabs-link-active-bg: var(--qb-surface);
-	--bs-nav-tabs-link-active-border-color: var(--qb-border) var(--qb-surface) var(--qb-border);
+	--bs-nav-tabs-link-active-bg: transparent;
+	--bs-nav-tabs-link-active-border-color: transparent;
 	border-bottom: 1px solid var(--qb-border);
+	background: var(--qb-surface);
+	gap: 2px;
+	padding: 0 8px !important;
+	scrollbar-width: thin;
+}
+
+.tabbar li.nav-item {
+	margin: 0;
 }
 
 .tabbar li.nav-item a.nav-link {
-	border: 1px solid var(--qb-border);
-	background-color: var(--qb-surface-2);
-	margin-bottom: 0px;
-	margin-top: 6px;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	height: 40px;
+	margin: 0;
+	padding: 0 12px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	transition: color 0.15s ease, border-color 0.15s ease;
 }
 
-.tabbar li.nav-item.selected a.nav-link {
-	border-top: 2px solid var(--qb-primary);
-	color: unset;
+/* Glyph before each tab label (mask so the label is never clipped). */
+.tabbar li.nav-item a.nav-link::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
 }
+
+#tab_gcont a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-general.svg); mask-image: url(../images/icons/tab-general.svg); }
+#tab_FileList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-files.svg); mask-image: url(../images/icons/tab-files.svg); }
+#tab_TrackerList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-trackers.svg); mask-image: url(../images/icons/tab-trackers.svg); }
+#tab_PeerList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-peers.svg); mask-image: url(../images/icons/tab-peers.svg); }
+#tab_Speed a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-speed.svg); mask-image: url(../images/icons/tab-speed.svg); }
+#tab_PluginList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-plugins.svg); mask-image: url(../images/icons/tab-plugins.svg); }
+#tab_history a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-history.svg); mask-image: url(../images/icons/tab-history.svg); }
+#tab_flm-browser a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-filemanager.svg); mask-image: url(../images/icons/tab-filemanager.svg); }
+#tab_tasks a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-tasks.svg); mask-image: url(../images/icons/tab-tasks.svg); }
+#tab_Chunks a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-chunks.svg); mask-image: url(../images/icons/tab-chunks.svg); }
+#tab_traf a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-traffic.svg); mask-image: url(../images/icons/tab-traffic.svg); }
+#tab_lcont a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-log.svg); mask-image: url(../images/icons/tab-log.svg); }
 
 .tabbar li.nav-item a.nav-link:hover {
-	border-top: 2px solid var(--qb-primary);
-	color: unset;
+	color: var(--qb-foreground);
+	border-bottom-color: var(--qb-border);
+	background: transparent;
 }
 
-div.tab {
-	background-color: var(--qb-surface);
-	font-family: inherit;
+.tabbar li.nav-item.selected a.nav-link,
+.tabbar li.nav-item a.nav-link.active {
+	color: var(--qb-foreground);
+	border-top: none;
+	border-bottom: 2px solid var(--qb-primary);
+	background: transparent;
 }
 
-div.graph_tab,
-div.table_tab {
-	background-color: var(--qb-surface);
-	color: var(--qb-fg-muted);
-	font-family: inherit;
+.tabbar li.nav-item.selected a.nav-link::before {
+	background-color: var(--qb-primary);
 }
 
 li#tab_lcont {
-	width: fit-content;
+	width: auto;
 	display: inline-flex;
 }
 
-/* Detail text colors */
-span#dl,
-span#ds {
-	color: var(--qb-speed-down);
+/* ============================================================
+ * General pane -- stat cards (built from #mainlayout by details.js).
+ * ============================================================ */
+div#gcont.tab {
+	background-color: var(--qb-surface);
+	font-family: var(--qb-font);
 }
 
-span#ra {
-	color: var(--qb-primary);
-}
-
-span#ul,
-span#us {
-	color: var(--qb-speed-up);
-}
-
-span.det {
+/* Section heading row. */
+#mainlayout .row.Header,
+.cqb-stat-heading {
 	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+	background: transparent;
+	padding: 14px 2px 6px;
+	margin: 0;
+	border-bottom: 1px solid var(--qb-border-soft);
+}
+
+#mainlayout .row.Header:first-child,
+.cqb-stat-heading:first-child {
+	padding-top: 2px;
+}
+
+/* JS-built stat-card grid. */
+.cqb-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+	gap: 8px;
+	padding: 8px 0 4px;
+}
+
+.cqb-stat {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 8px 10px;
+	border: 1px solid var(--qb-border-soft);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface-2);
+	min-width: 0;
+}
+
+.cqb-stat-label {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.cqb-stat .det,
+.cqb-stat-value {
+	color: var(--qb-foreground);
+	font-size: 14px;
+	font-variant-numeric: tabular-nums;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+/* Raw-grid fallback (before/without the JS build). */
+#mainlayout .det-hdr {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+/* Detail value accents. */
+span#dl, span#ds { color: var(--qb-speed-down); }
+span#ul, span#us { color: var(--qb-speed-up); }
+span#ra { color: var(--qb-primary); font-weight: 600; }
+span.det { color: var(--qb-foreground); }
+
+/* ============================================================
+ * Table / graph panes
+ * ============================================================ */
+div.tab,
+div.graph_tab,
+div.table_tab {
+	background-color: var(--qb-surface);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+}
+
+/* ============================================================
+ * Log pane -- monospace console surface + icon clear button.
+ * ============================================================ */
+div#lcont {
+	background: var(--qb-input);
+	border: 1px solid var(--qb-border-soft);
+	border-radius: var(--qb-radius-lg);
+	padding: 10px 12px;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--qb-foreground);
+}
+
+div#lcont .message,
+div#lcont div {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+button#clear_log {
+	position: absolute;
+	top: 48px;
+	right: 20px;
+	width: 32px;
+	height: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: 0;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+button#clear_log:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+button#clear_log svg { width: 16px; height: 16px; }
+
+/* ============================================================
+ * Pane empty state -- centered glyph + prompt (toggled by details.js).
+ * ============================================================ */
+.cqb-details-empty {
+	display: none;
+	position: absolute;
+	inset: 41px 0 0 0;
+	z-index: 2;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	background: var(--qb-surface);
+	color: var(--qb-fg-muted);
+	text-align: center;
+	padding: 24px;
+}
+
+div#tdetails.cqb-empty .cqb-details-empty {
+	display: flex;
+}
+
+.cqb-details-empty .cqb-empty-glyph {
+	width: 40px;
+	height: 40px;
+	background-color: var(--qb-fg-muted);
+	opacity: 0.55;
+	-webkit-mask: url(../images/icons/empty-state.svg) center / contain no-repeat;
+	mask: url(../images/icons/empty-state.svg) center / contain no-repeat;
+}
+
+.cqb-details-empty .cqb-empty-text {
+	font-size: 13px;
+	max-width: 280px;
+	line-height: 1.5;
+}
+
+/* ============================================================
+ * Defect 4 -- plugin-pane toolbars: the File Manager path bar and
+ * every sibling nav row. A 40px surface toolbar with an icon-button
+ * group and a clickable breadcrumb; the stock select stays wired but
+ * visually replaced by the breadcrumb.
+ * ============================================================ */
+#flm-navigation-head,
+#flm-navigation-head .container-fluid,
+#flm-navigation-head .row {
+	margin: 0;
+	padding: 0;
+	max-width: none;
+}
+
+#flm-navigation-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 40px;
+	padding: 0 8px;
+	margin-bottom: 8px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+#flm-navigation-head .row {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	align-items: center;
+}
+
+#flm-navigation-head .input-group {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	width: auto;
+}
+
+/* Icon-button group (refresh, dir-up, mkdir). */
+.cqb-flm-tools {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	flex: none;
+	padding-right: 6px;
+	margin-right: 2px;
+	border-right: 1px solid var(--qb-border);
+}
+
+button#flm-nav-refresh,
+.cqb-flm-btn {
+	width: 30px;
+	height: 30px;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	margin: 0;
+	padding: 0 !important;
+	border: 1px solid transparent;
+	border-radius: var(--qb-radius);
+	background: transparent !important;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+button#flm-nav-refresh:hover,
+.cqb-flm-btn:hover {
+	background: var(--qb-surface-3) !important;
+	color: var(--qb-foreground);
+	border-color: var(--qb-border);
+}
+
+/* Replace the refresh sprite with a masked glyph. */
+button#flm-nav-refresh .flm-sprite,
+button#flm-nav-refresh .sprite-refresh {
+	width: 16px;
+	height: 16px;
+	background: none !important;
+	background-color: currentColor !important;
+	-webkit-mask: url(../images/icons/fm-refresh.svg) center / 16px no-repeat;
+	mask: url(../images/icons/fm-refresh.svg) center / 16px no-repeat;
+}
+
+.cqb-flm-btn .cqb-icon {
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: center / 16px no-repeat;
+	mask: center / 16px no-repeat;
+}
+
+/* Hide the stock history <select>; the breadcrumb replaces it (handler
+ * stays wired for keyboard users via the sr-only class). */
+#flm-navpath.cqb-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Clickable breadcrumb path. */
+.cqb-breadcrumb {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 1px;
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.cqb-breadcrumb .cqb-crumb {
+	flex: none;
+	padding: 3px 7px;
+	border-radius: var(--qb-radius);
+	background: transparent;
+	border: none;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.cqb-breadcrumb .cqb-crumb:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+.cqb-breadcrumb .cqb-crumb.cqb-crumb-current {
+	color: var(--qb-foreground);
+	font-weight: 600;
+	cursor: default;
+}
+
+.cqb-breadcrumb .cqb-crumb-sep {
+	flex: none;
+	color: var(--qb-fg-muted);
+	opacity: 0.6;
+	font-size: 12px;
+	padding: 0 1px;
 }
