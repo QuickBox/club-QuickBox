@@ -394,6 +394,11 @@
 	min-width: 0;
 }
 
+/* Tiles in a row stretch to equal height; pin the control to the bottom so a
+ * wrapping label never drops its input below its neighbors. */
+#stg .cqb-field > .cqb-control,
+#stg .cqb-field > .cqb-input-group { margin-top: auto; }
+
 #stg .cqb-field > label,
 #stg .cqb-field > .cqb-field-label {
 	margin: 0;
