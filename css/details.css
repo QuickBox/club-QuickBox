@@ -752,6 +752,15 @@ div#tdetails.cqb-nosel .cqb-tab-empty {
 	line-height: 1.5;
 }
 
+/* While no torrent is selected, the torrent-scoped list panels show the prompt
+ * above; their core table header would otherwise paint a short column strip
+ * over it, so hide it here. The header returns the moment a torrent is picked. */
+div#tdetails.cqb-nosel #FileList thead,
+div#tdetails.cqb-nosel #TrackerList thead,
+div#tdetails.cqb-nosel #PeerList thead {
+	visibility: hidden;
+}
+
 /* ============================================================
  * Defect 4 -- plugin-pane toolbars: the File Manager path bar and
  * every sibling nav row. A 40px surface toolbar with an icon-button
@@ -767,11 +776,16 @@ div#tdetails.cqb-nosel .cqb-tab-empty {
 }
 
 #flm-navigation-head {
+	--cqb-flm-bar-h: 40px;
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	height: 40px;
-	padding: 0 8px;
+	box-sizing: border-box;
+	height: var(--cqb-flm-bar-h);
+	/* No end padding: the first and last controls are flush segments of the
+	 * toolbar, meeting its border with no gap; interior spacing comes from the
+	 * input-group gap and the tool-group divider. */
+	padding: 0;
 	margin-bottom: 8px;
 	background: var(--qb-surface-2);
 	border: 1px solid var(--qb-border);
@@ -819,6 +833,23 @@ button#flm-nav-refresh.cqb-icon-btn,
 	width: 32px;
 	height: 32px;
 	min-width: 32px;
+}
+
+/* The toolbar surface is --qb-surface-2, so the primitive's --qb-surface-2
+ * hover would be invisible on it; lift the tools' hover to --qb-surface-3. */
+.cqb-flm-tools .cqb-icon-btn:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+}
+
+/* The refresh is the toolbar's FIRST control: a flush left segment -- full
+ * inner height, still square (so the shape gate reads it as a square), with
+ * its left corners matching the toolbar radius. Inner height = bar height
+ * minus its two 1px borders. */
+button#flm-nav-refresh.cqb-icon-btn {
+	width: calc(var(--cqb-flm-bar-h) - 2px);
+	height: calc(var(--cqb-flm-bar-h) - 2px);
+	min-width: calc(var(--cqb-flm-bar-h) - 2px);
+	border-radius: var(--qb-radius-lg) 0 0 var(--qb-radius-lg);
 }
 
 /* Replace the refresh sprite with a masked glyph. */
@@ -922,13 +953,17 @@ button#flm-nav-refresh .sprite-refresh {
 .cqb-flm-recent.cqb-select-trigger,
 .cqb-flm-recent.cqb-select-trigger[data-cqb-grow] {
 	flex: none;
-	width: 32px;
-	height: 32px;
-	min-width: 32px;
+	box-sizing: border-box;
+	/* The toolbar's LAST control: a flush right segment, full inner height, still
+	 * square, with its right corners matching the toolbar radius. */
+	width: calc(var(--cqb-flm-bar-h) - 2px);
+	height: calc(var(--cqb-flm-bar-h) - 2px);
+	min-width: calc(var(--cqb-flm-bar-h) - 2px);
 	min-height: 0;
 	gap: 0;
 	padding: 0;
 	justify-content: center;
+	border-radius: 0 var(--qb-radius-lg) var(--qb-radius-lg) 0;
 	background: transparent;
 	border-color: transparent;
 	color: var(--qb-fg-muted);

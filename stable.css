@@ -16,7 +16,11 @@
 	--header-border-color: var(--qb-border);
 	--col-resize-sep-bg-color: var(--qb-border);
 	--row-border-color: var(--qb-border-soft);
-	--row-odd-bg-color: var(--qb-surface);
+	/* Zebra tint for the odd row when the user turns on "alternate list
+	 * background colors": a faint foreground wash over the surface, subtle
+	 * on every variant and still readable on the light (defaulted) theme. */
+	--cqb-row-stripe: color-mix(in srgb, var(--qb-foreground) 4%, var(--qb-surface));
+	--row-odd-bg-color: var(--cqb-row-stripe);
 	--row-even-bg-color: var(--qb-surface);
 	--row-active-bg-color: var(--qb-surface-3);
 	font-variant-numeric: tabular-nums;
@@ -151,37 +155,28 @@
 	height: 32px;
 }
 
-/* Zebra off -- a flat surface reads cleaner; separation is the hairline. */
-.stable tbody tr.odd td,
-.stable-body tr.odd td,
-.stable tbody tr.even td,
-.stable-body tr.even td,
-div.stable-body table tbody tr.even td,
-div.stable-body table tbody tr.even:nth-child(2n+1) td {
-	background-color: var(--qb-surface);
-}
+/* Zebra: the odd-row stripe is painted by the engine (it adds .alternate to
+ * every table) from --row-odd-bg-color, so it appears only when the user
+ * enables "alternate list background colors" and the rows stay flat when it is
+ * off. The engine floors its virtual-scroll window to an even row index, so the
+ * stripe holds steady while scrolling, sorting or filtering a long list. */
 
-/* Hover */
-.stable-body tr.odd:hover td,
-.stable-body tr.even:hover td,
-div.stable-body table tbody tr.even:hover td,
-div.stable-body table tbody tr.even:hover:nth-child(2n+1) td {
+/* Hover wins over the stripe on every row, striped or flat. The .alternate-
+ * scoped selector outranks the engine's striped-odd rule so hover always shows. */
+.stable-body tr:hover td,
+.stable tbody tr:hover td,
+.stable.alternate .stable-body tr:hover td {
 	background-color: var(--qb-surface-2);
 }
 
-/* Selection -- primary tint + 2px left accent on the first cell. */
+/* Selection -- primary tint, winning over both the stripe and hover. Tint only;
+ * no left-edge accent bar (an AI-UI tell). */
 .stable tbody tr.selected td,
-.stable-body tr.selected td {
+.stable-body tr.selected td,
+.stable.alternate .stable-body tr.selected td {
 	background-color: var(--qb-surface-3);
 	color: var(--qb-foreground);
 	text-shadow: none;
-}
-
-/* Selected row = tint only (no left-edge accent bar). */
-
-/* First numeric sub-column stays muted for scan hierarchy. */
-div.stable-body table tbody tr.even td:nth-child(2n+1) {
-	color: var(--qb-fg-muted);
 }
 
 /* ============================================================

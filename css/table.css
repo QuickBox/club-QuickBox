@@ -84,7 +84,7 @@ div#TrackerList {
 	--header-border-color: var(--qb-border);
 	--header-bg-image: none;
 	--row-border-color: var(--qb-border-soft);
-	--row-odd-bg-color: var(--qb-surface);
+	--row-odd-bg-color: var(--cqb-row-stripe);
 	--row-even-bg-color: var(--qb-surface);
 	--row-active-bg-color: var(--qb-surface-3);
 	background-color: var(--qb-surface);
@@ -122,9 +122,13 @@ div#TrackerList {
 /* ============================================================
  * Torrent-row status glyph -- a state-tinted dot; one SVG per state.
  * The engine sets .stable-icon + a .Status_* class on the icon cell.
+ * The icon tint and mask scaffolding stay global (harmless: the mask is a
+ * no-op until a .Status_* / .Icon_* rule supplies a mask-image, and the tint
+ * sits behind any raster), but the raster BLANK is scoped below to the only
+ * two tables that mask their icons, so other dxSTables keep their own rasters
+ * (e.g. the geoip country flags in the peer list).
  * ============================================================ */
 .stable-icon {
-	background-image: none;
 	background-color: var(--qb-icon);
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
@@ -132,6 +136,13 @@ div#TrackerList {
 	mask-position: center;
 	-webkit-mask-size: 15px;
 	mask-size: 15px;
+}
+
+/* Blank the underlying raster only where an SVG mask replaces it: the torrent
+ * list states and the file list glyphs. Elsewhere the raster is left intact. */
+#List .stable-icon,
+#FileList .stable-icon {
+	background-image: none;
 }
 
 .Status_Down { -webkit-mask-image: url(../images/icons/state-downloading.svg); mask-image: url(../images/icons/state-downloading.svg); background-color: var(--qb-state-downloading); }
