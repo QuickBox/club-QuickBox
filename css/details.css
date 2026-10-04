@@ -197,9 +197,15 @@ li#tab_lcont {
 	-webkit-mask: center / contain no-repeat;
 	mask: center / contain no-repeat;
 }
+/* The inner core element keeps its click handler but paints NOTHING -- the
+ * id beats the core `#fMan_showconsole` grey-background + 80px width so there
+ * is no box inside the ghost wrapper. */
+#fMan_showconsole.cqb-flm-console,
 input.cqb-flm-console.Button,
 .cqb-flm-console {
 	flex: none;
+	width: auto;
+	min-width: 0;
 	min-height: 0;
 	height: auto;
 	margin: 0;
@@ -211,12 +217,16 @@ input.cqb-flm-console.Button,
 	background: transparent;
 	border: 0;
 	border-radius: 0;
+	box-shadow: none;
 	cursor: pointer;
 }
+#fMan_showconsole.cqb-flm-console:hover,
+#fMan_showconsole.cqb-flm-console:focus,
 input.cqb-flm-console.Button:hover,
 .cqb-flm-console:hover {
 	background: transparent;
 	color: inherit;
+	box-shadow: none;
 }
 
 /* ============================================================
@@ -859,6 +869,13 @@ button#flm-nav-refresh .sprite-refresh {
 
 .cqb-breadcrumb .cqb-crumb {
 	flex: none;
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	min-width: 0;
+	min-height: 0;
+	height: 30px;
+	margin: 0;
 	padding: 3px 7px;
 	border-radius: var(--qb-radius);
 	background: transparent;
@@ -868,6 +885,15 @@ button#flm-nav-refresh .sprite-refresh {
 	font-size: 13px;
 	cursor: pointer;
 	transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+/* The root crumb ("/") carries no text glyph the shape gate can read, so the
+ * core `button{width:80px}` made it an 80x36 RECT; give it a compact square. */
+.cqb-breadcrumb .cqb-crumb:first-child {
+	width: 30px;
+	min-width: 30px;
+	padding: 0;
+	justify-content: center;
 }
 
 .cqb-breadcrumb .cqb-crumb:hover {
@@ -890,15 +916,16 @@ button#flm-nav-refresh .sprite-refresh {
 }
 
 /* "Recent folders" -- the history <select>, enhanced by the shared select,
- * collapsed to a 36px square clock trigger at the toolbar's far right; the
+ * collapsed to a 32px square clock trigger at the toolbar's far right; the
  * chevron and value label are dropped so only the glyph shows. The popover
  * still lists the path history. */
 .cqb-flm-recent.cqb-select-trigger,
 .cqb-flm-recent.cqb-select-trigger[data-cqb-grow] {
 	flex: none;
-	width: 36px;
-	height: 36px;
-	min-width: 36px;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+	min-height: 0;
 	gap: 0;
 	padding: 0;
 	justify-content: center;
