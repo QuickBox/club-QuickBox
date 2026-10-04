@@ -180,10 +180,21 @@
 	 * ships a flot sparkline; move the label out to a flex sibling and swap
 	 * the sparkline for a token track+fill so both panes render identically.
 	 * ============================================================ */
+	/* Match init.js meterThresholdColor so the cpu bar tints like the disk bar:
+	 * ok below 80%, amber (paused token) past 80%, danger past 90%. */
+	function meterThresholdColor(pct) {
+		var root = document.documentElement;
+		var name = pct > 90 ? "--qb-destructive" : pct > 80 ? "--qb-state-paused" : "--qb-primary";
+		return getComputedStyle(root).getPropertyValue(name).trim();
+	}
+
 	function fillFromText(fill, textEl) {
 		if (!fill || !textEl) return;
 		var m = /(\d+(?:\.\d+)?)/.exec(textEl.textContent || "");
-		fill.style.width = (m ? Math.min(100, parseFloat(m[1])) : 0) + "%";
+		var pct = m ? Math.min(100, parseFloat(m[1])) : 0;
+		fill.style.width = pct + "%";
+		var color = meterThresholdColor(pct);
+		if (color) fill.style.backgroundColor = color;
 	}
 
 	function normalizeDiskMeter() {

@@ -86,9 +86,10 @@ div#logoff:hover {
 	line-height: normal;
 }
 
-/* The fill: disk uses the plugin-driven #meter-disk-value, cpu uses the
- * .cqb-meter-fill extras.js adds. Both run the brand gradient; the !important
- * beats the plugin's inline primary->destructive paint that went muddy mid-bar. */
+/* The fill: disk uses the plugin-driven #meter-disk-value (init.js paints its
+ * usage-threshold colour inline per update), cpu uses the .cqb-meter-fill
+ * extras.js adds and tints with the same threshold. The primary here is only
+ * the pre-paint fallback, so no !important -- the inline tint must win. */
 #meter-disk-value,
 #meter-cpu-holder .cqb-meter-fill {
 	display: block;
@@ -100,7 +101,8 @@ div#logoff:hover {
 	border: 0;
 	border-radius: 999px;
 	float: none;
-	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
+	background-color: var(--qb-primary);
+	background-image: none;
 }
 
 /* The label: a flex sibling beside the bar. The plugin CSS makes it
