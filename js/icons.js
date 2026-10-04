@@ -628,7 +628,11 @@
 			if (refocus) btn.focus();
 		}
 		function onDown(e) { if (btn.contains(e.target) || (panel && panel.contains(e.target))) return; close(false); }
-		function onMove() { if (panel) place(); }
+		function onMove(e) {
+			if (!panel) return;
+			if (cqb && cqb.panelScrolledInside && cqb.panelScrolledInside(e, panel)) return;
+			place();
+		}
 		function place() {
 			var r = btn.getBoundingClientRect();
 			var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight, pad = 8, gap = 4;
