@@ -19,7 +19,7 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "1000d6ec58";
+	var CQB_REV = "0a787f1708";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];

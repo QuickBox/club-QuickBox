@@ -23,6 +23,25 @@
 
 	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
 
+	/* The row image probe, upload and delete all go through the tracklabels
+	 * plugin's action.php. On a ruTorrent where that plugin is not installed,
+	 * every one of those requests would 404, so skip them: label rows fall back
+	 * to library glyphs and the picker drops its Upload tab, with nothing to
+	 * fail. The feature modules load only after plugins finish, so the lookup is
+	 * stable and cached. */
+	var hasTracklabels = null;
+	function tracklabelsInstalled() {
+		if (hasTracklabels !== null) return hasTracklabels;
+		hasTracklabels = false;
+		try {
+			if (window.thePlugins) {
+				if (typeof thePlugins.isInstalled === "function") hasTracklabels = !!thePlugins.isInstalled("tracklabels");
+				else if (typeof thePlugins.get === "function") hasTracklabels = thePlugins.get("tracklabels") != null;
+			}
+		} catch (e) { hasTracklabels = false; }
+		return hasTracklabels;
+	}
+
 	/* Short sha-256 prefixes of the plugin's bundled default PNGs -> the library
 	 * glyph each maps to. A fetched row image whose hash is NOT here (and is not
 	 * unknown.png) is a real user upload or a live favicon, so it is respected. */
@@ -163,6 +182,10 @@
 	function detectImage(kind, name) {
 		var key = kind + ":" + name;
 		if (detectCache[key]) return detectCache[key];
+		if (!tracklabelsInstalled()) {
+			detectCache[key] = Promise.resolve({ kind: "none" });
+			return detectCache[key];
+		}
 		detectCache[key] = fetch(imageUrl(kind, name), { credentials: "same-origin" })
 			.then(function (r) { return r.ok ? r.arrayBuffer() : null; })
 			.then(function (buf) {
@@ -373,6 +396,8 @@
 		var tabUpload = el("button", "cqb-tab", { type: "button", role: "tab", "aria-selected": "false" });
 		tabUpload.textContent = t("cqb_icons_tab_upload", "Upload image");
 		tabs.appendChild(tabIcons); tabs.appendChild(tabUpload);
+		/* No upload target without the backing plugin: show glyphs only. */
+		if (!tracklabelsInstalled()) { tabUpload.hidden = true; tabUpload.style.display = "none"; }
 
 		/* --- icons panel --- */
 		var iconsPanel = el("div", "cqb-panel");
@@ -701,6 +726,7 @@
 	}
 
 	function doUpload(file) {
+		if (!tracklabelsInstalled()) return;
 		var st = picker.state;
 		var fd = new FormData();
 		fd.append("uploadfile", file, file.name);
@@ -731,6 +757,7 @@
 		xhr.send(fd);
 	}
 	function doDeleteUpload() {
+		if (!tracklabelsInstalled()) return;
 		var st = picker.state;
 		var fd = new FormData();
 		fd.append("delete", "on");
