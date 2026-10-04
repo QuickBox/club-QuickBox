@@ -698,3 +698,27 @@
 	outline-offset: 1px;
 	z-index: 1;
 }
+
+/* Advanced key tiles: human label, raw-key subtext, byte hint. */
+#stg .cqb-ao-field > label {
+	margin-bottom: 1px;
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+#stg .cqb-ao-field > .cqb-ao-key {
+	margin: 0 0 4px;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 11px;
+	line-height: 1.2;
+	color: var(--qb-fg-muted);
+}
+
+/* Header is uniform (label + key), so align controls by top, not bottom. */
+#stg .cqb-ao-field > .cqb-control { margin-top: 0; }
+
+#stg .cqb-ao-hint {
+	margin-top: 3px;
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+}

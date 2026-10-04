@@ -30,6 +30,7 @@
 		theUILang.cqb_grp_flags = theUILang.cqb_grp_flags || "Flags";
 		theUILang.cqb_stg_empty = theUILang.cqb_stg_empty || "No matching trackers";
 		theUILang.cqb_browse = theUILang.cqb_browse || "Browse";
+		theUILang.cqb_not_set = theUILang.cqb_not_set || "Not set";
 	}
 
 	/* Pages that belong to the "ruTorrent" group; everything else is a plugin. */
@@ -352,6 +353,82 @@
 	function L(key, dflt) { return (window.theUILang && theUILang[key]) || dflt; }
 	function unitKbs() { return L("KB", "KiB") + "/" + L("s", "s"); }
 
+	function humanBytes(n) {
+		var u = ["B", "KiB", "MiB", "GiB", "TiB", "PiB"], i = 0;
+		while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+		return (n % 1 === 0 ? n : n.toFixed(1)) + " " + u[i];
+	}
+
+	/* Advanced rtorrent keys: human label + unit; `b` marks a bytes value. */
+	var AO_KEYS = {
+		hash_interval: { label: "Hash check interval", unit: "ms" },
+		hash_max_tries: { label: "Hash check max tries" },
+		hash_read_ahead: { label: "Hash read-ahead", unit: "MiB" },
+		preload_type: { label: "Preload type" },
+		preload_min_size: { label: "Preload minimum size", unit: "bytes", b: true },
+		preload_required_rate: { label: "Preload required rate", unit: "bytes", b: true },
+		receive_buffer_size: { label: "Receive buffer size", unit: "bytes", b: true },
+		send_buffer_size: { label: "Send buffer size", unit: "bytes", b: true },
+		max_downloads_div: { label: "Max downloads divisor" },
+		max_uploads_div: { label: "Max uploads divisor" },
+		max_file_size: { label: "Maximum file size", unit: "bytes", b: true },
+		split_file_size: { label: "Split file size", unit: "bytes", b: true },
+		split_suffix: { label: "Split suffix" },
+		http_cacert: { label: "HTTP CA certificate" },
+		http_capath: { label: "HTTP CA path" },
+		http_proxy: { label: "HTTP proxy" },
+		proxy_address: { label: "Proxy address" },
+		bind: { label: "Bind address" },
+		session: { label: "Session directory" },
+		timeout_safe_sync: { label: "Safe sync timeout", unit: "s" },
+		timeout_sync: { label: "Sync timeout", unit: "s" }
+	};
+
+	/* A tile for one Advanced key: human label, raw key subtext, unit, hint. */
+	function aoTile(id) {
+		var ctrl = document.getElementById(id);
+		if (!ctrl) return null;
+		var spec = AO_KEYS[id] || {};
+		var tile = document.createElement("div");
+		tile.className = "cqb-field cqb-ao-field";
+		var lab = document.createElement("label");
+		lab.setAttribute("for", id);
+		lab.textContent = spec.label || id;
+		tile.appendChild(lab);
+		var key = document.createElement("div");
+		key.className = "cqb-ao-key";
+		key.textContent = id;
+		tile.appendChild(key);
+		var wrap = document.createElement("div");
+		wrap.className = "cqb-control";
+		wrap.appendChild(ctrl);
+		if (spec.unit) {
+			wrap.classList.add("cqb-has-unit");
+			var u = document.createElement("span");
+			u.className = "cqb-unit";
+			u.textContent = spec.unit;
+			wrap.appendChild(u);
+		}
+		tile.appendChild(wrap);
+		if (ctrl.tagName === "INPUT" && ctrl.type !== "checkbox" && !ctrl.value) ctrl.placeholder = L("cqb_not_set", "Not set");
+		if (spec.b) {
+			var hint = document.createElement("div");
+			hint.className = "cqb-ao-hint";
+			var upd = function () { var n = parseInt(ctrl.value, 10); hint.textContent = n > 0 ? humanBytes(n) : ""; };
+			upd();
+			ctrl.addEventListener("input", upd);
+			tile.appendChild(hint);
+		}
+		return tile;
+	}
+
+	function aoGrid(ids) {
+		var grid = document.createElement("div");
+		grid.className = "cqb-field-grid";
+		ids.forEach(function (id) { var t = aoTile(id); if (t) grid.appendChild(t); });
+		return grid.children.length ? grid : null;
+	}
+
 	var LAYOUTS = {
 		st_gl: function (pane) {
 			var fs = pane.querySelectorAll("fieldset");
@@ -507,7 +584,7 @@
 			];
 			var nodes = [];
 			groups.forEach(function (g) {
-				var grid = fieldGrid(g[1].map(function (id) { return { id: id, mono: true }; }));
+				var grid = aoGrid(g[1]);
 				if (grid) {
 					var h = document.createElement("div");
 					h.className = "cqb-heading cqb-subhead";

@@ -36,3 +36,4 @@ theUILang.qbAnnounceHelp    = "One announce URL per line.";
 
 theUILang.qbBrowse          = "Browse";
 theUILang.cqb_browse         = "Browse";
+theUILang.cqb_not_set        = "Not set";
