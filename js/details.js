@@ -695,7 +695,10 @@
 		keys.forEach(function (k) {
 			var ds = g && g[k];
 			if (ds && ds.data) ds.data.forEach(function (pt) {
-				if (pt && pt[1] != null) total += pt[1];
+				if (pt && pt[1] != null) {
+					var n = Number(pt[1]);
+					if (!isNaN(n)) total += n;
+				}
 			});
 		});
 		return total;
@@ -806,6 +809,13 @@
 			/* Keep Clear in the right-hand group next to the selects. */
 			if (btn) ctrl.appendChild(btn);
 			ctrl.setAttribute("data-cqb-tb", "1");
+
+			/* The toolbar just grew to its final height; let the plugin
+			 * recompute the plot size against it and redraw. */
+			try {
+				var tg = window.theWebUI && theWebUI.trafGraph;
+				if (tg && tg.resize) { tg.resize(); tg.draw && tg.draw(true); }
+			} catch (e) {}
 
 			/* Recompute the KPI chips after each data load. */
 			if (window.theWebUI && typeof theWebUI.showTrafic === "function" && !theWebUI.showTrafic.__cqbWrapped) {

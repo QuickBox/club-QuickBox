@@ -766,24 +766,19 @@ button#flm-nav-refresh .sprite-refresh {
 #traf .legend { display: none !important; }
 
 /* ============================================================
- * Traffic pane -- even 16px pane, toolbar aligned to the chart, the chart
- * filling the remaining height. The toolbar carries KPI chips (left),
- * inline series toggles, and the period/tracker selects + Clear (right).
+ * Traffic pane -- even 16px pane (from #tdcont), a surface toolbar carrying
+ * KPI chips (left), inline series toggles, and the period/tracker selects +
+ * Clear (right). The toolbar height is fixed so the plugin's graph-height
+ * math (#traf height minus #traf_graph_ctrl height) stays deterministic.
  * ============================================================ */
-#traf {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
 #traf_graph_ctrl,
 #Chunks > div.d-flex.flex-row,
 .cqb-pane-toolbar {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	flex: none;
-	min-height: 44px;
+	box-sizing: border-box;
+	height: 50px;
 	padding: 6px 12px;
 	margin-bottom: 10px;
 	background: var(--qb-surface-2);
@@ -808,12 +803,8 @@ button#flm-nav-refresh .sprite-refresh {
 	font-size: 13px;
 }
 
-/* The flot plot fills the pane width with a consistent inset. */
-#traf_graph {
-	flex: 1 1 auto;
-	min-height: 160px;
-	width: 100% !important;
-}
+/* The plugin sizes the flot placeholder itself; keep a small top inset only. */
+#traf_graph { margin-top: 2px; }
 
 /* KPI chips (total down / up / ratio for the selected period). */
 .cqb-traf-kpi {
