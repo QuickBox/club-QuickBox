@@ -1,0 +1,357 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- settings surface.
+ *  The Settings dialog body (#stg): a two-column layout with a grouped,
+ *  filterable navigation rail and a single-scroll content pane whose
+ *  fieldsets read as cards under a page title, closed by a sticky action bar.
+ *  Every color reads from a --qb-* token. Selectors are scoped under #stg and
+ *  carry the dialog id so they win over the shared dialog chrome.
+ */
+
+/* ============================================================
+ * Shell: window, two-column body, single scroll container
+ * ============================================================ */
+#stg .cqb-icon {
+	display: inline-block;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+#stg.dlg-window {
+	width: min(94vw, 920px);
+	max-width: 94vw;
+}
+
+#stg #stg_c {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	gap: 0;
+	padding: 0;
+	height: min(80vh, 660px);
+	min-height: 360px;
+	overflow: hidden;
+	background-color: var(--qb-surface);
+	border-radius: 0 0 var(--qb-radius-lg) var(--qb-radius-lg);
+}
+
+/* ---- Navigation rail -------------------------------------- */
+#stg #stg_c .lm.list-group {
+	flex: 0 0 220px;
+	width: 220px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	margin: 0;
+	padding: 0 8px 10px;
+	background-color: var(--qb-surface);
+	border: 0;
+	border-right: 1px solid var(--qb-border);
+	border-radius: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+/* Filter field pinned above the scrolling nav list */
+#stg .cqb-stg-filter {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	margin: 0 -8px 6px;
+	padding: 8px;
+	background-color: var(--qb-surface);
+	border-bottom: 1px solid var(--qb-border);
+}
+
+#stg .cqb-stg-filter .cqb-icon {
+	position: absolute;
+	left: 17px;
+	width: 14px;
+	height: 14px;
+	pointer-events: none;
+	background-color: var(--qb-fg-muted);
+}
+
+#stg .cqb-stg-filter input {
+	width: 100%;
+	height: 30px;
+	margin: 0;
+	padding: 0 8px 0 28px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#stg .cqb-stg-filter input:focus,
+#stg .cqb-stg-filter input:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Group headers ("ruTorrent" / "Plugins") */
+#stg .cqb-stg-group {
+	padding: 10px 10px 4px;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+#stg .cqb-stg-group:first-of-type { padding-top: 2px; }
+
+#stg .cqb-stg-group.cqb-hidden,
+#stg .lm.list-group .list-group-item.cqb-hidden { display: none; }
+
+/* Nav rows */
+#stg #stg_c .lm.list-group .list-group-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 34px;
+	margin: 1px 0;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--qb-radius-lg);
+	background-color: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1.2;
+	text-decoration: none;
+	flex-grow: 0;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#stg #stg_c .lm.list-group .list-group-item .cqb-icon {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-icon);
+	transition: background-color 0.15s ease;
+}
+
+#stg #stg_c .lm.list-group .list-group-item .cqb-stg-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#stg #stg_c .lm.list-group .list-group-item:hover {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+}
+
+#stg #stg_c .lm.list-group .list-group-item:hover .cqb-icon {
+	background-color: var(--qb-icon-hover);
+}
+
+#stg #stg_c .lm.list-group .list-group-item.active {
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	color: var(--qb-primary);
+	font-weight: 600;
+	box-shadow: inset 3px 0 0 var(--qb-primary);
+}
+
+#stg #stg_c .lm.list-group .list-group-item.active .cqb-icon {
+	background-color: var(--qb-primary);
+}
+
+#stg #stg_c .lm.list-group .list-group-item:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: -2px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* ---- Content pane ----------------------------------------- */
+#stg #stg-pages {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	overflow: hidden;
+	background-color: var(--qb-background);
+	border: 0;
+}
+
+/* The ONE scroll container: the active page */
+#stg .stg_con {
+	display: none;
+	margin: 0;
+	background: none;
+	overflow: visible;
+}
+
+#stg .stg_con.active {
+	display: block;
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 18px 20px 20px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+}
+
+/* Page title + description */
+#stg .cqb-stg-head {
+	margin: 0 0 16px;
+	padding-left: 11px;
+	border-left: 3px solid var(--qb-primary);
+}
+
+#stg .cqb-stg-head .cqb-stg-title {
+	margin: 0;
+	color: var(--qb-foreground);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+#stg .cqb-stg-head .cqb-stg-desc {
+	margin: 3px 0 0;
+	color: var(--qb-fg-muted);
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+/* Fieldset sections rendered as cards */
+#stg .stg_con fieldset {
+	margin: 0 0 14px;
+	padding: 14px 16px 10px;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+#stg .stg_con fieldset:last-child { margin-bottom: 0; }
+
+#stg .stg_con legend {
+	position: static;
+	float: none;
+	display: block;
+	width: auto;
+	margin: 0 0 10px;
+	padding: 0;
+	background: none;
+	border: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+/* Field rhythm + controls */
+#stg .stg_con .row > [class*="col"] {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+#stg .stg_con label {
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+#stg .stg_con input[type="checkbox"],
+#stg .stg_con input[type="radio"] {
+	accent-color: var(--qb-primary);
+	width: 15px;
+	height: 15px;
+	margin-right: 6px;
+	vertical-align: -2px;
+}
+
+#stg .stg_con input[type="text"],
+#stg .stg_con input[type="number"],
+#stg .stg_con input[type="password"],
+#stg .stg_con select {
+	min-height: 30px;
+	max-width: 100%;
+}
+
+#stg .stg_con textarea { max-width: 100%; }
+
+/* ---- Sticky action bar ------------------------------------ */
+#stg #stg-pages #st_btns.buttons-list {
+	flex: 0 0 auto;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 12px 20px;
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+}
+
+#stg #stg-pages #st_btns.buttons-list button {
+	width: auto;
+	min-width: 88px;
+	min-height: 34px;
+	margin: 0;
+	padding: 0 16px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Primary (Save) sits right of secondary (Cancel) */
+#stg #stg-pages #st_btns.buttons-list button:not(.Cancel) {
+	order: 2;
+	background-color: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+}
+
+#stg #stg-pages #st_btns.buttons-list button:not(.Cancel):hover {
+	background-color: var(--qb-accent);
+	border-color: var(--qb-accent);
+	color: var(--qb-accent-fg);
+}
+
+#stg #stg-pages #st_btns.buttons-list button.Cancel {
+	order: 1;
+	background-color: var(--qb-surface-2);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+#stg #stg-pages #st_btns.buttons-list button.Cancel:hover {
+	background-color: var(--qb-surface-3);
+}
+
+#stg #stg-pages #st_btns.buttons-list button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Empty filter result hint */
+#stg .cqb-stg-empty {
+	display: none;
+	padding: 12px 10px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+#stg .cqb-stg-empty.cqb-show { display: block; }
