@@ -26,7 +26,7 @@
 	/* Grow to the taller column (usually the 23-item nav) so it need not
 	 * scroll, capped so a very long page still fits the viewport. */
 	height: auto;
-	max-height: min(900px, 90vh);
+	max-height: min(940px, 92vh);
 }
 
 #stg #stg_c {
@@ -138,7 +138,7 @@
 	align-items: center;
 	gap: 8px;
 	min-height: 30px;
-	margin: 1px 0;
+	margin: 0;
 	padding: 0 10px;
 	border: 0;
 	border-radius: var(--qb-radius-lg);
