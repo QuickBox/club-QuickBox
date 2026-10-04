@@ -540,6 +540,7 @@
 
 #stg .cqb-table td {
 	padding: 4px 10px;
+	text-align: left;
 	vertical-align: middle;
 	border-bottom: 1px solid var(--qb-border-soft);
 	color: var(--qb-foreground);
