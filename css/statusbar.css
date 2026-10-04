@@ -131,6 +131,7 @@
 #StatusBar #port-pane .icon {
 	width: 14px;
 	height: 14px;
+	background-image: none;
 	-webkit-mask-image: url(../images/icons/statusbar-port.svg);
 	mask-image: url(../images/icons/statusbar-port.svg);
 	-webkit-mask-size: 13px;
