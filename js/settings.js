@@ -200,6 +200,20 @@
 		pane.dataset.cqbHead = "1";
 	}
 
+	/* Language, Theme and Appearance ship as quarter-width columns that crowd
+	 * onto shared rows; normalize them to full label/field rows like the rest. */
+	function fixGeneralRows() {
+		["webui.lang", "webui.theme", "qb.variant"].forEach(function (id) {
+			var sel = document.getElementById(id);
+			if (!sel) return;
+			var selCol = sel.closest("[class*=col]");
+			var lab = document.querySelector('label[for="' + id + '"]');
+			var labCol = lab ? lab.closest("[class*=col]") : null;
+			if (selCol) selCol.className = "col-12 col-md-6 cqb-stg-fullrow";
+			if (labCol) labCol.className = "col-12 col-md-6 cqb-stg-fullrow";
+		});
+	}
+
 	/* Relabel the dialog's confirm button to "Save" (keeps its click handler). */
 	function relabelSave() {
 		var bar = document.querySelector("#stg #st_btns");
@@ -228,6 +242,7 @@
 				for (var j = 0; j < panes.length; j++) decoratePane(panes[j]);
 			}
 			relabelSave();
+			fixGeneralRows();
 			var inp = navEl.querySelector(".cqb-stg-filter input");
 			if (inp) applyFilter(navEl, inp.value);
 		} finally {

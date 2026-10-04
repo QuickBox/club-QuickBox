@@ -57,8 +57,20 @@
 	border-radius: 0;
 	overflow-x: hidden;
 	overflow-y: auto;
-	scrollbar-gutter: stable;
+	/* All 23 rows fit at 1080; shorter viewports scroll with a thumb that only
+	 * appears on hover, so there is never a permanent second scrollbar. */
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
 }
+
+#stg #stg_c .lm.list-group:hover {
+	scrollbar-color: var(--qb-scrollbar-thumb) transparent;
+}
+
+#stg #stg_c .lm.list-group::-webkit-scrollbar { width: 8px; }
+#stg #stg_c .lm.list-group::-webkit-scrollbar-track { background: transparent; border: 0; }
+#stg #stg_c .lm.list-group::-webkit-scrollbar-thumb { background: transparent; border-radius: var(--qb-radius-lg); }
+#stg #stg_c .lm.list-group:hover::-webkit-scrollbar-thumb { background: var(--qb-scrollbar-thumb); }
 
 /* Filter field pinned above the scrolling nav list */
 #stg .cqb-stg-filter {
@@ -84,7 +96,7 @@
 
 #stg .cqb-stg-filter input {
 	width: 100%;
-	height: 30px;
+	height: 32px;
 	margin: 0;
 	padding: 0 8px 0 28px;
 	background-color: var(--qb-input);
@@ -104,7 +116,7 @@
 
 /* Group headers ("ruTorrent" / "Plugins") */
 #stg .cqb-stg-group {
-	padding: 10px 10px 4px;
+	padding: 12px 10px 4px;
 	color: var(--qb-fg-muted);
 	font-size: 11px;
 	font-weight: 600;
@@ -125,7 +137,7 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 32px;
+	min-height: 30px;
 	margin: 1px 0;
 	padding: 0 10px;
 	border: 0;
@@ -247,12 +259,12 @@
 
 #stg .stg_con fieldset:last-child { margin-bottom: 0; }
 
+/* Float the legend so it sits INSIDE the card's top padding and the card
+ * border stays unbroken (the standard fieldset-legend trick). */
 #stg .stg_con legend {
-	position: static;
-	float: none;
-	display: block;
-	width: auto;
-	margin: 0 0 10px;
+	float: left;
+	width: 100%;
+	margin: 0 0 12px;
 	padding: 0;
 	background: none;
 	border: 0;
@@ -261,6 +273,8 @@
 	font-weight: 600;
 	line-height: 1.3;
 }
+
+#stg .stg_con fieldset > .row { clear: both; }
 
 /* Field rhythm + controls (12px between adjacent rows) */
 #stg .stg_con .row > [class*="col"] {
