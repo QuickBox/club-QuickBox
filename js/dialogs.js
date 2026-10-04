@@ -184,21 +184,225 @@
 		syncAdd();
 	}
 
-	function run() {
-		try { enhanceAddTorrent(); } catch (e) { /* never break the dialog */ }
+	/* Parse MediaInfo "Key : Value" output into {name, rows:[{k,v}]} sections. */
+	function parseMediaInfo(text) {
+		var sections = [];
+		var cur = null;
+		(text || "").split(/\r?\n/).forEach(function (raw) {
+			var line = raw.replace(/\s+$/, "");
+			if (!line.trim()) return;
+			var m = line.match(/^(.+?)\s{2,}:\s?(.*)$/);
+			if (m) {
+				if (!cur) { cur = { name: "General", rows: [] }; sections.push(cur); }
+				cur.rows.push({ k: m[1].trim(), v: m[2].trim() });
+			} else {
+				cur = { name: line.trim(), rows: [] };
+				sections.push(cur);
+			}
+		});
+		return sections.filter(function (s) { return s.rows.length; });
 	}
 
-	if (document.getElementById("tadd")) run();
-	else if (document.readyState === "loading") {
-		document.addEventListener("DOMContentLoaded", run);
-	} else {
-		/* dialog may be built slightly after this module; retry briefly */
-		var tries = 0;
-		var iv = setInterval(function () {
-			if (document.getElementById("tadd") || ++tries > 20) {
-				clearInterval(iv);
-				run();
+	function enhanceTaskConsole() {
+		var dlg = document.getElementById("tskConsole");
+		if (!dlg || dlg.getAttribute("data-cqb-tsk") === "1") return false;
+		if (!window.theWebUI || typeof theWebUI.startConsoleTask !== "function") return false;
+		var header = document.getElementById("tskConsole-header");
+		var log = document.getElementById("tskcmdlog");
+		var headerBar = dlg.querySelector(".dlg-header");
+		if (!header || !log || !headerBar) return false;
+		dlg.setAttribute("data-cqb-tsk", "1");
+
+		var LABELS = {
+			mediainfo: "Media Info", screenshots: "Screenshots",
+			create: "Create Torrent", unpack: "Unpack"
+		};
+		var ctx = { task: "", title: "Task", sub: "", status: "running" };
+
+		/* Capture the task name/title as each console task starts. */
+		var origStart = theWebUI.startConsoleTask;
+		theWebUI.startConsoleTask = function (taskName) {
+			ctx.task = taskName || "";
+			ctx.title = LABELS[taskName] || (window.theUILang && theUILang[taskName]) || "Task";
+			ctx.sub = "";
+			return origStart.apply(this, arguments);
+		};
+
+		/* Thin running-progress bar under the header. */
+		var bar = document.createElement("div");
+		bar.className = "cqb-task-bar";
+		headerBar.insertAdjacentElement("afterend", bar);
+
+		/* MediaInfo formatted view + Raw toggle, inserted before the raw log. */
+		var toolbar = document.createElement("div");
+		toolbar.className = "cqb-mi-toolbar";
+		toolbar.style.display = "none";
+		var rawBtn = document.createElement("button");
+		rawBtn.type = "button";
+		rawBtn.className = "cqb-secondary";
+		var showRaw = false;
+		rawBtn.textContent = t("raw", "Raw");
+		rawBtn.addEventListener("click", function () { showRaw = !showRaw; renderMI(); });
+		toolbar.appendChild(rawBtn);
+		var miWrap = document.createElement("div");
+		miWrap.className = "cqb-mi";
+		miWrap.style.display = "none";
+		log.parentNode.insertBefore(toolbar, log);
+		log.parentNode.insertBefore(miWrap, log);
+
+		function basename(p) {
+			var s = String(p).replace(/[\\/]+$/, "");
+			var i = Math.max(s.lastIndexOf("/"), s.lastIndexOf("\\"));
+			return i >= 0 ? s.slice(i + 1) : s;
+		}
+
+		function renderMI() {
+			if (ctx.task !== "mediainfo") {
+				toolbar.style.display = "none";
+				miWrap.style.display = "none";
+				log.style.display = "";
+				return;
 			}
-		}, 150);
+			var text = log.innerText || log.textContent || "";
+			var sections = parseMediaInfo(text);
+			if (!sections.length) {
+				toolbar.style.display = "none";
+				miWrap.style.display = "none";
+				log.style.display = "";
+				return;
+			}
+			toolbar.style.display = "flex";
+			rawBtn.textContent = showRaw ? t("Formatted", "Formatted") : t("raw", "Raw");
+			/* Subtitle = the file name from the Complete name row. */
+			sections.forEach(function (s) {
+				s.rows.forEach(function (r) {
+					if (/complete name|file name/i.test(r.k) && !ctx.sub) ctx.sub = basename(r.v);
+				});
+			});
+			renderHeader(ctx.status);
+			miWrap.innerHTML = "";
+			sections.forEach(function (s) {
+				var card = document.createElement("div");
+				card.className = "cqb-mi-section";
+				var h = document.createElement("h4");
+				h.textContent = s.name;
+				card.appendChild(h);
+				s.rows.forEach(function (r) {
+					var row = document.createElement("div");
+					row.className = "cqb-mi-row";
+					var lab = document.createElement("div");
+					lab.className = "cqb-mi-label";
+					lab.textContent = r.k;
+					var val = document.createElement("div");
+					val.className = "cqb-mi-value";
+					if (/[\\/]/.test(r.v)) val.classList.add("cqb-mono");
+					val.textContent = r.v;
+					row.appendChild(lab);
+					row.appendChild(val);
+					card.appendChild(row);
+				});
+				miWrap.appendChild(card);
+			});
+			miWrap.style.display = showRaw ? "none" : "";
+			log.style.display = showRaw ? "" : "none";
+			log.classList.remove("image-cont");
+		}
+
+		function errorsPresent() {
+			var e = document.getElementById("tskcmderrors");
+			var set = document.getElementById("tskcmderrors_set");
+			return !!(set && getComputedStyle(set).display !== "none" && e && (e.textContent || "").trim());
+		}
+
+		function statusFromText(txt) {
+			if (window.theUILang && txt === theUILang.tskCommandDone) return "done";
+			if (window.theUILang && txt === theUILang.tskCommand) return "running";
+			return null;
+		}
+
+		/* Footer: compact, one row. Hide screenshot-only controls off that flow. */
+		function decorateFooter() {
+			if (ctx.task !== "screenshots") {
+				var sc = dlg.querySelectorAll(".scplay");
+				Array.prototype.forEach.call(sc, function (b) { b.style.display = "none"; });
+			}
+			[["tskCopy", "Copy"], ["tskSaveLog", "Save Log"]].forEach(function (pair) {
+				var b = document.getElementById(pair[0]);
+				if (b && !b.classList.contains("cqb-icon-btn")) {
+					b.classList.add("cqb-icon-btn");
+					if (window.cqb && cqb.tooltip) cqb.tooltip(b, b.textContent.trim() || pair[1]);
+				}
+			});
+			var close = document.getElementById("tskCancel");
+			if (close) {
+				close.classList.add("cqb-primary");
+				close.textContent = (ctx.status === "running")
+					? t("Cancel", "Cancel")
+					: (window.theUILang && theUILang.Close) || "Close";
+			}
+		}
+
+		var writing = false;
+		function renderHeader(status) {
+			if (status === "done" && errorsPresent()) status = "failed";
+			ctx.status = status;
+			writing = true;
+			hObs.disconnect();
+			header.textContent = "";
+			var ttl = document.createElement("span");
+			ttl.className = "cqb-tsk-title";
+			ttl.textContent = ctx.title;
+			header.appendChild(ttl);
+			if (ctx.sub) {
+				var sub = document.createElement("span");
+				sub.className = "cqb-tsk-sub";
+				sub.textContent = ctx.sub;
+				header.appendChild(sub);
+			}
+			var pill = document.createElement("span");
+			pill.className = "cqb-status-pill cqb-status-" + status;
+			pill.textContent = status === "running"
+				? t("tskRunning", "Running")
+				: status === "failed" ? t("tskFailed", "Failed") : t("tskDone", "Done");
+			header.appendChild(pill);
+			dlg.classList.toggle("cqb-task-running", status === "running");
+			decorateFooter();
+			writing = false;
+			hObs.observe(header, { childList: true, subtree: true, characterData: true });
+		}
+
+		var hObs = new MutationObserver(function () {
+			if (writing) return;
+			if (header.querySelector(".cqb-status-pill")) return;
+			var s = statusFromText((header.textContent || "").trim());
+			renderHeader(s || "running");
+		});
+		hObs.observe(header, { childList: true, subtree: true, characterData: true });
+
+		var lObs = new MutationObserver(function () {
+			if (ctx.task === "mediainfo") renderMI();
+		});
+		lObs.observe(log, { childList: true, subtree: true, characterData: true });
+
+		return true;
 	}
+
+	function enhanced(id, attr) {
+		var el = document.getElementById(id);
+		return el ? el.getAttribute(attr) === "1" : false;
+	}
+
+	/* Both dialogs are preloaded, but the task console is built a little after
+	 * the add dialog; retry (idempotently) until both are decorated. */
+	function run() {
+		try { enhanceAddTorrent(); } catch (e) { /* never break the dialog */ }
+		try { enhanceTaskConsole(); } catch (e) { /* never break the dialog */ }
+		return enhanced("tadd", "data-cqb-add") && enhanced("tskConsole", "data-cqb-tsk");
+	}
+
+	if (run()) return;
+	var tries = 0;
+	var iv = setInterval(function () {
+		if (run() || ++tries > 40) clearInterval(iv);
+	}, 150);
 })(window.cqb);

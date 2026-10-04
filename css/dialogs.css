@@ -785,8 +785,205 @@ ul.CMenu li ul li a.dis:hover {
 	opacity: 0.5;
 }
 
-/* Task console dialog keeps a workable default size. */
+/* ============================================================
+ * Task console (#tskConsole): Media Info + Create/Unpack/etc.
+ * ============================================================ */
 #tskConsole {
-	width: 620px;
+	width: min(820px, 94vw);
 	height: auto;
+	max-height: 90vh;
+}
+
+/* Console output: wrap instead of overflowing right; token colors. */
+.tskconsole {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12.5px;
+	line-height: 1.5;
+	background: var(--qb-input);
+	color: var(--qb-foreground);
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-x: hidden;
+	overflow-y: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	padding: 10px 12px;
+}
+
+#tskcmdlog {
+	height: auto;
+	min-height: 96px;
+	max-height: 52vh;
+}
+
+#tskcmderrors {
+	height: auto;
+	max-height: 20vh;
+}
+
+/* Kill the raster running-loader strip the plugin paints on the footer. */
+#tsk_btns {
+	background: none !important;
+	padding-top: 0 !important;
+}
+
+/* Thin indeterminate progress, only while the task runs. */
+.cqb-task-bar {
+	display: none;
+	height: 4px;
+	margin: 0;
+	border-radius: 2px;
+	background: linear-gradient(90deg, transparent, var(--qb-primary), transparent);
+	background-size: 40% 100%;
+	background-repeat: no-repeat;
+	animation: cqb-task-slide 1.1s linear infinite;
+}
+
+.cqb-task-running .cqb-task-bar {
+	display: block;
+}
+
+@keyframes cqb-task-slide {
+	0% { background-position: -40% 0; }
+	100% { background-position: 140% 0; }
+}
+
+/* Header status pill + task title/subtitle. */
+.cqb-tsk-title {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.cqb-tsk-sub {
+	margin-left: 8px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	font-weight: 400;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 40%;
+}
+
+.cqb-status-pill {
+	margin-left: 10px;
+	flex: none;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.cqb-status-running {
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+}
+
+.cqb-status-done {
+	background: color-mix(in srgb, var(--qb-primary) 16%, transparent);
+	color: var(--qb-primary-text, var(--qb-primary));
+}
+
+.cqb-status-failed {
+	background: color-mix(in srgb, var(--qb-destructive) 16%, transparent);
+	color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* Compact footer: nav arrows as square buttons, Copy/Save-Log as icon buttons. */
+#tsk_btns .scplay {
+	min-width: 36px;
+	width: 36px;
+	padding: 0 8px;
+}
+
+.dlg-window .cqb-icon-btn {
+	min-width: 36px;
+	width: 36px;
+	padding: 0;
+	font-size: 0;
+}
+
+.dlg-window .cqb-icon-btn::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: center / 16px no-repeat;
+	mask: center / 16px no-repeat;
+}
+
+#tskCopy.cqb-icon-btn::before {
+	-webkit-mask-image: url(../images/icons/fm-copy.svg);
+	mask-image: url(../images/icons/fm-copy.svg);
+}
+
+#tskSaveLog.cqb-icon-btn::before {
+	-webkit-mask-image: url(../images/icons/tab-log.svg);
+	mask-image: url(../images/icons/tab-log.svg);
+}
+
+/* Console primary dismiss (id beats the .Cancel secondary rule). */
+.dlg-window button#tskCancel.cqb-primary {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+.dlg-window button#tskCancel.cqb-primary:not(:disabled):hover {
+	filter: brightness(1.08);
+}
+
+/* Media Info: parsed section cards + Raw toggle. */
+.cqb-mi-toolbar {
+	display: flex;
+	justify-content: flex-end;
+	margin-bottom: 10px;
+}
+
+.cqb-mi {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.cqb-mi-section {
+	border: 1px solid var(--qb-border);
+	border-radius: 10px;
+	background: var(--qb-surface);
+	padding: 12px 14px;
+}
+
+.cqb-mi-section h4 {
+	margin: 0 0 8px 0;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.cqb-mi-row {
+	display: grid;
+	grid-template-columns: minmax(110px, 32%) 1fr;
+	gap: 10px;
+	padding: 3px 0;
+}
+
+.cqb-mi-label {
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+}
+
+.cqb-mi-value {
+	color: var(--qb-foreground);
+	font-size: 13px;
+	word-break: break-word;
+}
+
+.cqb-mi-value.cqb-mono {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12.5px;
 }
