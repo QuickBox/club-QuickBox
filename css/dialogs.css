@@ -249,12 +249,12 @@ div.dlg-window > .cont {
 	margin-bottom: 0;
 }
 
-/* legend renders as a normal in-card heading, never interrupting the border */
+/* legend renders as an in-card heading below an unbroken top border: a
+ * floated full-width block takes it out of the fieldset's border line */
 .dlg-window legend {
-	display: block;
-	float: none;
+	float: left;
 	width: 100%;
-	margin: 0 0 10px 0;
+	margin: 0 0 12px 0;
 	padding: 0;
 	color: var(--qb-fg-muted);
 	font-family: var(--qb-font);
@@ -262,6 +262,12 @@ div.dlg-window > .cont {
 	font-weight: 700;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
+}
+
+.dlg-window fieldset::after {
+	content: "";
+	display: block;
+	clear: both;
 }
 
 .dlg-window label {
@@ -1074,10 +1080,8 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 #tcreate .cqb-field-v > label {
-	font-size: 11px;
-	font-weight: 700;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
+	font-size: 12px;
+	font-weight: 500;
 	color: var(--qb-fg-muted);
 }
 
@@ -1086,6 +1090,11 @@ ul.CMenu li ul li a.dis:hover {
 	box-sizing: border-box;
 	width: 100%;
 }
+
+/* Piece size is a short control; cap it and let its trigger fill the cap. */
+#tcreate .cqb-field-narrow { max-width: 220px; }
+#tcreate .cqb-field-narrow .cqb-select-trigger,
+#tcreate .cqb-field-narrow > select { width: 100%; }
 
 /* Comment + Source sit side by side, stacking on a narrow dialog. */
 #tcreate .cqb-row-2 {

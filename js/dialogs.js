@@ -515,6 +515,21 @@
 			}
 		}
 
+		/* Piece size: a stacked field; move the native select AND its custom
+		 * trigger together so the enhanced control stays intact. */
+		var pieceSel = document.getElementById("piece_size");
+		if (pieceSel) {
+			var pLbl = dlg.querySelector('label[for="piece_size"]');
+			var pRow = pieceSel.closest(".row");
+			var pCol = pieceSel.closest("[class*='col-']");
+			var pWrap = document.createElement("div");
+			pWrap.className = "cqb-field-v cqb-field-narrow";
+			if (pLbl) pWrap.appendChild(pLbl);
+			if (pCol) { while (pCol.firstChild) pWrap.appendChild(pCol.firstChild); }
+			else pWrap.appendChild(pieceSel);
+			if (pRow && pRow.parentNode) { pRow.parentNode.insertBefore(pWrap, pRow); pRow.remove(); }
+		}
+
 		/* Options as switch rows with a one-line helper. */
 		var HELP = {
 			start_seeding: t("cqb_help_seed", "Start seeding as soon as the torrent is created."),
@@ -557,7 +572,10 @@
 
 		/* Footer: a primary "Create torrent" (no ellipsis), off until a source
 		 * is set. The core submit handler stays on the same button. */
-		createBtn.textContent = t("torrentCreate", "Create torrent").replace(/\s*(\.{2,}|…)\s*$/, "");
+		createBtn.textContent = t("cqb_create_torrent", "Create torrent");
+		/* Cancel secondary first, the primary Create torrent rightmost. */
+		var footer = createBtn.closest(".buttons-list");
+		if (footer) footer.appendChild(createBtn);
 		function syncCreate() { createBtn.disabled = !pathEdit.value.trim(); }
 		pathEdit.addEventListener("input", syncCreate);
 		if (window.theDialogManager && theDialogManager.addHandler) {
