@@ -35,3 +35,4 @@ theUILang.qbFindAtHelp      = "One lookup per line. Format: name|url -- use {HAS
 theUILang.qbAnnounceHelp    = "One announce URL per line.";
 
 theUILang.qbBrowse          = "Browse";
+theUILang.cqb_browse         = "Browse";

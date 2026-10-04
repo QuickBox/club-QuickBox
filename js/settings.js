@@ -29,6 +29,7 @@
 		theUILang.cqb_grp_session = theUILang.cqb_grp_session || "Session and timeouts";
 		theUILang.cqb_grp_flags = theUILang.cqb_grp_flags || "Flags";
 		theUILang.cqb_stg_empty = theUILang.cqb_stg_empty || "No matching trackers";
+		theUILang.cqb_browse = theUILang.cqb_browse || "Browse";
 	}
 
 	/* Pages that belong to the "ruTorrent" group; everything else is a plugin. */
@@ -282,9 +283,38 @@
 		lab.setAttribute("for", id);
 		lab.textContent = opts.label != null ? opts.label : labelTextFor(id);
 		w.appendChild(lab);
-		w.appendChild(ctrl);
+		if (opts.path) {
+			var g = document.createElement("div");
+			g.className = "cqb-input-group";
+			g.dataset.cqbBrowse = id;
+			g.appendChild(ctrl);
+			w.appendChild(g);
+		} else {
+			w.appendChild(ctrl);
+		}
 		if (opts.help) w.appendChild(helpLine(opts.help));
 		return w;
+	}
+
+	/* Attach the core directory browser to every marked path input, as one
+	 * input-group: the button sits flush against the input it browses for. */
+	function wireBrowsers(scope) {
+		if (!window.theWebUI || !theWebUI.rDirBrowser || !window.thePlugins || !thePlugins.isInstalled("_getdir")) return;
+		var groups = scope.querySelectorAll("[data-cqb-browse]");
+		for (var i = 0; i < groups.length; i++) {
+			var g = groups[i];
+			var id = g.dataset.cqbBrowse;
+			if (g.dataset.cqbBrowseDone || document.getElementById(id + "_btn")) { g.dataset.cqbBrowseDone = "1"; continue; }
+			try { new theWebUI.rDirBrowser(id); } catch (e) { continue; }
+			var btn = document.getElementById(id + "_btn");
+			if (btn) {
+				g.appendChild(btn);
+				btn.classList.add("cqb-browse");
+				btn.textContent = "";
+				cqb.tooltip(btn, L("cqb_browse", "Browse"));
+			}
+			g.dataset.cqbBrowseDone = "1";
+		}
 	}
 
 	function checkGridFrom(scope) {
@@ -336,7 +366,7 @@
 					{ id: "webui.theme" },
 					{ id: "qb.variant" }
 				]);
-				if (grid && checks) grid.style.marginTop = "16px";
+				if (grid && checks) grid.style.marginTop = "12px";
 				rebuildFieldset(fs[0], [checks, grid]);
 			}
 			if (fs[1]) rebuildFieldset(fs[1], [fieldGrid([{ id: "webui.speedlistul" }, { id: "webui.speedlistdl" }])]);
@@ -347,7 +377,12 @@
 				{ id: "max_uploads" }, { id: "min_peers" }, { id: "max_peers" },
 				{ id: "min_peers_seed" }, { id: "max_peers_seed" }, { id: "tracker_numwant" }
 			])]);
-			if (fs[1]) rebuildFieldset(fs[1], [checkGridFrom(fs[1]), wideField("directory")]);
+			if (fs[1]) {
+				var checks = checkGridFrom(fs[1]);
+				var dir = wideField("directory", { path: true });
+				if (dir && checks) dir.style.marginTop = "12px";
+				rebuildFieldset(fs[1], [checks, dir]);
+			}
 		},
 		st_con: function (pane) {
 			var fs = pane.querySelectorAll("fieldset");
@@ -493,7 +528,7 @@
 			if (fs[0]) {
 				var checks = checkGridFrom(fs[0]);
 				var grid = fieldGrid([{ id: "webui.dateformat" }]);
-				if (grid && checks) checks.style.marginTop = "14px";
+				if (grid && checks) checks.style.marginTop = "12px";
 				rebuildFieldset(fs[0], [grid, checks]);
 			}
 			if (fs[1]) {
@@ -514,7 +549,7 @@
 		if (pane.dataset.cqbLaid) return;
 		var fn = LAYOUTS[pane.id];
 		if (!fn) return;
-		try { fn(pane); } catch (e) { /* a layout error must never break the dialog */ }
+		try { fn(pane); wireBrowsers(pane); } catch (e) { /* a layout error must never break the dialog */ }
 		pane.dataset.cqbLaid = "1";
 	}
 
