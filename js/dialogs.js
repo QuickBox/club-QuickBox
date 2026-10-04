@@ -17,6 +17,75 @@
 		return (window.theUILang && theUILang[key]) || fallback;
 	}
 
+	/* Wire a drop-zone + file-chip pair onto a native file input without
+	 * replacing it: drag/drop fills the input's FileList, chips reflect the
+	 * selection, and the input's own change handlers still fire. Shared by
+	 * Add Torrent and the tracker-icon upload so the two never diverge. */
+	function wireDropzone(zone, chips, fileInput, opts) {
+		opts = opts || {};
+		function setFiles(fileList) {
+			try {
+				var dt = new DataTransfer();
+				for (var i = 0; i < fileList.length; i++) dt.items.add(fileList[i]);
+				fileInput.files = dt.files;
+			} catch (e) {
+				return; /* DataTransfer unavailable: leave native input as-is */
+			}
+			fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+		}
+		["dragenter", "dragover"].forEach(function (ev) {
+			zone.addEventListener(ev, function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				zone.classList.add("cqb-dragover");
+			});
+		});
+		["dragleave", "dragend"].forEach(function (ev) {
+			zone.addEventListener(ev, function () { zone.classList.remove("cqb-dragover"); });
+		});
+		zone.addEventListener("drop", function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			zone.classList.remove("cqb-dragover");
+			var f = e.dataTransfer && e.dataTransfer.files;
+			if (f && f.length) setFiles(opts.multiple ? f : [f[0]]);
+		});
+		function renderChips() {
+			chips.textContent = "";
+			var files = fileInput.files;
+			if (!files) return;
+			Array.prototype.forEach.call(files, function (f, idx) {
+				var chip = document.createElement("span");
+				chip.className = "cqb-chip";
+				var nm = document.createElement("span");
+				nm.className = "cqb-chip-name";
+				nm.textContent = f.name;
+				cqb && cqb.tooltip && cqb.tooltip(chip, f.name);
+				var rm = document.createElement("button");
+				rm.type = "button";
+				rm.className = "cqb-chip-remove";
+				rm.setAttribute("aria-label", t("remove", "Remove") + " " + f.name);
+				rm.addEventListener("click", function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					var keep = [];
+					Array.prototype.forEach.call(fileInput.files, function (g, j) {
+						if (j !== idx) keep.push(g);
+					});
+					setFiles(keep);
+				});
+				chip.appendChild(nm);
+				chip.appendChild(rm);
+				chips.appendChild(chip);
+			});
+		}
+		fileInput.addEventListener("change", function () {
+			renderChips();
+			if (opts.onChange) opts.onChange();
+		});
+		return { setFiles: setFiles, renderChips: renderChips };
+	}
+
 	/* Enhance the Add Torrent dialog once. It is preloaded hidden in the DOM,
 	 * so it exists by the time this module runs; a guard makes it idempotent. */
 	function enhanceAddTorrent() {
@@ -75,67 +144,9 @@
 		fileRow.classList.add("cqb-file-tucked");
 		fileInput.classList.add("cqb-file-tucked");
 
-		/* 2. Drag + drop onto the zone feeds the native input's FileList. */
-		function setFiles(fileList) {
-			try {
-				var dt = new DataTransfer();
-				for (var i = 0; i < fileList.length; i++) dt.items.add(fileList[i]);
-				fileInput.files = dt.files;
-			} catch (e) {
-				return; /* DataTransfer unavailable: leave native input as-is */
-			}
-			fileInput.dispatchEvent(new Event("change", { bubbles: true }));
-		}
-		["dragenter", "dragover"].forEach(function (ev) {
-			zone.addEventListener(ev, function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				zone.classList.add("cqb-dragover");
-			});
-		});
-		["dragleave", "dragend"].forEach(function (ev) {
-			zone.addEventListener(ev, function () { zone.classList.remove("cqb-dragover"); });
-		});
-		zone.addEventListener("drop", function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			zone.classList.remove("cqb-dragover");
-			if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
-				setFiles(e.dataTransfer.files);
-			}
-		});
-
-		/* 3. File chips reflect the current selection; remove rebuilds it. */
-		function renderChips() {
-			chips.textContent = "";
-			var files = fileInput.files;
-			if (!files) return;
-			Array.prototype.forEach.call(files, function (f, idx) {
-				var chip = document.createElement("span");
-				chip.className = "cqb-chip";
-				var nm = document.createElement("span");
-				nm.className = "cqb-chip-name";
-				nm.textContent = f.name;
-				cqb && cqb.tooltip && cqb.tooltip(chip, f.name);
-				var rm = document.createElement("button");
-				rm.type = "button";
-				rm.className = "cqb-chip-remove";
-				rm.setAttribute("aria-label", t("remove", "Remove") + " " + f.name);
-				rm.addEventListener("click", function (e) {
-					e.preventDefault();
-					e.stopPropagation();
-					var keep = [];
-					Array.prototype.forEach.call(fileInput.files, function (g, j) {
-						if (j !== idx) keep.push(g);
-					});
-					setFiles(keep);
-				});
-				chip.appendChild(nm);
-				chip.appendChild(rm);
-				chips.appendChild(chip);
-			});
-		}
-		fileInput.addEventListener("change", function () { renderChips(); syncAdd(); });
+		/* 2 + 3. Drag/drop feeds the native FileList and chips reflect the
+		 * selection (shared helper, multiple files); Add re-syncs on change. */
+		wireDropzone(zone, chips, fileInput, { multiple: true, onChange: function () { syncAdd(); } });
 
 		/* 4. One primary Add in a footer; the two native submits stay wired but
 		 * hidden, and Add proxies a click to whichever input is filled. */
@@ -642,16 +653,166 @@
 		dirPatched = true;
 	}
 
+	/* Dialog forms that still ship the legacy right-aligned, colon-suffixed
+	 * label column. One field layout: labels left-aligned (CSS), trailing
+	 * colons trimmed from the RENDERED text here (never the lang source). */
+	var FORM_DIALOGS = [
+		"dlg_datadir", "tegLoadTorrents", "dlgLoadTorrents", "dlgProps", "tedit",
+		"dlg_unpack", "tracklabels-dialog", "dlgAddRSS", "dlgEditRSS",
+		"dlgAddRSSGroup", "dlgEditFilters", "dlgEditRatioRules", "dlgLabel"
+	];
+
+	function stripColons(root) {
+		root.querySelectorAll("label").forEach(function (l) {
+			if (l.children.length) return; /* leave labels that wrap a control */
+			var trimmed = l.textContent.replace(/\s*:\s*$/, "");
+			if (trimmed !== l.textContent) l.textContent = trimmed;
+		});
+	}
+
+	/* Trim the colon suffix across every legacy form dialog, once each. */
+	function enhanceFieldForms() {
+		FORM_DIALOGS.forEach(function (id) {
+			var dlg = document.getElementById(id);
+			if (!dlg || dlg.getAttribute("data-cqb-form") === "1") return;
+			dlg.setAttribute("data-cqb-form", "1");
+			stripColons(dlg);
+		});
+	}
+
+	/* Unpack: the single legend is a whole sentence -- keep the lead ("Unpack
+	 * to") as the heading and move the parenthetical to muted helper text. */
+	function enhanceUnpack() {
+		var dlg = document.getElementById("dlg_unpack");
+		if (!dlg || dlg.getAttribute("data-cqb-unp") === "1") return;
+		var fs = dlg.querySelector(".cont fieldset");
+		var leg = fs && fs.querySelector("legend");
+		if (!leg) return;
+		dlg.setAttribute("data-cqb-unp", "1");
+		var m = (leg.textContent || "").match(/^([^(]+?)\s*\((.+)\)\s*$/);
+		if (!m) return;
+		leg.textContent = m[1].trim();
+		var help = document.createElement("div");
+		help.className = "cqb-help";
+		help.textContent = m[2].trim();
+		fs.appendChild(help);
+	}
+
+	/* Tracker/label icon upload: swap the native grey file control for the
+	 * same drop-zone + chip pattern Add Torrent uses, keeping the plugin's
+	 * FormData upload handler wired to the untouched native input. */
+	function enhanceTrackLabels() {
+		var dlg = document.getElementById("tracklabels-dialog");
+		if (!dlg || dlg.getAttribute("data-cqb-tl") === "1") return;
+		var fileInput = document.getElementById("tracklabels-dialog-uploadfile");
+		if (!fileInput) return;
+		dlg.setAttribute("data-cqb-tl", "1");
+
+		var fieldCol = fileInput.closest("[class*='col-']") || fileInput.parentNode;
+		var labelCol = fileInput.closest(".row")
+			? fileInput.closest(".row").querySelector('label[for="tracklabels-dialog-uploadfile"]')
+			: null;
+		var labelColWrap = labelCol ? labelCol.closest("[class*='col-']") : null;
+
+		var zone = document.createElement("label");
+		zone.className = "cqb-dropzone";
+		zone.setAttribute("for", "tracklabels-dialog-uploadfile");
+		var zi = document.createElement("span");
+		zi.className = "cqb-dropzone-icon";
+		zi.setAttribute("aria-hidden", "true");
+		var zh = document.createElement("span");
+		zh.className = "cqb-dropzone-hint";
+		var browse = document.createElement("span");
+		browse.className = "cqb-dropzone-browse";
+		browse.textContent = t("browse", "browse");
+		var parts = t("cqb_add_drop_hint", "Drag a .png here or {browse}").split("{browse}");
+		zh.appendChild(document.createTextNode(parts[0]));
+		zh.appendChild(browse);
+		if (parts[1]) zh.appendChild(document.createTextNode(parts[1]));
+		zone.appendChild(zi);
+		zone.appendChild(zh);
+
+		var chips = document.createElement("div");
+		chips.className = "cqb-chips";
+
+		/* The drop-zone spans the full width; the old label column is dropped. */
+		if (fieldCol) {
+			fieldCol.classList.add("cqb-tl-filecol");
+			fieldCol.appendChild(zone);
+			fieldCol.appendChild(chips);
+		}
+		if (labelColWrap) labelColWrap.classList.add("cqb-file-tucked");
+		fileInput.classList.add("cqb-file-tucked");
+
+		/* The native change is already bound to the plugin's updateButtons; the
+		 * helper's dispatched change keeps that enablement logic firing. */
+		wireDropzone(zone, chips, fileInput, { multiple: false });
+	}
+
+	/* An empty-state card shown only while a list has no rows, via a CSS
+	 * `:empty + .cqb-empty` sibling toggle. Text comes from theUILang. */
+	function addEmptyState(listId, key, fallback) {
+		var list = document.getElementById(listId);
+		if (!list || !list.parentNode) return;
+		if (list.nextElementSibling && list.nextElementSibling.classList.contains("cqb-empty")) return;
+		var box = document.createElement("div");
+		box.className = "cqb-empty";
+		var glyph = document.createElement("span");
+		glyph.className = "cqb-empty-icon";
+		glyph.setAttribute("aria-hidden", "true");
+		var txt = document.createElement("span");
+		txt.textContent = t(key, fallback);
+		box.appendChild(glyph);
+		box.appendChild(txt);
+		list.insertAdjacentElement("afterend", box);
+	}
+
+	function enhanceEmptyStates() {
+		addEmptyState("rlsul", "cqb_empty_ratio_rules", "No ratio rules yet");
+		addEmptyState("fltlist", "cqb_empty_rss_filters", "No filters yet");
+		addEmptyState("rssGroupSet", "cqb_empty_rss_group", "No feeds in this group yet");
+	}
+
+	/* Primary-action consistency: the confirming button is primary and sits
+	 * rightmost in every footer. Two core confirms ship without the primary
+	 * class -- promote them, then move each footer's primary to the end so
+	 * visual, DOM and tab order all read Cancel -> Confirm. */
+	function decorateConfirms() {
+		var logoff = document.getElementById("logoffComplete");
+		if (logoff) logoff.classList.add("cqb-primary");
+		var rename = document.querySelector('#dlgRenameView .buttons-list button[value="confirm"]');
+		if (rename) rename.classList.add("cqb-primary");
+	}
+
+	function normalizeFooters() {
+		var footers = document.querySelectorAll(".dlg-window .buttons-list");
+		Array.prototype.forEach.call(footers, function (footer) {
+			var dlg = footer.closest(".dlg-window");
+			if (!dlg || dlg.id === "stg") return; /* settings lane owns its footer */
+			if (footer.getAttribute("data-cqb-footer") === "1") return;
+			footer.setAttribute("data-cqb-footer", "1");
+			var primary = footer.querySelector(".OK, input[type='submit'], .cqb-primary");
+			if (primary && primary.parentNode === footer) footer.appendChild(primary);
+		});
+	}
+
 	/* Both dialogs are preloaded, but the task console is built a little after
 	 * the add dialog; retry (idempotently) until both are decorated. */
 	function run() {
 		try { enhanceAddTorrent(); } catch (e) { /* never break the dialog */ }
 		try { enhanceTaskConsole(); } catch (e) { /* never break the dialog */ }
 		try { enhanceCreate(); } catch (e) { /* never break the dialog */ }
+		try { enhanceFieldForms(); } catch (e) { /* never break the dialog */ }
+		try { enhanceUnpack(); } catch (e) { /* never break the dialog */ }
+		try { enhanceTrackLabels(); } catch (e) { /* never break the dialog */ }
+		try { enhanceEmptyStates(); } catch (e) { /* never break the dialog */ }
+		try { decorateConfirms(); normalizeFooters(); } catch (e) { /* never break the dialog */ }
 		try { sweepBrowse(); patchDirBrowser(); } catch (e) { /* never break the dialog */ }
 		return enhanced("tadd", "data-cqb-add") &&
 			enhanced("tskConsole", "data-cqb-tsk") &&
-			enhanced("tcreate", "data-cqb-create");
+			enhanced("tcreate", "data-cqb-create") &&
+			enhanced("tracklabels-dialog", "data-cqb-tl") &&
+			enhanced("dlgEditFilters", "data-cqb-form");
 	}
 
 	if (run()) return;

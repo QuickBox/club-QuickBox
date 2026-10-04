@@ -420,12 +420,20 @@ div.dlg-window > .cont {
 	background: var(--qb-muted, var(--qb-surface-2));
 }
 
+/* Disabled reads as inert, never as a dimmed primary: a muted surface with
+ * muted text, so an enable-on-input action (Bulk loading OK, Add) clearly
+ * states it is waiting. Listed at >= the primary rules' specificity. */
 .dlg-window button:disabled,
+.dlg-window button.OK:disabled,
+.dlg-window button.cqb-primary:disabled,
 .dlg-window input[type="submit"]:disabled,
 .dlg-window input[type="button"]:disabled,
 .dlg-window .Button:disabled,
 .dlg-window .cqb-primary:disabled {
-	opacity: 0.45;
+	background: var(--qb-muted, var(--qb-surface-2));
+	border-color: var(--qb-border);
+	color: var(--qb-fg-muted);
+	opacity: 0.7;
 	cursor: not-allowed;
 	filter: none;
 }
@@ -725,6 +733,17 @@ ul.CMenu li hr {
 	background-color: transparent;
 }
 
+/* Core ships a 1.35rem ::before AND ::after on EVERY item (a raster check
+ * via --menu-item-active-icon, a raster caret via --menu-item-exp-icon),
+ * reserving icon gutters on plain rows and bleeding the raster under a mask
+ * (hdetect DOUBLE). Drop both by default; re-add a masked glyph only where
+ * the row is selected or expandable, with the raster explicitly killed. */
+ul.CMenu li a::before,
+ul.CMenu li a::after {
+	content: none;
+	background-image: none;
+}
+
 ul.CMenu li a.exp::after {
 	content: "";
 	display: block;
@@ -732,11 +751,13 @@ ul.CMenu li a.exp::after {
 	height: 1rem;
 	margin-left: auto;
 	background-color: var(--qb-fg-muted);
+	background-image: none;
 	-webkit-mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
 	mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
 }
 
-ul.CMenu li a.exp:hover::after {
+ul.CMenu li a.exp:hover::after,
+ul.CMenu li:hover > a.exp::after {
 	background-color: var(--qb-foreground);
 }
 
@@ -751,6 +772,7 @@ ul.CMenu li a.sel::before {
 	width: 1rem;
 	height: 1rem;
 	background-color: var(--qb-primary-text, var(--qb-primary));
+	background-image: none;
 	-webkit-mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
 	mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
 }
@@ -1212,3 +1234,235 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 #tcreate .cqb-opt .cqb-help { margin: 0; }
+
+/* ============================================================
+ * One field layout (defect 1): left-aligned label column, no
+ * trailing colons (trimmed in JS), consistent row gap. Scoped
+ * to the dialogs that still ship the legacy right-aligned form.
+ * ============================================================ */
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlg_unpack, #tracklabels-dialog, #dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup,
+	#dlgEditFilters, #dlgEditRatioRules, #dlgLabel) .cont .row > [class*="col-"] {
+	justify-content: flex-start !important;
+	text-align: left;
+}
+
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlg_unpack, #tracklabels-dialog, #dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup,
+	#dlgEditFilters, #dlgEditRatioRules, #dlgLabel) .cont .ms-md-auto {
+	margin-left: 0 !important;
+}
+
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup, #dlgEditFilters) .cont .row {
+	row-gap: 12px;
+}
+
+/* ============================================================
+ * Shared empty state: a centered glyph + muted line, shown only
+ * while the preceding list is :empty (CSS sibling toggle).
+ * ============================================================ */
+.cqb-empty {
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 96px;
+	padding: 20px 16px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+#rlsul:empty + .cqb-empty,
+#fltlist:empty + .cqb-empty,
+#rssGroupSet:empty + .cqb-empty {
+	display: flex;
+}
+
+.cqb-empty .cqb-empty-icon {
+	width: 26px;
+	height: 26px;
+	opacity: 0.6;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/header-ratio-rules.svg) center / contain no-repeat;
+	mask: url(../images/icons/header-ratio-rules.svg) center / contain no-repeat;
+}
+
+#fltlist:empty + .cqb-empty .cqb-empty-icon,
+#rssGroupSet:empty + .cqb-empty .cqb-empty-icon {
+	-webkit-mask-image: url(../images/icons/toolbar-rss.svg);
+	mask-image: url(../images/icons/toolbar-rss.svg);
+}
+
+/* ============================================================
+ * Ratio Rules Manager (defect 2): contain the Add/Delete/Up/Down
+ * group (a 2x2 grid never overflows the column), token the rule
+ * box + row inputs, host the empty state inside the list box.
+ * ============================================================ */
+.dlg-window#dlgEditRatioRules #exratio_buttons1 {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	width: 100%;
+	margin: 10px 0 0;
+}
+
+.dlg-window#dlgEditRatioRules #exratio_buttons1 button {
+	min-width: 0;
+	width: 100%;
+	padding: 0 10px;
+}
+
+#dlgEditRatioRules #ratioRuleList {
+	border-color: var(--qb-border);
+	border-radius: 8px;
+	background: var(--qb-input);
+}
+
+#dlgEditRatioRules #rlsul { white-space: normal; }
+
+#dlgEditRatioRules #rlsul > li input[type="text"],
+#dlgEditRatioRules #rlsul > li input.TextboxFocus,
+#dlgEditRatioRules #rlsul > li input.TextboxNormal {
+	border: 1px solid var(--qb-border);
+	border-radius: 6px;
+	background: var(--qb-input);
+	color: var(--qb-foreground);
+}
+
+/* The right column's THEN rows: keep the label beside its select, not
+ * pushed to the far edge, so "Set ratio to" reads with its control. */
+#dlgEditRatioRules fieldset .row.align-items-center > .justify-content-md-end {
+	justify-content: flex-start !important;
+}
+
+/* ============================================================
+ * RSS Manager (defects 2 + 3): the filter list gets an empty
+ * state; RatioGroup / Channel each take a full-width row so the
+ * value is never truncated to "No R..." / "No C...".
+ * ============================================================ */
+#dlgEditFilters .col-md-3:has(> #FLT_ratio),
+#dlgEditFilters .col-md-3:has(> #FLT_throttle),
+#dlgEditFilters .col-md-3:has(> label[for="FLT_ratio"]),
+#dlgEditFilters .col-md-3:has(> label[for="FLT_throttle"]) {
+	flex: 1 1 100%;
+	max-width: 100%;
+}
+
+#dlgEditFilters #FLT_ratio,
+#dlgEditFilters #FLT_throttle {
+	width: 100%;
+	min-width: 0;
+}
+
+/* The filter list box carries a token border + hosts its empty state. */
+#dlgEditFilters #filterList {
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	background: var(--qb-input);
+}
+
+/* ============================================================
+ * Add RSS Group (defect 2): the empty CONTENT box reserves room
+ * so its empty state is visible, not a zero-height sliver.
+ * ============================================================ */
+#dlgAddRSSGroup #rssGroupSet { min-height: 64px; }
+
+/* ============================================================
+ * Tracker/label icon upload (defect 5): the drop-zone spans the
+ * full width where the native grey "Choose File" row used to sit.
+ * ============================================================ */
+#tracklabels-dialog .cqb-tl-filecol {
+	flex: 1 1 100%;
+	max-width: 100%;
+}
+
+#tracklabels-dialog .cqb-dropzone { min-height: 96px; }
+
+/* ============================================================
+ * Edit torrent (defect 6): size the trackers box to content
+ * (core forces 12rem / 24rem); 6-row floor, user-growable. The
+ * enable checkbox + its label read as one control at the top.
+ * ============================================================ */
+#tedit #etrackers {
+	box-sizing: border-box;
+	width: 100%;
+	height: auto;
+	min-height: 8.4rem;
+	resize: vertical;
+}
+
+#tedit .cont .row > [class*="col-"]:has(> input[type="checkbox"]) {
+	gap: 6px;
+}
+
+/* ============================================================
+ * Help (defect 7): shortcut keys as kbd chips, matching the
+ * top-bar Ctrl K chip (token surface, hairline, muted mono-ish).
+ * ============================================================ */
+.dlg-window#dlgHelp { max-width: 95vw; }
+
+#dlgHelp .container-fluid .row {
+	row-gap: 6px;
+	align-items: center;
+}
+
+#dlgHelp .col-4 .fw-bold {
+	display: inline-block;
+	padding: 2px 8px;
+	border: 1px solid var(--qb-border);
+	border-radius: 6px;
+	background: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+#dlgHelp .col-8 a {
+	color: var(--qb-primary-text, var(--qb-primary));
+	text-decoration: none;
+}
+
+#dlgHelp .col-8 a:hover { text-decoration: underline; }
+
+/* ============================================================
+ * About (defect 7): a clean left-aligned card, dropping the
+ * ragged offset-N centered indentation the core markup uses.
+ * ============================================================ */
+#dlgAbout .container-fluid { padding: 4px 2px 8px; }
+
+#dlgAbout .container-fluid .row {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0;
+}
+
+#dlgAbout [class*="offset-"] { margin-left: 0 !important; }
+
+#dlgAbout [class*="col-"] {
+	flex: none;
+	width: 100%;
+	max-width: 100%;
+	padding: 0;
+	text-align: left;
+}
+
+#dlgAbout .col-10 { padding-left: 12px; }
+
+#dlgAbout .col-11 span {
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+}
+
+#dlgAbout strong { color: var(--qb-foreground); font-weight: 600; }
+
+#dlgAbout .pt-3 { margin-top: 8px; }
+
+#dlgAbout a { color: var(--qb-primary-text, var(--qb-primary)); }
