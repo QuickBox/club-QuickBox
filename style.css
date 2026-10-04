@@ -585,7 +585,7 @@ div#t {
 /* Toolbar icons: SVG masks tinted by token; hover changes color only. */
 #t div#add, #t div#create, #t div#remove, #t div#start, #t div#pause,
 #t div#stop, #t div#moveu, #t div#moved, #t div#search, #t div#rss,
-#t div#setting, #t div#help, #t div#plugins, #t div#chat {
+#t div#setting, #t div#help, #t div#plugins, #t div#chat, #t div#logoff {
 	background-color: var(--qb-icon);
 	background-image: none;
 	-webkit-mask-repeat: no-repeat;
@@ -600,7 +600,7 @@ div#t {
 #t div#add:hover, #t div#create:hover, #t div#remove:hover, #t div#start:hover,
 #t div#pause:hover, #t div#stop:hover, #t div#moveu:hover, #t div#moved:hover,
 #t div#search:hover, #t div#rss:hover, #t div#setting:hover, #t div#help:hover,
-#t div#plugins:hover, #t div#chat:hover {
+#t div#plugins:hover, #t div#chat:hover, #t div#logoff:hover {
 	background-color: var(--qb-icon-hover);
 }
 
@@ -618,6 +618,7 @@ div#t {
 #t div#help { -webkit-mask-image: url(images/icons/toolbar-help.svg); mask-image: url(images/icons/toolbar-help.svg); }
 #t div#plugins { -webkit-mask-image: url(images/icons/toolbar-plugins.svg); mask-image: url(images/icons/toolbar-plugins.svg); }
 #t div#chat { -webkit-mask-image: url(images/icons/toolbar-chat.svg); mask-image: url(images/icons/toolbar-chat.svg); }
+#t div#logoff { -webkit-mask-image: url(images/icons/logoff.svg); mask-image: url(images/icons/logoff.svg); }
 
 /* GO button: variant gradient, the toolbar's signature action */
 @media (min-width: 769px) {
