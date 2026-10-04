@@ -361,14 +361,18 @@
 					try {
 						if (fmBtn.disabled) return;
 						var dir = fmParentDir(spanText("bf"));
-						if (!dir || !window.flm || !flm.goToPath) return;
-						/* Convert the absolute save dir to a jail-relative path
-						 * via the plugin's own helper, with a trailing slash so
-						 * getDir treats it as a directory listing. */
-						var rel = flm.stripJailPath ? flm.stripJailPath(dir) : dir;
-						if (rel && rel.charAt(rel.length - 1) !== "/") rel += "/";
-						if (window.theTabs) theTabs.show("flm-browser");
-						flm.goToPath(rel);
+						if (!dir || !window.flm) return;
+						/* showPath is the plugin's own entry point: it strips the
+						 * absolute path to the jail, loads the listing and shows
+						 * the File Manager tab, initialising its UI if needed. */
+						if (typeof flm.showPath === "function") {
+							flm.showPath(dir);
+						} else if (flm.goToPath) {
+							var rel = flm.stripJailPath ? flm.stripJailPath(dir) : dir;
+							if (rel && rel.charAt(rel.length - 1) !== "/") rel += "/";
+							if (window.theTabs) theTabs.show("flm-browser");
+							flm.goToPath(rel);
+						}
 					} catch (e) {}
 				});
 			}
