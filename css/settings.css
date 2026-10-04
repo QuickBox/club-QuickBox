@@ -273,6 +273,21 @@
 
 #stg .stg_con fieldset > .row { clear: both; }
 
+/* A legend may wrap its text in a link (the PushBullet heading points at
+ * pushbullet.com). Keep it reading as every other card heading -- the theme
+ * link color must not leak a stray accent into the title. */
+#stg .stg_con legend a {
+	color: var(--qb-foreground);
+	font: inherit;
+	text-decoration: none;
+}
+
+#stg .stg_con legend a:hover,
+#stg .stg_con legend a:focus-visible {
+	color: var(--qb-primary-text);
+	text-decoration: underline;
+}
+
 /* Field rhythm + controls (12px between adjacent rows) */
 #stg .stg_con .row > [class*="col"] {
 	padding-top: 6px;
@@ -509,6 +524,17 @@
 	color: var(--qb-foreground);
 	white-space: normal;
 }
+
+/* Vertical rhythm between stacked blocks in a reshaped card: a check grid and
+ * an adjacent field block must not hug, or a checkbox caption reads as the
+ * label of the field below it (the XMPP/History/Retrackers crowding). Grids
+ * carry no margin of their own, so add the gap only on these transitions --
+ * the wide field already supplies its own bottom margin, so it is left out to
+ * avoid doubling. */
+#stg .stg_con .cqb-check-grid + .cqb-field-grid,
+#stg .stg_con .cqb-check-grid + .cqb-field-wide,
+#stg .stg_con .cqb-check-grid + .cqb-retrackers,
+#stg .stg_con .cqb-field-grid + .cqb-check-grid { margin-top: 12px; }
 
 /* One muted helper line under a field or card. */
 #stg .cqb-help {
