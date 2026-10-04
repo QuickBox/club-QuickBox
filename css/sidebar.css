@@ -343,20 +343,29 @@ category-list {
 	mask-size: 20px !important;
 }
 
-/* Count -> a small corner badge pinned to the row's top-right (the host is
- * positioned, so the shadow part anchors to it). */
+/* Count -> a small corner badge pinned to the row's top-right gutter, clear of
+ * the centered 20px glyph (the host is positioned, so the shadow part anchors
+ * to it). A ring in the surface tone lifts it off the row. */
 :root[data-cqb-rail] panel-label::part(count) {
 	position: absolute;
 	top: 1px;
-	right: 6px;
-	margin-left: 0;
+	right: 1px;
+	margin: 0 !important;
 	box-sizing: border-box;
-	min-width: 15px;
-	height: 15px;
-	line-height: 15px;
-	padding: 0 4px;
-	font-size: 10px;
+	min-width: 14px;
+	height: 14px;
+	line-height: 14px;
+	padding: 0 2px;
+	font-size: 9px;
 	border-radius: 999px;
+	text-align: center;
+	box-shadow: 0 0 0 1.5px var(--qb-surface);
+}
+
+/* v4 rail parity: a zero count carries no badge. */
+:root[data-cqb-rail] panel-label[count="0"]::part(count),
+:root[data-cqb-rail] panel-label[count=""]::part(count) {
+	display: none !important;
 }
 
 :root[data-cqb-rail] panel-label[selected]::part(count) {

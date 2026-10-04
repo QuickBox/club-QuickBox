@@ -43,10 +43,14 @@
 		return m ? (m[1] === "collapsed") : null; /* null = unset */
 	}
 
-	/* Collapsed rows hide their label, so each needs a tooltip carrying
-	 * "Label (count)". Composed from the panel-label attributes; refreshed as
-	 * the live counts change while the rail is open. */
-	function refreshRailTips() {
+	/* ONE tooltip formatter for every category row, in both states: "Label ·
+	 * count · size" (count/size dropped when the row has none). Collapsed rows
+	 * hide their label so the tip is essential; expanded rows share the same
+	 * form so it never diverges by run. The custom tooltip is body-level
+	 * (position:fixed) so the rail never clips it. The observer below re-applies
+	 * it on every count/size/text/selected/title change, so the core title the
+	 * global migrator copies never leaves a divergent form behind. */
+	function applyRowTips() {
 		var sp = sidebar();
 		if (!sp) return;
 		var rows = sp.querySelectorAll("panel-label");
@@ -54,9 +58,12 @@
 			var pl = rows[i];
 			var text = (pl.getAttribute("text") || "").trim();
 			if (!text) continue;
+			var parts = [text];
 			var count = pl.getAttribute("count");
-			var tip = text + (count != null && count !== "" ? " (" + count + ")" : "");
-			cqb.tooltip(pl, tip);
+			if (count != null && count !== "") parts.push(count);
+			var size = (pl.getAttribute("size") || "").trim();
+			if (size) parts.push(size);
+			cqb.tooltip(pl, parts.join(" · "));
 		}
 	}
 
@@ -87,7 +94,7 @@
 		if (collapsed) root.setAttribute("data-cqb-rail", "1");
 		else root.removeAttribute("data-cqb-rail");
 		syncToggle(collapsed);
-		if (collapsed) refreshRailTips();
+		applyRowTips();
 		reflow();
 		if (persist) {
 			writeCookie(collapsed ? "collapsed" : "expanded");
@@ -119,15 +126,15 @@
 	}
 	apply(initialCollapsed(), false);
 
-	/* Keep the rail tooltips current as counts update while collapsed. */
+	/* Keep the row tooltips current and single-formatted as counts update and
+	 * after the global migrator copies a core title (this observer is created
+	 * after init's migrator, so its callback runs last and wins). */
 	if (window.MutationObserver) {
 		var sp = sidebar();
 		if (sp) {
-			new MutationObserver(function () {
-				if (collapsed) refreshRailTips();
-			}).observe(sp, {
+			new MutationObserver(applyRowTips).observe(sp, {
 				subtree: true, attributes: true,
-				attributeFilter: ["count", "text", "selected"]
+				attributeFilter: ["count", "text", "size", "selected", "title"]
 			});
 		}
 	}
