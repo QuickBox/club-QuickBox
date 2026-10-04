@@ -907,7 +907,7 @@
 		var browse = document.createElement("span");
 		browse.className = "cqb-dropzone-browse";
 		browse.textContent = t("browse", "browse");
-		var parts = t("cqb_add_drop_hint", "Drag a .png here or {browse}").split("{browse}");
+		var parts = t("cqb_tl_drop_hint", "Drag a .png here or {browse}").split("{browse}");
 		zh.appendChild(document.createTextNode(parts[0]));
 		zh.appendChild(browse);
 		if (parts[1]) zh.appendChild(document.createTextNode(parts[1]));

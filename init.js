@@ -19,7 +19,7 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "97ab586ca7";
+	var CQB_REV = "39801126fe";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
@@ -52,6 +52,40 @@
 	CSS_MODULES.forEach(function (name) {
 		injectCSS(plugin.path + "css/" + name + ".css?cqb=" + CQB_REV, cssDone);
 	});
+
+	/* ============================================================
+	 * Skin string catalog: load lang/<code>.js for the active ruTorrent
+	 * language before any string is rendered.
+	 * ============================================================
+	 * The theme plugin loads its OWN localization, never the skin's, so the
+	 * skin ships lang/en.js (the full catalog) plus one file per supported
+	 * language. English is loaded first as the base, so every key resolves
+	 * even when a translation is partial; the active language is then layered
+	 * on top. injectScript is the same synchronous, ordered loader the CSS and
+	 * feature modules use, so the keys are in place before the rest of this
+	 * file runs (the Settings Appearance select below) and before allDone
+	 * injects the feature modules -- no module reads a string before its
+	 * catalog entry exists. A lang file only ASSIGNS theUILang keys; an
+	 * unsupported language is never requested (no 404), and a failed load
+	 * leaves the English base and the inline fallbacks intact. */
+	var LANG_SUPPORTED = ["en", "da", "de", "es", "fr", "pt-br", "zh-cn"];
+	var LANG_ALIAS = { "pt-pt": "pt-br" };
+	function activeLang() {
+		var code = "";
+		try {
+			if (typeof GetActiveLanguage === "function") code = String(GetActiveLanguage() || "").toLowerCase();
+		} catch (e) { code = ""; }
+		if (LANG_ALIAS[code]) code = LANG_ALIAS[code];
+		return LANG_SUPPORTED.indexOf(code) !== -1 ? code : "en";
+	}
+	function loadLang(code) {
+		try {
+			injectScript(plugin.path + "lang/" + code + ".js?cqb=" + CQB_REV);
+		} catch (e) { /* keep the English base + the modules' inline fallbacks */ }
+	}
+	loadLang("en");
+	var activeLangCode = activeLang();
+	if (activeLangCode !== "en") loadLang(activeLangCode);
 
 	/* Re-key the three sheets the theme plugin loads itself (style.css,
 	 * stable.css, plugins.css at the skin root). Each already carries ruTorrent's
@@ -459,6 +493,15 @@
 		reel: "qbVariantReel",
 		defaulted: "qbVariantLight"
 	};
+	/* English fallback for the select, so the read below never yields
+	 * undefined if a key is unset (or a translation set it empty). */
+	var VARIANT_LABEL_FALLBACK = {
+		auto: "Auto (dashboard)",
+		spectre: "Spectre",
+		smoked: "Smoked",
+		reel: "Reel",
+		defaulted: "Light"
+	};
 
 	var themeOnLangLoaded = plugin.onLangLoaded;
 	plugin.onLangLoaded = function () {
@@ -468,7 +511,7 @@
 		var opts = "";
 		["auto", "spectre", "smoked", "reel", "defaulted"].forEach(function (val) {
 			opts += '<option value="' + val + '"' + (current === val ? " selected" : "") +
-				">" + theUILang[VARIANT_LABELS[val]] + "</option>";
+				">" + (theUILang[VARIANT_LABELS[val]] || VARIANT_LABEL_FALLBACK[val]) + "</option>";
 		});
 		$($$("webui.theme")).closest("div").after(
 			$("<div>").addClass("col-6 col-md-3").append(
