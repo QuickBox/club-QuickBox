@@ -33,39 +33,77 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
-	function watch(root) {
+	/* Torrent-row Status cell -> a state pill. The core writes the localized
+	 * status text into the virtual table, so that text is never touched here.
+	 * Instead we read the state the core already computed onto the row's
+	 * .stable-icon (its Status_* class) and mirror it as data-cqb-state on the
+	 * Status cell (always the id-indexed col-1, stable across column reorder),
+	 * so css/table.css draws the dot + tint. Re-run on add/sort/filter/refresh. */
+	var STATUS_STATE = {
+		Status_Down: "downloading", Status_Up: "seeding", Status_Up_Down: "downloading",
+		Status_Incompleted: "stopped", Status_Paused: "paused",
+		Status_Error: "error", Status_Error_Up: "error", Status_Error_Down: "error",
+		Status_Completed: "seeding", Status_Queued_Up: "queued", Status_Queued_Down: "queued",
+		Status_Checking: "checking"
+	};
+	function rowState(tr) {
+		var icon = tr.querySelector(".stable-icon");
+		if (!icon) return "";
+		for (var i = 0; i < icon.classList.length; i++) {
+			var s = STATUS_STATE[icon.classList[i]];
+			if (s) return s;
+		}
+		return "";
+	}
+	function tagStatusAll(root) {
+		try {
+			var rows = root.querySelectorAll("tr");
+			Array.prototype.forEach.call(rows, function (tr) {
+				var cell = tr.querySelector("td.stable-List-col-1");
+				if (!cell) return;
+				var s = rowState(tr);
+				if (s) { if (cell.getAttribute("data-cqb-state") !== s) cell.setAttribute("data-cqb-state", s); }
+				else if (cell.hasAttribute("data-cqb-state")) cell.removeAttribute("data-cqb-state");
+			});
+		} catch (e) { /* never break the bundle */ }
+	}
+
+	function watch(root, withStatus) {
 		try {
 			if (!root || root.getAttribute("data-cqb-prog")) return;
 			root.setAttribute("data-cqb-prog", "1");
 			syncAll(root);
+			if (withStatus) tagStatusAll(root);
 			var pending = false;
 			var mo = new MutationObserver(function (records) {
-				/* Coalesce frequent progress updates into one frame. */
+				/* Coalesce frequent progress + status updates into one frame. */
 				var touched = false;
 				for (var i = 0; i < records.length; i++) {
 					var t = records[i].target;
 					if (t && t.classList && t.classList.contains("meter-value")) { syncOne(t); touched = true; }
 					else if (records[i].addedNodes && records[i].addedNodes.length) touched = true;
+					else if (withStatus && t && t.classList && t.classList.contains("stable-icon")) touched = true;
 				}
 				if (touched && !pending) {
 					pending = true;
-					requestAnimationFrame(function () { pending = false; syncAll(root); });
+					requestAnimationFrame(function () { pending = false; syncAll(root); if (withStatus) tagStatusAll(root); });
 				}
 			});
-			mo.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ["style"] });
+			mo.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: withStatus ? ["style", "class"] : ["style"] });
 		} catch (e) { /* never break the bundle */ }
 	}
 
 	function init() {
-		/* Main torrent list and the in-drawer file list both carry progress. */
-		watch(document.getElementById("List"));
+		/* Main torrent list carries progress + status; the file list is progress. */
+		watch(document.getElementById("List"), true);
 		watch(document.getElementById("FileList"));
 	}
 
-	/* The core ships the Size column at 70px, too narrow for values like
-	 * "756.00 MiB"; lift it to a fit floor (by stable column id, only when
-	 * narrower, so a user who widened it keeps their width). */
-	var WIDTH_FLOOR = { size: 84 };
+	/* The core ships some columns too narrow for their formatted value: Size
+	 * for "756.00 MiB", Status for the state pill, Created On for the full
+	 * "DD.MM.YYYY HH:MM:SS" stamp. Lift each to a fit floor (by stable column
+	 * id, only when narrower, so a user who widened it keeps their width). */
+	var WIDTH_FLOOR = { size: 84, status: 156, created: 180 };
 	function enforceColumnWidths() {
 		try {
 			var t = window.theWebUI && theWebUI.tables ? theWebUI.tables.trt : null;

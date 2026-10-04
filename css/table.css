@@ -202,3 +202,50 @@ td:has(> .meter-value) .meter-text {
 	text-align: right;
 	float: none;
 }
+
+/* ============================================================
+ * Status cell -> a v4 state pill: a solid state dot + a tinted label on a
+ * subtle same-hue surface. js/table.js tags the cell with data-cqb-state
+ * from the core-computed row state; the status text itself is never written
+ * here. checking shares the downloading hue and queued the stopped hue, the
+ * same pairing the row state glyph uses, so both surfaces read identically.
+ * ============================================================ */
+#List td.stable-List-col-1[data-cqb-state] > div {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding: 1px 8px;
+	border-radius: var(--qb-radius);
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 16px;
+	white-space: nowrap;
+	overflow: hidden;
+	color: var(--cqb-state, var(--qb-fg-muted));
+	background: color-mix(in srgb, var(--cqb-state, var(--qb-fg-muted)) 14%, transparent);
+}
+
+#List td.stable-List-col-1[data-cqb-state] > div::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 999px;
+	flex: none;
+	background: var(--cqb-state, var(--qb-fg-muted));
+}
+
+#List td.stable-List-col-1[data-cqb-state="downloading"] { --cqb-state: var(--qb-state-downloading); }
+#List td.stable-List-col-1[data-cqb-state="seeding"]     { --cqb-state: var(--qb-state-seeding); }
+#List td.stable-List-col-1[data-cqb-state="paused"]      { --cqb-state: var(--qb-state-paused); }
+#List td.stable-List-col-1[data-cqb-state="stopped"]     { --cqb-state: var(--qb-state-stopped); }
+#List td.stable-List-col-1[data-cqb-state="error"]       { --cqb-state: var(--qb-state-error); }
+#List td.stable-List-col-1[data-cqb-state="checking"]    { --cqb-state: var(--qb-state-downloading); }
+#List td.stable-List-col-1[data-cqb-state="queued"]      { --cqb-state: var(--qb-state-stopped); }
+
+/* Created On -> tabular-nums so the full "DD.MM.YYYY HH:MM:SS" stamp aligns
+ * cleanly; the colsdata width floor in js/table.js guarantees it fits. */
+#List td.stable-List-col-14 > div {
+	font-variant-numeric: tabular-nums;
+}
