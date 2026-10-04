@@ -219,12 +219,17 @@
 		};
 		var ctx = { task: "", title: "Task", sub: "", status: "running" };
 
-		/* Capture the task name/title as each console task starts. */
+		var showRaw = false;
+
+		/* Capture the task name/title as each console task starts, and reset
+		 * the Media Info view so a fresh run always opens Formatted. */
 		var origStart = theWebUI.startConsoleTask;
 		theWebUI.startConsoleTask = function (taskName) {
 			ctx.task = taskName || "";
 			ctx.title = LABELS[taskName] || (window.theUILang && theUILang[taskName]) || "Task";
 			ctx.sub = "";
+			showRaw = false;
+			seg.style.display = "none";
 			return origStart.apply(this, arguments);
 		};
 
@@ -233,21 +238,28 @@
 		bar.className = "cqb-task-bar";
 		headerBar.insertAdjacentElement("afterend", bar);
 
-		/* MediaInfo formatted view + Raw toggle, inserted before the raw log. */
-		var toolbar = document.createElement("div");
-		toolbar.className = "cqb-mi-toolbar";
-		toolbar.style.display = "none";
-		var rawBtn = document.createElement("button");
-		rawBtn.type = "button";
-		rawBtn.className = "cqb-secondary";
-		var showRaw = false;
-		rawBtn.textContent = t("raw", "Raw");
-		rawBtn.addEventListener("click", function () { showRaw = !showRaw; renderMI(); });
-		toolbar.appendChild(rawBtn);
+		/* Formatted | Raw segmented control, parked in the dialog header so it
+		 * never floats in the body. Opens on Formatted. */
+		var seg = document.createElement("div");
+		seg.className = "cqb-mi-seg";
+		var segFmt = document.createElement("button");
+		segFmt.type = "button";
+		segFmt.textContent = t("Formatted", "Formatted");
+		var segRaw = document.createElement("button");
+		segRaw.type = "button";
+		segRaw.textContent = t("raw", "Raw");
+		seg.appendChild(segFmt);
+		seg.appendChild(segRaw);
+		segFmt.addEventListener("click", function () { if (showRaw) { showRaw = false; renderMI(); } });
+		segRaw.addEventListener("click", function () { if (!showRaw) { showRaw = true; renderMI(); } });
+		var closeEl = headerBar.querySelector(".dlg-close");
+		if (closeEl) headerBar.insertBefore(seg, closeEl);
+		else headerBar.appendChild(seg);
+
+		/* The formatted card view, inserted before the raw log. */
 		var miWrap = document.createElement("div");
 		miWrap.className = "cqb-mi";
 		miWrap.style.display = "none";
-		log.parentNode.insertBefore(toolbar, log);
 		log.parentNode.insertBefore(miWrap, log);
 
 		function basename(p) {
@@ -258,7 +270,7 @@
 
 		function renderMI() {
 			if (ctx.task !== "mediainfo") {
-				toolbar.style.display = "none";
+				seg.style.display = "none";
 				miWrap.style.display = "none";
 				log.style.display = "";
 				return;
@@ -266,13 +278,14 @@
 			var text = log.innerText || log.textContent || "";
 			var sections = parseMediaInfo(text);
 			if (!sections.length) {
-				toolbar.style.display = "none";
+				seg.style.display = "none";
 				miWrap.style.display = "none";
 				log.style.display = "";
 				return;
 			}
-			toolbar.style.display = "flex";
-			rawBtn.textContent = showRaw ? t("Formatted", "Formatted") : t("raw", "Raw");
+			seg.style.display = "inline-flex";
+			segFmt.classList.toggle("is-active", !showRaw);
+			segRaw.classList.toggle("is-active", showRaw);
 			/* Subtitle = the file name from the Complete name row. */
 			sections.forEach(function (s) {
 				s.rows.forEach(function (r) {
@@ -320,19 +333,13 @@
 			return null;
 		}
 
-		/* Footer: compact, one row. Hide screenshot-only controls off that flow. */
+		/* Footer: one row. Copy and Save Log keep their text (a glyph is added
+		 * in CSS by id); the dismiss reads Close and goes primary when done. */
 		function decorateFooter() {
 			if (ctx.task !== "screenshots") {
 				var sc = dlg.querySelectorAll(".scplay");
 				Array.prototype.forEach.call(sc, function (b) { b.style.display = "none"; });
 			}
-			[["tskCopy", "Copy"], ["tskSaveLog", "Save Log"]].forEach(function (pair) {
-				var b = document.getElementById(pair[0]);
-				if (b && !b.classList.contains("cqb-icon-btn")) {
-					b.classList.add("cqb-icon-btn");
-					if (window.cqb && cqb.tooltip) cqb.tooltip(b, b.textContent.trim() || pair[1]);
-				}
-			});
 			var close = document.getElementById("tskCancel");
 			if (close) {
 				close.classList.add("cqb-primary");

@@ -783,12 +783,32 @@ ul.CMenu li ul li a.dis:hover {
  * Task console (#tskConsole): Media Info + Create/Unpack/etc.
  * ============================================================ */
 #tskConsole {
+	display: flex;
+	flex-direction: column;
 	width: min(820px, 94vw);
 	height: auto;
-	max-height: 90vh;
+	max-height: 80vh;
 }
 
-/* Console output: wrap instead of overflowing right; token colors. */
+/* Fieldsets carry no card chrome here -- the console surface is the card and
+ * the header names the task, so the "Console" legend is dropped. */
+#tskConsole fieldset {
+	margin: 0 0 12px 0;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+#tskConsole fieldset:last-child { margin-bottom: 0; }
+
+#tskConsole #tskcmdlog_set > legend { display: none; }
+
+#tskConsole #tskcmderrors_set > legend {
+	margin: 0 0 6px 0;
+	color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* Console output: wrap, never scroll horizontally; token colors. */
 .tskconsole {
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 	font-size: 12.5px;
@@ -797,6 +817,7 @@ ul.CMenu li ul li a.dis:hover {
 	color: var(--qb-foreground);
 	white-space: pre-wrap;
 	word-break: break-word;
+	overflow-wrap: anywhere;
 	overflow-x: hidden;
 	overflow-y: auto;
 	border: 1px solid var(--qb-border);
@@ -884,35 +905,33 @@ ul.CMenu li ul li a.dis:hover {
 	color: var(--qb-destructive-text, var(--qb-destructive));
 }
 
-/* Compact footer: nav arrows as square buttons, Copy/Save-Log as icon buttons. */
+/* Screenshot nav arrows stay square. */
 #tsk_btns .scplay {
 	min-width: 36px;
 	width: 36px;
 	padding: 0 8px;
 }
 
-.dlg-window .cqb-icon-btn {
-	min-width: 36px;
-	width: 36px;
-	padding: 0;
-	font-size: 0;
-}
-
-.dlg-window .cqb-icon-btn::before {
+/* Footer: Copy and Save Log keep their text with a leading glyph. */
+#tsk_btns #tskCopy::before,
+#tsk_btns #tskSaveLog::before {
 	content: "";
-	width: 16px;
-	height: 16px;
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	margin-right: 6px;
+	vertical-align: -3px;
 	background-color: currentColor;
-	-webkit-mask: center / 16px no-repeat;
-	mask: center / 16px no-repeat;
+	-webkit-mask: center / 15px no-repeat;
+	mask: center / 15px no-repeat;
 }
 
-#tskCopy.cqb-icon-btn::before {
+#tsk_btns #tskCopy::before {
 	-webkit-mask-image: url(../images/icons/fm-copy.svg);
 	mask-image: url(../images/icons/fm-copy.svg);
 }
 
-#tskSaveLog.cqb-icon-btn::before {
+#tsk_btns #tskSaveLog::before {
 	-webkit-mask-image: url(../images/icons/tab-log.svg);
 	mask-image: url(../images/icons/tab-log.svg);
 }
@@ -929,13 +948,49 @@ ul.CMenu li ul li a.dis:hover {
 	filter: brightness(1.08);
 }
 
-/* Media Info: parsed section cards + Raw toggle. */
-.cqb-mi-toolbar {
-	display: flex;
-	justify-content: flex-end;
-	margin-bottom: 10px;
+/* Formatted|Raw segmented control, parked in the dialog header. */
+.cqb-mi-seg {
+	display: none;
+	flex: none;
+	gap: 2px;
+	padding: 2px;
+	background: var(--qb-muted);
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
 }
 
+.cqb-mi-seg > button {
+	min-height: 0;
+	margin: 0;
+	padding: 3px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.cqb-mi-seg > button:not(:disabled):hover {
+	background: transparent;
+	color: var(--qb-foreground);
+}
+
+.cqb-mi-seg > button.is-active {
+	background: var(--qb-surface);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+	box-shadow: var(--qb-shadow-soft);
+}
+
+.cqb-mi-seg > button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* Media Info: parsed section cards. */
 .cqb-mi {
 	display: flex;
 	flex-direction: column;
