@@ -571,3 +571,23 @@
 	color: var(--qb-foreground);
 	text-transform: none;
 }
+
+/* Monospace key labels (Advanced page) + spacing for grouped subsections. */
+#stg .cqb-field label.cqb-mono {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+	text-transform: none;
+}
+
+#stg .cqb-subhead {
+	margin: 16px 0 8px;
+	padding-top: 12px;
+	border-top: 1px solid var(--qb-border-soft);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--qb-fg-muted);
+}
+
+#stg .cqb-subhead:first-child { margin-top: 0; padding-top: 0; border-top: 0; }

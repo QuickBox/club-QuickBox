@@ -21,6 +21,13 @@
 		theUILang.cqb_filter_trackers = theUILang.cqb_filter_trackers || "Filter trackers";
 		theUILang.cqb_tracker = theUILang.cqb_tracker || "Tracker";
 		theUILang.cqb_enabled = theUILang.cqb_enabled || "Enabled";
+		theUILang.cqb_grp_hashing = theUILang.cqb_grp_hashing || "Hashing";
+		theUILang.cqb_grp_preload = theUILang.cqb_grp_preload || "Preload";
+		theUILang.cqb_grp_buffers = theUILang.cqb_grp_buffers || "Buffers";
+		theUILang.cqb_grp_limits = theUILang.cqb_grp_limits || "Limits";
+		theUILang.cqb_grp_network = theUILang.cqb_grp_network || "Network";
+		theUILang.cqb_grp_session = theUILang.cqb_grp_session || "Session and timeouts";
+		theUILang.cqb_grp_flags = theUILang.cqb_grp_flags || "Flags";
 	}
 
 	/* Pages that belong to the "ruTorrent" group; everything else is a plugin. */
@@ -237,6 +244,7 @@
 		var lab = document.createElement("label");
 		lab.setAttribute("for", id);
 		lab.textContent = opts.label != null ? opts.label : labelTextFor(id);
+		if (opts.mono) lab.className = "cqb-mono";
 		tile.appendChild(lab);
 		var wrap = document.createElement("div");
 		wrap.className = "cqb-control";
@@ -366,6 +374,36 @@
 				{ id: "webui.side_panel_max_width_percent", unit: "%" },
 				{ id: "webui.list_table_min_height", unit: L("Pixel", "px") }
 			])]);
+		},
+		st_ao: function (pane) {
+			var fs = pane.querySelectorAll("fieldset")[0];
+			if (!fs) return;
+			var checks = checkGridFrom(fs);
+			var groups = [
+				[L("cqb_grp_hashing", "Hashing"), ["hash_interval", "hash_max_tries", "hash_read_ahead"]],
+				[L("cqb_grp_preload", "Preload"), ["preload_type", "preload_min_size", "preload_required_rate"]],
+				[L("cqb_grp_buffers", "Buffers"), ["receive_buffer_size", "send_buffer_size"]],
+				[L("cqb_grp_limits", "Limits"), ["max_downloads_div", "max_uploads_div", "max_file_size", "split_file_size", "split_suffix"]],
+				[L("cqb_grp_network", "Network"), ["http_cacert", "http_capath", "http_proxy", "proxy_address", "bind"]],
+				[L("cqb_grp_session", "Session"), ["session", "timeout_safe_sync", "timeout_sync"]]
+			];
+			var nodes = [];
+			groups.forEach(function (g) {
+				var grid = fieldGrid(g[1].map(function (id) { return { id: id, mono: true }; }));
+				if (grid) {
+					var h = document.createElement("div");
+					h.className = "cqb-heading cqb-subhead";
+					h.textContent = g[0];
+					nodes.push(h, grid);
+				}
+			});
+			if (checks) {
+				var hc = document.createElement("div");
+				hc.className = "cqb-heading cqb-subhead";
+				hc.textContent = L("cqb_grp_flags", "Flags");
+				nodes.push(hc, checks);
+			}
+			rebuildFieldset(fs, nodes);
 		},
 		st_fmt: function (pane) {
 			var fs = pane.querySelectorAll("fieldset");
