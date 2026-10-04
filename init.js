@@ -52,7 +52,8 @@
 	/* ============================================================
 	 * window.cqb -- shared helpers for the feature modules.
 	 * ============================================================ */
-	var tipEl = null;
+	var TIP_DELAY = 400;
+	var tipEl = null, tipTimer = null, tipTarget = null;
 	function ensureTip() {
 		if (tipEl) return tipEl;
 		tipEl = document.createElement("div");
@@ -62,12 +63,14 @@
 			"position:fixed;z-index:99999;pointer-events:none;opacity:0;" +
 			"transition:opacity .12s ease;max-width:240px;padding:4px 8px;" +
 			"border-radius:6px;font-size:12px;line-height:1.4;white-space:normal;" +
-			"background:var(--qb-tooltip-bg);color:var(--qb-tooltip-fg);" +
-			"border:1px solid var(--qb-tooltip-border);box-shadow:var(--qb-shadow-soft);";
+			"background:var(--qb-surface);color:var(--qb-foreground);" +
+			"border:1px solid var(--qb-border);box-shadow:var(--qb-shadow-soft);";
 		document.body.appendChild(tipEl);
 		return tipEl;
 	}
-	function showTip(el, text) {
+	function showTip(el) {
+		var text = el.getAttribute("data-cqb-tip");
+		if (!text) return;
 		var t = ensureTip();
 		t.textContent = text;
 		t.style.display = "block";
@@ -80,8 +83,38 @@
 		t.style.top = Math.max(4, top) + "px";
 		t.style.opacity = "1";
 	}
+	function scheduleTip(el) {
+		clearTimeout(tipTimer);
+		tipTarget = el;
+		tipTimer = setTimeout(function () { showTip(el); }, TIP_DELAY);
+	}
 	function hideTip() {
+		clearTimeout(tipTimer);
+		tipTarget = null;
 		if (tipEl) tipEl.style.opacity = "0";
+	}
+
+	/* Migrate a native title= into data-cqb-tip so the custom tooltip renders
+	 * it and the browser popup never fires. aria-label is only added when the
+	 * element has no other accessible text, so visible labels are preserved. */
+	function migrateTitle(el) {
+		if (!el || el.nodeType !== 1 || !el.getAttribute) return;
+		var t = el.getAttribute("title");
+		if (t == null || t === "") return;
+		el.setAttribute("data-cqb-tip", t);
+		el.removeAttribute("title");
+		if (!el.getAttribute("aria-label") && !el.getAttribute("aria-labelledby") &&
+			!(el.textContent || "").trim()) {
+			el.setAttribute("aria-label", t);
+		}
+	}
+	function migrateTree(node) {
+		if (!node || node.nodeType !== 1) return;
+		migrateTitle(node);
+		if (node.querySelectorAll) {
+			var withTitle = node.querySelectorAll("[title]");
+			for (var i = 0; i < withTitle.length; i++) migrateTitle(withTitle[i]);
+		}
 	}
 
 	var cqb = {
@@ -100,17 +133,17 @@
 			s.style.maskImage = u;
 			return s;
 		},
-		/* Attach the one shared custom tooltip to an element. Never a native
-		 * title= (that bypasses theme styling); aria-label keeps it readable. */
+		/* Mark an element for the one shared custom tooltip. Never a native
+		 * title= (that bypasses theme styling); the delegated listeners below
+		 * drive display, so this just records the text. */
 		tooltip: function (el, text) {
 			if (!el || !text) return;
 			el.removeAttribute("title");
-			el.setAttribute("aria-label", text);
-			var show = function () { showTip(el, text); };
-			el.addEventListener("mouseenter", show);
-			el.addEventListener("focus", show);
-			el.addEventListener("mouseleave", hideTip);
-			el.addEventListener("blur", hideTip);
+			el.setAttribute("data-cqb-tip", text);
+			if (!el.getAttribute("aria-label") && !el.getAttribute("aria-labelledby") &&
+				!(el.textContent || "").trim()) {
+				el.setAttribute("aria-label", text);
+			}
 		},
 		/* Register a callback fired with (variant, isDark) on every change,
 		 * including the initial apply. */
@@ -119,6 +152,45 @@
 		}
 	};
 	window.cqb = cqb;
+
+	/* Global title -> custom tooltip: sweep the current tree, watch for new
+	 * nodes and new title= attributes, and drive the one tooltip by delegation
+	 * (400ms hover delay, keyboard focus shows it, Escape or blur hides it). */
+	function closestTip(node) {
+		return node && node.closest ? node.closest("[data-cqb-tip]") : null;
+	}
+	migrateTree(document.body || root);
+	if (window.MutationObserver) {
+		new MutationObserver(function (muts) {
+			for (var i = 0; i < muts.length; i++) {
+				var m = muts[i];
+				if (m.type === "attributes") {
+					migrateTitle(m.target);
+				} else if (m.type === "childList") {
+					for (var j = 0; j < m.addedNodes.length; j++) migrateTree(m.addedNodes[j]);
+				}
+			}
+		}).observe(document.documentElement, {
+			subtree: true, childList: true, attributes: true, attributeFilter: ["title"]
+		});
+	}
+	document.addEventListener("mouseover", function (e) {
+		var el = closestTip(e.target);
+		if (el) scheduleTip(el);
+	});
+	document.addEventListener("mouseout", function (e) {
+		if (closestTip(e.target) === tipTarget && tipTarget) hideTip();
+	});
+	document.addEventListener("focusin", function (e) {
+		var el = closestTip(e.target);
+		if (el) showTip(el);
+	});
+	document.addEventListener("focusout", function (e) {
+		if (closestTip(e.target)) hideTip();
+	});
+	document.addEventListener("keydown", function (e) {
+		if (e.key === "Escape" || e.keyCode === 27) hideTip();
+	});
 
 	/* ============================================================
 	 * Variant resolution + apply.
