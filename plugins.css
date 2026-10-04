@@ -1,205 +1,224 @@
-/* Console Background */
-.console,
-.exconsole,
-.starterConsole,
-.tskconsole {
-	background-color: #333;
+/*
+ *  club-QuickBox skin for ruTorrent -- plugin surfaces.
+ *  Every color reads from a --qb-* token; masked glyphs carry no raster
+ *  background so the core sprite sheets never bleed through the mask.
+ */
+
+/* ============================================================
+ * Masked glyphs: solid token fill clipped to the SVG, no raster.
+ * background-image is forced off so the plugins' own base64 GIF /
+ * spritesheet backgrounds cannot show through the mask window.
+ * ============================================================ */
+#meter-disk-pane .icon,
+#meter-cpu-pane .icon,
+#meter-cpu-td,
+#autodl-tb,
+div#logoff,
+.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip, .sprite-console,
+.sprite-copy, .sprite-curdir, .sprite-delete, .flm-sprite-dir_up, .sprite-extract,
+.sprite-image, .sprite-move, .sprite-mp3, .sprite-mkdir, .sprite-nfo,
+.sprite-nfo_view, .sprite-refresh, .sprite-rename, .sprite-sfv, .sprite-sfv_create,
+.sprite-sfv_check, .sprite-torrent, .sprite-video, .sprite-vplay {
+	background-color: var(--qb-icon);
+	background-image: none !important;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	transition: background-color 0.15s ease;
 }
 
-/* Cell Styling */
-.cCell {
-	color: #ccc;
+#autodl-tb:hover,
+div#logoff:hover {
+	background-color: var(--qb-icon-hover);
+	background-image: none !important;
 }
 
-.status-cell {
-	padding: 0 3px 0 3px;
-	border-right: solid 2px #222;
-}
-
-/* Meters */
+/* ============================================================
+ * Capacity meters (disk / band / cpu)
+ * ============================================================ */
 #meter-disk-value,
 #qmeter-band-value,
 #qmeter-disk-value {
-	background-color: #6c7a89;
+	background-color: var(--qb-surface-3);
 	border: 1px solid transparent;
-	border-radius: 3px;
+	border-radius: var(--qb-radius);
 	float: left;
 }
 
 #meter-band-text,
 #meter-disk-text,
-#qmeter-disk-text {
-	color: #fff;
-	text-shadow: 0 0 2px #000;
-	/*position: relative;
-	text-align: left;
-	float: left;
-	left: 40%;*/
+#qmeter-disk-text,
+#meter-cpu-text {
+	color: var(--qb-fg-muted);
+	text-shadow: none;
 	font-size: 11px;
 	font-family: inherit;
 	z-index: 1;
 }
 
-/* Meter Holders */
 #meter-band-holder,
 #meter-disk-holder,
 #qmeter-disk-holder {
 	height: 16px;
 	line-height: 16px;
-	/*width: 100px;*/
 	border: 0;
-	/*display: flex;*/
 	padding-right: 12px;
 }
 
 #meter-disk-pane .icon {
-	background: var(--qb-icon);
 	-webkit-mask: url(images/icons/meter-disk.svg) 0 center / 14px no-repeat;
 	mask: url(images/icons/meter-disk.svg) 0 center / 14px no-repeat;
-}
-
-#meter-cpu-text {
-	/*position: absolute;*/
-	/*left: 45px;*/
-	top: 0;
-	color: #fff;
-	text-shadow: 0 0 2px #000;
-	font-size: 11px;
-	font-family: inherit;
 }
 
 #meter-cpu-holder {
 	height: 16px;
 	line-height: 16px;
 	padding-left: 25px;
-	/*width: 100px;*/
 }
 
-#meter-cpu-pane .icon {
-	background: var(--qb-icon) !important;
+#meter-cpu-pane .icon,
+#meter-cpu-td {
 	-webkit-mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
 	mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
 }
 
 #meter-cpu-td {
-	background: var(--qb-icon) !important;
-	-webkit-mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
-	mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
 	height: 16px;
 	line-height: 18px;
 }
 
 .meter-value {
-    background-color: var(--qb-primary) !important;
-    border: var(--qb-primary);
-    border-radius: 3px;
-    width: 96% !important;
+	background-color: var(--qb-primary) !important;
+	border: 0;
+	border-radius: var(--qb-radius);
+	width: 96% !important;
 }
 
-/* Graph Tab Styling */
-div.graph_tab {
-	color: #282828;
-	border-color: #000;
+/* ============================================================
+ * Consoles + listboxes (plugin terminal surfaces)
+ * ============================================================ */
+.console,
+.exconsole,
+.starterConsole,
+.tskconsole,
+.listbox {
+	background-color: var(--qb-input);
+	color: var(--qb-foreground);
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
-/* Textbox Focus */
-.lf li input.TextboxFocus {
-	background-color: transparent;
-	color: #009ddd;
+.listbox {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	overflow: auto;
+	white-space: nowrap;
 }
 
-/* Custom Cell Colors */
+.listboxItem {
+	color: var(--qb-fg-muted);
+	padding: 1px 4px;
+}
+
+.listboxItem:hover {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+}
+
+.listboxItemSelected {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+/* ============================================================
+ * Cell styling (status / chunk map)
+ * ============================================================ */
 .cCell {
-	color: #333;
+	color: var(--qb-foreground);
 }
 
-/* Cell Background Colors */
+.status-cell {
+	padding: 0 3px;
+	border-right: solid 2px var(--qb-border);
+}
+
+/* Chunk / allocation map: a token-driven intensity ladder.
+ * Downloaded chunks climb a primary ramp; reserved/empty chunks use a
+ * muted ramp. No fixed green ladder -- each step follows the variant. */
 .Cell0 {
-	background-color: #fffdf0;
-	border: 1px dotted #888;
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
 }
 
-.Cell1 {
-	background-color: #7eb400;
-}
+.Cell1 { background-color: color-mix(in srgb, var(--qb-primary) 32%, var(--qb-surface)); }
+.Cell2 { background-color: color-mix(in srgb, var(--qb-primary) 42%, var(--qb-surface)); }
+.Cell3 { background-color: color-mix(in srgb, var(--qb-primary) 52%, var(--qb-surface)); }
+.Cell4 { background-color: color-mix(in srgb, var(--qb-primary) 62%, var(--qb-surface)); }
+.Cell5 { background-color: color-mix(in srgb, var(--qb-primary) 70%, var(--qb-surface)); }
+.Cell6 { background-color: color-mix(in srgb, var(--qb-primary) 78%, var(--qb-surface)); }
+.Cell7 { background-color: color-mix(in srgb, var(--qb-primary) 86%, var(--qb-surface)); }
+.Cell8 { background-color: color-mix(in srgb, var(--qb-primary) 93%, var(--qb-surface)); }
+.Cell9 { background-color: var(--qb-primary); }
 
-.Cell2 {
-	background-color: #75a602;
-}
-
-.Cell3 {
-	background-color: #6d9a02;
-}
-
-.Cell4 {
-	background-color: #628c02;
-}
-
-.Cell5 {
-	background-color: #5b8101;
-}
-
-.Cell6 {
-	background-color: #527501;
-}
-
-.Cell7 {
-	background-color: #4a6801;
-}
-
-.Cell8 {
-	background-color: #435f01;
-}
-
-.Cell9 {
-	background-color: #3b5401;
-}
-
-.CellA {
-	background-color: #c1c3c3;
-}
-
-.CellB {
-	background-color: #999a9a;
-}
-
-.CellC {
-	background-color: #767776;
-}
-
-.CellD {
-	background-color: #6b6c6b;
-}
-
-.CellE {
-	background-color: #60605e;
-}
-
+.CellA { background-color: color-mix(in srgb, var(--qb-fg-muted) 30%, var(--qb-surface)); }
+.CellB { background-color: color-mix(in srgb, var(--qb-fg-muted) 44%, var(--qb-surface)); }
+.CellC { background-color: color-mix(in srgb, var(--qb-fg-muted) 58%, var(--qb-surface)); }
+.CellD { background-color: color-mix(in srgb, var(--qb-fg-muted) 72%, var(--qb-surface)); }
+.CellE { background-color: color-mix(in srgb, var(--qb-fg-muted) 86%, var(--qb-surface)); }
 .CellF {
-	background-color: #000;
-	color: #fff;
+	background-color: var(--qb-foreground);
+	color: var(--qb-background);
 }
 
-/* Support Text */
 #tCellNotSupported {
 	text-align: center;
 }
 
 #tRowNotSupported {
 	vertical-align: middle;
-	color: red;
+	color: var(--qb-destructive-text);
 }
 
-/* AutoDL Toolbar */
+/* ============================================================
+ * Graph tab + legend + focus text
+ * ============================================================ */
+div.graph_tab {
+	color: var(--qb-foreground);
+	border-color: var(--qb-border);
+}
+
+.legendLabel {
+	color: var(--qb-fg-muted) !important;
+}
+
+#traf_graph_ctrl {
+	margin-top: -5px;
+}
+
+.lf li input.TextboxFocus,
+.lf_rur input.TextboxFocus {
+	background-color: transparent;
+	color: var(--qb-accent-text);
+}
+
+#PluginList {
+	margin-top: 0;
+}
+
+#maincont {
+	margin: 0;
+}
+
+li.cat.tracker {
+	padding: 3px 4px !important;
+}
+
+/* ============================================================
+ * AutoDL IRC
+ * ============================================================ */
 #autodl-tb {
-	background: var(--qb-icon);
-	-webkit-mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
-	mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
-	transition: background-color 0.15s ease;
-}
-
-#autodl-tb:hover {
-	background: var(--qb-icon-hover);
 	-webkit-mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
 	mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
 }
@@ -208,68 +227,35 @@ div.graph_tab {
 	background-image: none;
 }
 
-/* Go Button: legacy sprite is suppressed by the `#go` rule in style.css */
+/* Go button: legacy sprite is suppressed by the `#go` rule in style.css */
 #go,
 #go:hover {
 	background: none;
 }
 
-/* Listbox Styling */
-.listbox {
-	background-color: #000;
-	border: 1px solid #333;
-	color: green;
-	font-family: Courier;
-	overflow: auto;
-	white-space: nowrap;
-}
-
-.listboxItem {
-	color: #ccc;
-	padding: 1px 2px;
-}
-
-.listboxItem:hover {
-	background-color: #222;
-}
-
-.listboxItemSelected {
-	background-color: #333;
-	color: #ccc;
-}
-
-/* RSS URL Rewrite */
 .lf_rur {
-	background-color: #222;
-	border: 1px solid #333;
-	border-radius: 3px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
 	flex: 1 0 160px;
 	overflow-y: auto;
 }
 
-.lf_rur input.TextboxFocus {
-	background-color: #222;
-}
-
 .lf_rur input.TextboxNormal {
-	background-color: #212121;
+	background-color: var(--qb-input);
 }
-
-/* _getdir */
 
 .browseFrame {
-	border: 1px solid #2a2a2a;
-	background-color: #222;
+	border: 1px solid var(--qb-border);
+	background-color: var(--qb-input);
 }
 
-/*AutoDL Filters*/
 div#autodl-filters {
 	width: auto;
 	height: auto;
 }
 
 #autodl-filters-left {
-	/* margin: 0 5px 10px 5px; */
 	float: left;
 	min-height: max-content;
 	padding: 0 0 65px 0;
@@ -294,19 +280,18 @@ div#autodl-filters-contents {
 }
 
 .aright.buttons-list.dialog-buttons {
-	/* position: relative; */
 	padding: 5px 30px;
 	display: inline-flex;
-	background: #222;
+	background: var(--qb-surface-2);
 	width: 100%;
 	margin-bottom: 0;
 	margin-right: 0;
 	height: auto;
 	clear: both;
 	float: left;
-	border: 1px solid #333;
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
+	border: 1px solid var(--qb-border);
+	border-bottom-left-radius: var(--qb-radius-lg);
+	border-bottom-right-radius: var(--qb-radius-lg);
 }
 
 div#autodl-filters-contents-wol {
@@ -315,15 +300,14 @@ div#autodl-filters-contents-wol {
 	max-width: 400px;
 }
 
-/* AutoDL IRC Servers */
 div#autodl-ircsrvs {
 	height: fit-content;
 	width: fit-content;
 }
 
 fieldset#autodl-ircsrvs-servers-fieldset {
-	border: 1px solid #333;
-	border-radius: 6px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
 	margin: 3px 12px;
 	padding: 3px 9px;
 }
@@ -333,7 +317,6 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	padding: 3px 9px;
 }
 
-/* AutoDL Prefs */
 #autodl-prefs {
 	width: fit-content;
 	height: auto;
@@ -351,8 +334,6 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	display: inline-flex;
 }
 
-/* AutoDL Help */
-
 #autodl-help {
 	height: auto;
 }
@@ -363,26 +344,17 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	padding: 15px 15px 15px 0;
 }
 
-/* File Manager */
-input#flm-nav-refresh {
-    border: 1px solid #333;
-}
-
-/* File-manager operation + type icons: SVG masks tinted by token */
-.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip, .sprite-console,
+/* ============================================================
+ * File manager chrome (colors only; details lane owns the layout)
+ * ============================================================ */
+.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip,
 .sprite-copy, .sprite-curdir, .sprite-delete, .flm-sprite-dir_up, .sprite-extract,
 .sprite-image, .sprite-move, .sprite-mp3, .sprite-mkdir, .sprite-nfo,
 .sprite-nfo_view, .sprite-refresh, .sprite-rename, .sprite-sfv, .sprite-sfv_create,
-.sprite-sfv_check, .sprite-torrent, .sprite-video, .sprite-vplay {
+.sprite-sfv_check, .sprite-torrent, .sprite-video, .sprite-vplay,
+.sprite-console {
 	width: 16px;
 	height: 16px;
-	background: var(--qb-icon);
-	-webkit-mask-repeat: no-repeat;
-	mask-repeat: no-repeat;
-	-webkit-mask-position: center;
-	mask-position: center;
-	-webkit-mask-size: contain;
-	mask-size: contain;
 }
 
 .sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip { -webkit-mask-image: url(images/icons/file-archive.svg); mask-image: url(images/icons/file-archive.svg); }
@@ -404,36 +376,22 @@ input#flm-nav-refresh {
 .sprite-video { -webkit-mask-image: url(images/icons/file-video.svg); mask-image: url(images/icons/file-video.svg); }
 .sprite-vplay { -webkit-mask-image: url(images/icons/fm-vplay.svg); mask-image: url(images/icons/fm-vplay.svg); }
 
-/* Filemanager */
+input#flm-nav-refresh,
 #flm-nav-refresh {
-	background: #333;
-    border-color: #2a2a2a;
-    box-shadow: none;
-    padding: .25rem !important;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	box-shadow: none;
+	padding: .25rem !important;
 }
 
-#flm-navigation-head .input-group-text {
-	background: #333;
-	border-color: #2a2a2a;
-	color: #fff;
-}
-
+#flm-navigation-head .input-group-text,
 #flm-navpath {
-	background: #333;
-	border-color: #2a2a2a;
-	color: #fff;
+	background: var(--qb-surface-2);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
 }
 
-/* Logoff */
 div#logoff {
-	background: var(--qb-icon);
-	-webkit-mask: url(images/icons/logoff.svg) center / 20px no-repeat;
-	mask: url(images/icons/logoff.svg) center / 20px no-repeat;
-	transition: background-color 0.15s ease;
-}
-
-div#logoff:hover {
-	background: var(--qb-icon-hover);
 	-webkit-mask: url(images/icons/logoff.svg) center / 20px no-repeat;
 	mask: url(images/icons/logoff.svg) center / 20px no-repeat;
 }
