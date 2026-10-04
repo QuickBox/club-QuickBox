@@ -1523,7 +1523,8 @@ ul.CMenu li ul li a.dis:hover {
 
 /* Per-task header glyph, keyed off the sprite class the plugin
  * prepends (the modal window is shared across operations). */
-#flm_popup_console-header::after {
+#flm_popup_console-header::after,
+div.dlg-header > div:first-child:has(.sprite-console)::after {
 	-webkit-mask-image: url(../images/icons/fm-console.svg);
 	mask-image: url(../images/icons/fm-console.svg);
 }
@@ -1600,7 +1601,9 @@ ul.CMenu li ul li a.dis:hover {
 /* Console: one scroll region. Core forces 380/420px + an inline 500x310
  * box with a scrolling <pre> inside (box-in-box, double scroll). The
  * container is the single scroller; the <pre> just flows. */
-#flm_popup_console #flm_popup_console-log-container {
+/* The console loads into the shared flm_popup_window, so its log box is keyed
+ * by its own id (not a #flm_popup_console ancestor, which does not exist). */
+#flm_popup_console-log-container {
 	width: auto !important;
 	max-width: 100%;
 	height: auto !important;
@@ -1614,7 +1617,7 @@ ul.CMenu li ul li a.dis:hover {
 	padding: 10px 12px;
 }
 
-#flm_popup_console #flm_popup_console-log-container > pre {
+#flm_popup_console-log-container > pre {
 	margin: 0;
 	padding: 0;
 	border: 0;
@@ -1629,8 +1632,9 @@ ul.CMenu li ul li a.dis:hover {
 	color: var(--qb-foreground);
 }
 
-/* The console surface is the card; the fieldset carries no inner box. */
-#flm_popup_console fieldset {
+/* The console surface is the card; its fieldset carries no inner box. */
+fieldset:has(> legend + #flm_popup_console-log-container),
+fieldset:has(#flm_popup_console-log-container) {
 	margin: 0;
 	padding: 0;
 	border: 0;
