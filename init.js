@@ -149,6 +149,18 @@
 		 * including the initial apply. */
 		onVariant: function (fn) {
 			if (typeof fn === "function") variantListeners.push(fn);
+		},
+		/* The one apply path. The Appearance select, the topbar switcher and the
+		 * command palette all call this so persistence and paint stay in sync.
+		 * "auto" clears the override and follows the dashboard cookie. */
+		setVariant: function (v) {
+			try {
+				if (v === "auto") window.localStorage.removeItem(OVERRIDE_KEY);
+				else window.localStorage.setItem(OVERRIDE_KEY, v);
+			} catch (e) {
+				/* storage unavailable: fall back to a session-only apply */
+			}
+			applyVariant(resolveVariant());
 		}
 	};
 	window.cqb = cqb;
@@ -314,14 +326,7 @@
 			),
 			$("<div>").addClass("col-6 col-md-3").append(
 				$("<select>").attr({ id: "qb.variant" }).html(opts).on("change", function () {
-					var val = this.value;
-					try {
-						if (val === "auto") window.localStorage.removeItem(OVERRIDE_KEY);
-						else window.localStorage.setItem(OVERRIDE_KEY, val);
-					} catch (e) {
-						/* storage unavailable: fall back to session-only apply */
-					}
-					applyVariant(resolveVariant());
+					cqb.setVariant(this.value);
 				})
 			)
 		);
