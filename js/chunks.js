@@ -278,8 +278,9 @@
 		}
 		ui.grid._lay = { cols: cols, cells: cells, cpc: cpc, mx: mx };
 
-		/* overview strip */
-		var stripW = ui.root.clientWidth || wrapW;
+		/* overview strip -- match the grid's content width, not the padded root
+		 * (root.clientWidth includes the #qb-chunks padding and would overflow). */
+		var stripW = wrapW;
 		var sctx = setCanvas(ui.strip, stripW, STRIP_H);
 		roundRect(sctx, 0, 0, stripW, STRIP_H, STRIP_RAD);
 		sctx.save(); sctx.clip();
