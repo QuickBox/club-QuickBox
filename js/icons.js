@@ -373,10 +373,11 @@
 		/* --- icons panel --- */
 		var iconsPanel = el("div", "cqb-panel");
 		var controls = el("div", "cqb-picker-controls");
-		var search = el("div", "cqb-search");
+		var search = el("div", "cqb-search cqb-input-group");
+		var searchIco = el("span", "cqb-search-ico"); searchIco.setAttribute("aria-hidden", "true");
 		var searchInput = el("input", null, { type: "text", placeholder: "Search icons", "aria-label": "Search icons" });
-		search.appendChild(searchInput);
-		var chips = el("div", "cqb-chips"); chips.setAttribute("role", "group"); chips.setAttribute("aria-label", "Categories");
+		search.appendChild(searchIco); search.appendChild(searchInput);
+		var chips = el("div", "cqb-cat-chips"); chips.setAttribute("role", "group"); chips.setAttribute("aria-label", "Categories");
 		controls.appendChild(search); controls.appendChild(chips);
 		var gridWrap = el("div", "cqb-grid-wrap");
 		var grid = el("div", "cqb-grid"); grid.setAttribute("role", "listbox"); grid.setAttribute("aria-label", "Icons");
@@ -446,9 +447,39 @@
 	}
 
 	function focusables() {
+		// Roving-tabindex grid tiles carry tabindex="-1"; the one active tile is
+		// tabindex="0", so the grid is a single Tab stop in the trap cycle.
 		return picker.panel.querySelectorAll(
-			'button:not([hidden]):not([disabled]), input:not([hidden]), [tabindex="0"]'
+			'button:not([hidden]):not([disabled]):not([tabindex="-1"]), input:not([hidden]), [tabindex="0"]'
 		);
+	}
+
+	/* Column count of the auto-fill grid, read from the resolved track list. */
+	function gridColumns() {
+		var cs = window.getComputedStyle(picker.grid).gridTemplateColumns || "";
+		var n = cs.split(/\s+/).filter(function (x) { return x && x !== "none"; }).length;
+		return n > 0 ? n : 1;
+	}
+	/* Move the roving tabindex to one tile, focus it, keep it in view. */
+	function focusTile(idx) {
+		var tiles = picker.grid.querySelectorAll(".cqb-tile");
+		if (!tiles.length) return;
+		if (idx < 0) idx = 0;
+		if (idx > tiles.length - 1) idx = tiles.length - 1;
+		for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", i === idx ? "0" : "-1");
+		picker.state.rovingIndex = idx;
+		var t = tiles[idx];
+		t.focus();
+		if (t.scrollIntoView) t.scrollIntoView({ block: "nearest", inline: "nearest" });
+	}
+	/* Ensure exactly one rendered tile is the Tab stop (defaults to the first). */
+	function applyRoving() {
+		var tiles = picker.grid.querySelectorAll(".cqb-tile");
+		if (!tiles.length) return;
+		var idx = picker.state.rovingIndex || 0;
+		if (idx > tiles.length - 1) idx = 0;
+		for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", i === idx ? "0" : "-1");
+		picker.state.rovingIndex = idx;
 	}
 
 	function closePicker() {
@@ -487,14 +518,22 @@
 			g.appendChild(empty);
 			return;
 		}
+		// Start the roving stop on the current pick if it is in the filtered set.
+		st.rovingIndex = 0;
+		if (st.glyph) {
+			for (var r = 0; r < filtered.length; r++) { if (filtered[r].n === st.glyph) { st.rovingIndex = r; break; } }
+		}
 		appendTiles();
+		// Make sure the initial roving tile is rendered, then mark it the Tab stop.
+		while (st.rovingIndex >= st.rendered && st.rendered < filtered.length) appendTiles();
+		applyRoving();
 	}
 	function appendTiles() {
 		var st = picker.state, g = picker.grid, list = st.filtered;
 		var end = Math.min(st.rendered + 90, list.length);
 		for (var i = st.rendered; i < end; i++) {
 			var ic = list[i];
-			var tile = el("button", "cqb-tile", { type: "button", role: "option", title: ic.n, "aria-label": ic.n });
+			var tile = el("button", "cqb-tile", { type: "button", role: "option", tabindex: "-1", title: ic.n, "aria-label": ic.n });
 			tile.style.setProperty("--cqb-tile-mask", maskUrl(ic.n));
 			tile.setAttribute("data-icon", ic.n);
 			if (ic.n === st.glyph) { tile.setAttribute("aria-pressed", "true"); tile.setAttribute("aria-selected", "true"); }
@@ -529,7 +568,7 @@
 		c.innerHTML = "";
 		var cats = [{ id: "all", name: "All" }].concat(libData.cats);
 		cats.forEach(function (cat) {
-			var b = el("button", "cqb-chip", { type: "button", "data-cat": cat.id, "aria-pressed": (st.cat || "all") === cat.id ? "true" : "false" });
+			var b = el("button", "cqb-cat-chip", { type: "button", "data-cat": cat.id, "aria-pressed": (st.cat || "all") === cat.id ? "true" : "false" });
 			b.textContent = cat.name;
 			c.appendChild(b);
 		});
@@ -618,7 +657,7 @@
 		p.tabUpload.addEventListener("click", function () { selectTab("upload"); });
 		p.searchInput.addEventListener("input", renderGrid);
 		p.chips.addEventListener("click", function (e) {
-			var b = e.target.closest(".cqb-chip"); if (!b) return;
+			var b = e.target.closest(".cqb-cat-chip"); if (!b) return;
 			p.state.cat = b.getAttribute("data-cat");
 			renderChips(); renderGrid();
 		});
@@ -628,7 +667,42 @@
 			if (prev) { prev.removeAttribute("aria-pressed"); prev.removeAttribute("aria-selected"); }
 			t.setAttribute("aria-pressed", "true"); t.setAttribute("aria-selected", "true");
 			p.state.glyph = t.getAttribute("data-icon");
+			// Keep the roving Tab stop on the tile the user just acted on.
+			var tiles = p.grid.querySelectorAll(".cqb-tile");
+			for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", tiles[i] === t ? "0" : "-1");
+			p.state.rovingIndex = Array.prototype.indexOf.call(tiles, t);
 			updatePreview();
+		});
+		p.grid.addEventListener("keydown", function (e) {
+			var tiles = p.grid.querySelectorAll(".cqb-tile");
+			if (!tiles.length) return;
+			var cur = -1;
+			for (var i = 0; i < tiles.length; i++) { if (tiles[i] === document.activeElement) { cur = i; break; } }
+			if (cur === -1) return;
+			var total = p.state.filtered ? p.state.filtered.length : tiles.length;
+			var cols = gridColumns();
+			var next = cur;
+			switch (e.key) {
+				case "ArrowRight": next = cur + 1; break;
+				case "ArrowLeft": next = cur - 1; break;
+				case "ArrowDown": next = cur + cols; if (next >= total) next = cur; break;
+				case "ArrowUp": next = cur - cols; if (next < 0) next = cur; break;
+				case "Home": next = 0; break;
+				case "End": next = total - 1; break;
+				case "Enter":
+				case " ":
+				case "Spacebar":
+					e.preventDefault();
+					tiles[cur].click();
+					return;
+				default: return;
+			}
+			e.preventDefault();
+			if (next < 0) next = 0;
+			if (next > total - 1) next = total - 1;
+			// Lazy-render any tiles between the current edge and the target.
+			while (next >= p.state.rendered && p.state.rendered < total) appendTiles();
+			focusTile(next);
 		});
 		p.swatches.addEventListener("click", function (e) {
 			var b = e.target.closest(".cqb-swatch"); if (!b) return;
