@@ -145,3 +145,59 @@ theUILang.qbPalPlaceholder  = "Type a command or search torrents...";
 theUILang.qbPalNavigate     = "navigate";
 theUILang.qbPalOpen         = "run";
 theUILang.qbPalClose        = "close";
+
+/* Settings page descriptions (settings.js). */
+theUILang.cqb_stg_desc_gl          = "Interface behavior, update interval and speed presets.";
+theUILang.cqb_stg_desc_dl          = "Default download bandwidth limits and behavior.";
+theUILang.cqb_stg_desc_con         = "Listening port, global rate limits and connection caps.";
+theUILang.cqb_stg_desc_bt          = "DHT, peer exchange and other BitTorrent features.";
+theUILang.cqb_stg_desc_fmt         = "How sizes, dates and numbers are displayed.";
+theUILang.cqb_stg_desc_ao          = "Lower-level options for advanced users.";
+theUILang.cqb_stg_desc_dev         = "Diagnostic and developer-only options.";
+theUILang.cqb_stg_desc_loginmgr    = "Stored tracker logins used by autotools and search.";
+theUILang.cqb_stg_desc_autotools   = "Automatic actions applied to matching torrents.";
+theUILang.cqb_stg_desc_xmpp        = "Chat notifications delivered over an XMPP account.";
+theUILang.cqb_stg_desc_cookies     = "Per-host cookies sent when fetching torrents.";
+theUILang.cqb_stg_desc_lookat      = "Custom lookup links shown on the torrent menu.";
+theUILang.cqb_stg_desc_retrackers  = "Trackers appended automatically to new torrents.";
+theUILang.cqb_stg_desc_rss         = "RSS feeds and auto-download filters.";
+theUILang.cqb_stg_desc_scheduler   = "Time windows that change limits automatically.";
+theUILang.cqb_stg_desc_extsearch   = "Search engines used by the toolbar search.";
+theUILang.cqb_stg_desc_unpack      = "Automatic extraction of completed archives.";
+theUILang.cqb_stg_desc_throttle    = "Named bandwidth channels for grouping torrents.";
+theUILang.cqb_stg_desc_ratio       = "Ratio groups and the actions taken at each target.";
+theUILang.cqb_stg_desc_screenshots = "Thumbnail previews generated from media files.";
+theUILang.cqb_stg_desc_uploadeta   = "Target ratio and time used to estimate seeding.";
+theUILang.cqb_stg_desc_history     = "Event log retention and notification delivery.";
+
+/* Settings nav + account table chrome (settings.js). */
+theUILang.cqb_stg_grp_plugins = "Plugins";
+theUILang.cqb_stg_filter      = "Filter settings";
+theUILang.cqb_stg_no_match    = "No matching settings";
+theUILang.cqb_acct_login      = "{name} login";
+theUILang.cqb_acct_password   = "{name} password";
+theUILang.cqb_acct_autologin  = "{name} autologin";
+theUILang.cqb_unit_bytes      = "bytes";
+
+/* Advanced rtorrent option labels (settings.js, st_ao page). */
+theUILang.cqb_ao_hash_interval        = "Hash check interval";
+theUILang.cqb_ao_hash_max_tries       = "Hash check max tries";
+theUILang.cqb_ao_hash_read_ahead      = "Hash read-ahead";
+theUILang.cqb_ao_preload_type         = "Preload type";
+theUILang.cqb_ao_preload_min_size     = "Preload minimum size";
+theUILang.cqb_ao_preload_required_rate = "Preload required rate";
+theUILang.cqb_ao_receive_buffer_size  = "Receive buffer size";
+theUILang.cqb_ao_send_buffer_size     = "Send buffer size";
+theUILang.cqb_ao_max_downloads_div    = "Max downloads divisor";
+theUILang.cqb_ao_max_uploads_div      = "Max uploads divisor";
+theUILang.cqb_ao_max_file_size        = "Maximum file size";
+theUILang.cqb_ao_split_file_size      = "Split file size";
+theUILang.cqb_ao_split_suffix         = "Split suffix";
+theUILang.cqb_ao_http_cacert          = "HTTP CA certificate";
+theUILang.cqb_ao_http_capath          = "HTTP CA path";
+theUILang.cqb_ao_http_proxy           = "HTTP proxy";
+theUILang.cqb_ao_proxy_address        = "Proxy address";
+theUILang.cqb_ao_bind                 = "Bind address";
+theUILang.cqb_ao_session              = "Session directory";
+theUILang.cqb_ao_timeout_safe_sync    = "Safe sync timeout";
+theUILang.cqb_ao_timeout_sync         = "Sync timeout";

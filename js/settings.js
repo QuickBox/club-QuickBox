@@ -50,31 +50,31 @@
 
 	/* Page id -> one-line description under the page title. */
 	var DESC = {
-		st_gl: "Interface behavior, update interval and speed presets.",
-		st_dl: "Default download bandwidth limits and behavior.",
-		st_con: "Listening port, global rate limits and connection caps.",
-		st_bt: "DHT, peer exchange and other BitTorrent features.",
-		st_fmt: "How sizes, dates and numbers are displayed.",
-		st_ao: "Lower-level options for advanced users.",
-		st_dev: "Diagnostic and developer-only options.",
-		st_loginmgr: "Stored tracker logins used by autotools and search.",
-		st_autotools: "Automatic actions applied to matching torrents.",
-		st_xmpp: "Chat notifications delivered over an XMPP account.",
-		st_cookies: "Per-host cookies sent when fetching torrents.",
-		st_lookat: "Custom lookup links shown on the torrent menu.",
-		st_retrackers: "Trackers appended automatically to new torrents.",
-		st_rss: "RSS feeds and auto-download filters.",
-		st_scheduler: "Time windows that change limits automatically.",
-		st_extsearch: "Search engines used by the toolbar search.",
-		st_unpack: "Automatic extraction of completed archives.",
-		st_throttle: "Named bandwidth channels for grouping torrents.",
-		st_ratio: "Ratio groups and the actions taken at each target.",
-		st_screenshots: "Thumbnail previews generated from media files.",
-		st_uploadeta: "Target ratio and time used to estimate seeding.",
-		st_history: "Event log retention and notification delivery."
+		st_gl: L("cqb_stg_desc_gl", "Interface behavior, update interval and speed presets."),
+		st_dl: L("cqb_stg_desc_dl", "Default download bandwidth limits and behavior."),
+		st_con: L("cqb_stg_desc_con", "Listening port, global rate limits and connection caps."),
+		st_bt: L("cqb_stg_desc_bt", "DHT, peer exchange and other BitTorrent features."),
+		st_fmt: L("cqb_stg_desc_fmt", "How sizes, dates and numbers are displayed."),
+		st_ao: L("cqb_stg_desc_ao", "Lower-level options for advanced users."),
+		st_dev: L("cqb_stg_desc_dev", "Diagnostic and developer-only options."),
+		st_loginmgr: L("cqb_stg_desc_loginmgr", "Stored tracker logins used by autotools and search."),
+		st_autotools: L("cqb_stg_desc_autotools", "Automatic actions applied to matching torrents."),
+		st_xmpp: L("cqb_stg_desc_xmpp", "Chat notifications delivered over an XMPP account."),
+		st_cookies: L("cqb_stg_desc_cookies", "Per-host cookies sent when fetching torrents."),
+		st_lookat: L("cqb_stg_desc_lookat", "Custom lookup links shown on the torrent menu."),
+		st_retrackers: L("cqb_stg_desc_retrackers", "Trackers appended automatically to new torrents."),
+		st_rss: L("cqb_stg_desc_rss", "RSS feeds and auto-download filters."),
+		st_scheduler: L("cqb_stg_desc_scheduler", "Time windows that change limits automatically."),
+		st_extsearch: L("cqb_stg_desc_extsearch", "Search engines used by the toolbar search."),
+		st_unpack: L("cqb_stg_desc_unpack", "Automatic extraction of completed archives."),
+		st_throttle: L("cqb_stg_desc_throttle", "Named bandwidth channels for grouping torrents."),
+		st_ratio: L("cqb_stg_desc_ratio", "Ratio groups and the actions taken at each target."),
+		st_screenshots: L("cqb_stg_desc_screenshots", "Thumbnail previews generated from media files."),
+		st_uploadeta: L("cqb_stg_desc_uploadeta", "Target ratio and time used to estimate seeding."),
+		st_history: L("cqb_stg_desc_history", "Event log retention and notification delivery.")
 	};
 
-	var GROUP_LABELS = { rutorrent: "ruTorrent", plugins: "Plugins" };
+	var GROUP_LABELS = { rutorrent: "ruTorrent", plugins: L("cqb_stg_grp_plugins", "Plugins") };
 
 	var navEl = null, pagesEl = null, navObs = null, pagesObs = null, syncing = false;
 
@@ -158,13 +158,13 @@
 		wrap.appendChild(mkIcon("toolbar-search"));
 		var inp = document.createElement("input");
 		inp.type = "search";
-		inp.placeholder = "Filter settings";
-		inp.setAttribute("aria-label", "Filter settings");
+		inp.placeholder = L("cqb_stg_filter", "Filter settings");
+		inp.setAttribute("aria-label", L("cqb_stg_filter", "Filter settings"));
 		wrap.appendChild(inp);
 		nav.insertBefore(wrap, nav.firstChild);
 		var empty = document.createElement("div");
 		empty.className = "cqb-stg-empty";
-		empty.textContent = "No matching settings";
+		empty.textContent = L("cqb_stg_no_match", "No matching settings");
 		nav.appendChild(empty);
 		inp.addEventListener("input", function () { applyFilter(nav, inp.value); });
 	}
@@ -373,27 +373,27 @@
 
 	/* Advanced rtorrent keys: human label + unit; `b` marks a bytes value. */
 	var AO_KEYS = {
-		hash_interval: { label: "Hash check interval", unit: "ms" },
-		hash_max_tries: { label: "Hash check max tries" },
-		hash_read_ahead: { label: "Hash read-ahead", unit: "MiB" },
-		preload_type: { label: "Preload type" },
-		preload_min_size: { label: "Preload minimum size", unit: "bytes", b: true },
-		preload_required_rate: { label: "Preload required rate", unit: "bytes", b: true },
-		receive_buffer_size: { label: "Receive buffer size", unit: "bytes", b: true },
-		send_buffer_size: { label: "Send buffer size", unit: "bytes", b: true },
-		max_downloads_div: { label: "Max downloads divisor" },
-		max_uploads_div: { label: "Max uploads divisor" },
-		max_file_size: { label: "Maximum file size", unit: "bytes", b: true },
-		split_file_size: { label: "Split file size", unit: "bytes", b: true },
-		split_suffix: { label: "Split suffix" },
-		http_cacert: { label: "HTTP CA certificate" },
-		http_capath: { label: "HTTP CA path" },
-		http_proxy: { label: "HTTP proxy" },
-		proxy_address: { label: "Proxy address" },
-		bind: { label: "Bind address" },
-		session: { label: "Session directory" },
-		timeout_safe_sync: { label: "Safe sync timeout", unit: "s" },
-		timeout_sync: { label: "Sync timeout", unit: "s" }
+		hash_interval: { label: L("cqb_ao_hash_interval", "Hash check interval"), unit: "ms" },
+		hash_max_tries: { label: L("cqb_ao_hash_max_tries", "Hash check max tries") },
+		hash_read_ahead: { label: L("cqb_ao_hash_read_ahead", "Hash read-ahead"), unit: "MiB" },
+		preload_type: { label: L("cqb_ao_preload_type", "Preload type") },
+		preload_min_size: { label: L("cqb_ao_preload_min_size", "Preload minimum size"), unit: "bytes", b: true },
+		preload_required_rate: { label: L("cqb_ao_preload_required_rate", "Preload required rate"), unit: "bytes", b: true },
+		receive_buffer_size: { label: L("cqb_ao_receive_buffer_size", "Receive buffer size"), unit: "bytes", b: true },
+		send_buffer_size: { label: L("cqb_ao_send_buffer_size", "Send buffer size"), unit: "bytes", b: true },
+		max_downloads_div: { label: L("cqb_ao_max_downloads_div", "Max downloads divisor") },
+		max_uploads_div: { label: L("cqb_ao_max_uploads_div", "Max uploads divisor") },
+		max_file_size: { label: L("cqb_ao_max_file_size", "Maximum file size"), unit: "bytes", b: true },
+		split_file_size: { label: L("cqb_ao_split_file_size", "Split file size"), unit: "bytes", b: true },
+		split_suffix: { label: L("cqb_ao_split_suffix", "Split suffix") },
+		http_cacert: { label: L("cqb_ao_http_cacert", "HTTP CA certificate") },
+		http_capath: { label: L("cqb_ao_http_capath", "HTTP CA path") },
+		http_proxy: { label: L("cqb_ao_http_proxy", "HTTP proxy") },
+		proxy_address: { label: L("cqb_ao_proxy_address", "Proxy address") },
+		bind: { label: L("cqb_ao_bind", "Bind address") },
+		session: { label: L("cqb_ao_session", "Session directory") },
+		timeout_safe_sync: { label: L("cqb_ao_timeout_safe_sync", "Safe sync timeout"), unit: "s" },
+		timeout_sync: { label: L("cqb_ao_timeout_sync", "Sync timeout"), unit: "s" }
 	};
 
 	/* A tile for one Advanced key: human label, raw key subtext, unit, hint. */
@@ -418,7 +418,7 @@
 			wrap.classList.add("cqb-has-unit");
 			var u = document.createElement("span");
 			u.className = "cqb-unit";
-			u.textContent = spec.unit;
+			u.textContent = spec.unit === "bytes" ? L("cqb_unit_bytes", "bytes") : spec.unit;
 			wrap.appendChild(u);
 		}
 		tile.appendChild(wrap);
@@ -519,9 +519,9 @@
 				var login = fs.querySelector('input[type="text"]');
 				var pass = fs.querySelector('input[type="password"]');
 				if (en) en.setAttribute("aria-label", name + " " + L("cqb_enabled", "Enabled"));
-				if (login) login.setAttribute("aria-label", name + " login");
-				if (pass) pass.setAttribute("aria-label", name + " password");
-				if (auto) auto.setAttribute("aria-label", name + " autologin");
+				if (login) login.setAttribute("aria-label", L("cqb_acct_login", "{name} login").replace("{name}", name));
+				if (pass) pass.setAttribute("aria-label", L("cqb_acct_password", "{name} password").replace("{name}", name));
+				if (auto) auto.setAttribute("aria-label", L("cqb_acct_autologin", "{name} autologin").replace("{name}", name));
 				if (login) login.placeholder = "—";
 				if (pass) pass.placeholder = "—";
 				var on = !!(en && en.checked);
@@ -657,7 +657,7 @@
 		var btns = bar.querySelectorAll("button");
 		for (var i = 0; i < btns.length; i++) {
 			if (!btns[i].classList.contains("Cancel") && !btns[i].dataset.cqbSave) {
-				btns[i].textContent = (window.theUILang && theUILang.Save) ? theUILang.Save : "Save";
+				btns[i].textContent = L("Save", "Save");
 				btns[i].dataset.cqbSave = "1";
 			}
 		}
