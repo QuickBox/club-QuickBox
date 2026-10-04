@@ -9,9 +9,6 @@
  * background-image is forced off so the plugins' own base64 GIF /
  * spritesheet backgrounds cannot show through the mask window.
  * ============================================================ */
-#meter-disk-pane .icon,
-#meter-cpu-pane .icon,
-#meter-cpu-td,
 #autodl-tb,
 div#logoff,
 .sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip, .sprite-console,
@@ -37,64 +34,79 @@ div#logoff:hover {
 }
 
 /* ============================================================
- * Capacity meters (disk / band / cpu)
+ * Status-bar mini meters (disk / band quota are bars; cpu is a sparkline).
+ * The pane glyph is owned by statusbar.css; this owns the track, fill and
+ * the label beside the bar. The plugin sets the fill WIDTH inline (%); the
+ * fill COLOR is forced to the brand gradient so the old primary->destructive
+ * interpolation can no longer render a muddy mid-usage bar. Usage-threshold
+ * tinting is an init.js concern (see return note).
  * ============================================================ */
-#meter-disk-value,
-#qmeter-band-value,
-#qmeter-disk-value {
-	background-color: var(--qb-surface-3);
-	border: 1px solid transparent;
-	border-radius: var(--qb-radius);
-	float: left;
+
+/* Track: a 56px rounded rail the fill width maps onto. The right margin
+ * reserves in-flow room for the absolutely-placed % label. */
+#meter-disk-holder,
+#meter-band-holder,
+#qmeter-disk-holder {
+	position: relative;
+	display: inline-block;
+	width: 56px;
+	height: 4px;
+	margin: 0 40px 0 2px;
+	padding: 0;
+	border: 0;
+	border-radius: 999px;
+	background: var(--qb-muted);
+	vertical-align: middle;
+	overflow: visible;
 }
 
-#meter-band-text,
+/* Fill: absolute within the track, width% set inline by the plugin. */
+#meter-disk-value,
+#meter-band-value,
+#qmeter-band-value,
+#qmeter-disk-value,
+.meter-value {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	min-width: 2px;
+	max-width: 100%;
+	border: 0;
+	border-radius: 999px;
+	float: none;
+	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
+}
+
+/* % label beside the bar, 12px tabular-nums, never over it. */
 #meter-disk-text,
+#meter-band-text,
 #qmeter-disk-text,
 #meter-cpu-text {
+	position: absolute;
+	left: calc(100% + 8px);
+	top: 50%;
+	transform: translateY(-50%);
+	white-space: nowrap;
 	color: var(--qb-fg-muted);
 	text-shadow: none;
-	font-size: 11px;
-	font-family: inherit;
+	font-size: 12px;
+	font-family: var(--qb-font);
+	font-variant-numeric: tabular-nums;
 	z-index: 1;
 }
 
-#meter-band-holder,
-#meter-disk-holder,
-#qmeter-disk-holder {
-	height: 16px;
-	line-height: 16px;
-	border: 0;
-	padding-right: 12px;
-}
-
-#meter-disk-pane .icon {
-	-webkit-mask: url(images/icons/meter-disk.svg) 0 center / 14px no-repeat;
-	mask: url(images/icons/meter-disk.svg) 0 center / 14px no-repeat;
-}
-
+/* CPU is a flot line graph; size the placeholder so it renders as a clean
+ * mini sparkline instead of a sliver. Its line color is a flot canvas color
+ * painted by init.js (not reachable from CSS). */
 #meter-cpu-holder {
+	position: relative;
+	display: inline-block;
+	width: 56px;
 	height: 16px;
-	line-height: 16px;
-	padding-left: 25px;
-}
-
-#meter-cpu-pane .icon,
-#meter-cpu-td {
-	-webkit-mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
-	mask: url(images/icons/meter-cpu.svg) 0 center / 14px no-repeat;
-}
-
-#meter-cpu-td {
-	height: 16px;
-	line-height: 18px;
-}
-
-.meter-value {
-	background-color: var(--qb-primary) !important;
-	border: 0;
-	border-radius: var(--qb-radius);
-	width: 96% !important;
+	margin: 0 40px 0 2px;
+	padding: 0;
+	vertical-align: middle;
 }
 
 /* ============================================================
