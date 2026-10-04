@@ -850,6 +850,15 @@ button#flm-nav-refresh.cqb-icon-btn {
 	height: calc(var(--cqb-flm-bar-h) - 2px);
 	min-width: calc(var(--cqb-flm-bar-h) - 2px);
 	border-radius: var(--qb-radius-lg) 0 0 var(--qb-radius-lg);
+	/* A legacy `#flm-nav-refresh` rule paints a surface-2 box + border at id
+	 * specificity; neutralise it here so the refresh is a transparent flush
+	 * segment that tints only on hover, like the other toolbar controls. */
+	background: transparent;
+	border-color: transparent;
+}
+button#flm-nav-refresh.cqb-icon-btn:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+	border-color: transparent;
 }
 
 /* Replace the refresh sprite with a masked glyph. */

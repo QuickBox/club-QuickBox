@@ -17,9 +17,11 @@
 	--col-resize-sep-bg-color: var(--qb-border);
 	--row-border-color: var(--qb-border-soft);
 	/* Zebra tint for the odd row when the user turns on "alternate list
-	 * background colors": a faint foreground wash over the surface, subtle
-	 * on every variant and still readable on the light (defaulted) theme. */
-	--cqb-row-stripe: color-mix(in srgb, var(--qb-foreground) 4%, var(--qb-surface));
+	 * background colors". Taken from the surface->surface-2 ramp (not a
+	 * foreground wash, which lands on top of surface-2 on the dark variants),
+	 * so the odd row sits strictly between the even row (surface) and the hover
+	 * (surface-2): subtle on every variant, yet hover and selection still read. */
+	--cqb-row-stripe: color-mix(in srgb, var(--qb-surface-2) 45%, var(--qb-surface));
 	--row-odd-bg-color: var(--cqb-row-stripe);
 	--row-even-bg-color: var(--qb-surface);
 	--row-active-bg-color: var(--qb-surface-3);
