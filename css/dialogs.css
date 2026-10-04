@@ -641,38 +641,51 @@ dialog.browseFrame .rmenuitem.active {
 }
 
 .cqb-chip .cqb-chip-name {
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
+/* Circular 20x20 inline cancel. The remove is a <button>, so the dialog
+ * `.dlg-window button{min-width:84px;min-height:36px}` rule would stretch it
+ * into an oblong that covers the name -- reset min-width/height to 0 and hold
+ * a fixed square so the name ellipsizes BEFORE the remove, never under it. */
 .cqb-chip .cqb-chip-remove {
 	flex: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 18px;
-	height: 18px;
-	border-radius: 999px;
+	width: 20px;
+	height: 20px;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
 	background-color: transparent;
+	color: var(--qb-fg-muted);
 	cursor: pointer;
 }
 
 .cqb-chip .cqb-chip-remove::before {
 	content: "";
-	width: 11px;
-	height: 11px;
-	background-color: var(--qb-fg-muted);
+	width: 12px;
+	height: 12px;
+	background-color: currentColor;
 	-webkit-mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
 	mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
 }
 
-.cqb-chip .cqb-chip-remove:hover {
-	background-color: color-mix(in srgb, var(--qb-destructive) 18%, transparent);
+.cqb-chip .cqb-chip-remove:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
 }
 
-.cqb-chip .cqb-chip-remove:hover::before {
-	background-color: var(--qb-destructive-text, var(--qb-destructive));
+.cqb-chip .cqb-chip-remove:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
 }
 
 /* ============================================================
@@ -1171,8 +1184,8 @@ ul.CMenu li ul li a.dis:hover {
 	align-items: center;
 	justify-content: center;
 	flex: none;
-	width: 18px;
-	height: 18px;
+	width: 20px;
+	height: 20px;
 	min-width: 0;
 	min-height: 0;
 	margin: 0;
@@ -1186,16 +1199,21 @@ ul.CMenu li ul li a.dis:hover {
 
 #tcreate .cqb-tchip-x::before {
 	content: "";
-	width: 11px;
-	height: 11px;
+	width: 12px;
+	height: 12px;
 	background-color: currentColor;
-	-webkit-mask: url(../images/icons/menu-close.svg) center / 11px no-repeat;
-	mask: url(../images/icons/menu-close.svg) center / 11px no-repeat;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
 }
 
 #tcreate .cqb-tchip-x:not(:disabled):hover {
-	color: var(--qb-destructive-text, var(--qb-destructive));
+	color: var(--qb-foreground);
 	background: var(--qb-surface-3);
+}
+
+#tcreate .cqb-tchip-x:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
 }
 
 /* "Other" options render as switch rows with a one-line helper. */
