@@ -12,6 +12,13 @@
 	--footer-height: 32px;
 }
 
+/* The core height calc subtracts two 5px margins but only one renders (below
+ * the app bar), leaving 5px of dead space under the footer. Reclaim it so the
+ * footer sits flush at the viewport bottom. */
+#maincont {
+	height: calc(100dvh - var(--navbar-height) - var(--footer-height) - 5px) !important;
+}
+
 /* ============================================================
  * Bar shell -- 32px flex strip of chips on the surface.
  * ============================================================ */
