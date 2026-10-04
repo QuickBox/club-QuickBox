@@ -16,6 +16,7 @@
 	--qb-surface: #0e1726;
 	--qb-surface-2: #181e2e;
 	--qb-surface-3: #1b2436;
+	--qb-muted: #181e2e;
 	--qb-fg-muted: #94a3b8;
 	--qb-border: #1b2e4b;
 	--qb-border-soft: #142138;
@@ -62,6 +63,7 @@
 	--qb-surface: #22201e;
 	--qb-surface-2: #2a2826;
 	--qb-surface-3: #332f2b;
+	--qb-muted: #2a2826;
 	--qb-fg-muted: #9c958d;
 	--qb-border: #34302c;
 	--qb-border-soft: #262320;
@@ -106,6 +108,7 @@
 	--qb-surface: #1d2530;
 	--qb-surface-2: #171e27;
 	--qb-surface-3: #252e3a;
+	--qb-muted: #171e27;
 	--qb-fg-muted: #888ea8;
 	--qb-border: #2f3c4b;
 	--qb-border-soft: #222c38;
@@ -153,6 +156,7 @@
 	--qb-surface: #ffffff;
 	--qb-surface-2: #ebedf2;
 	--qb-surface-3: #e2e5ea;
+	--qb-muted: #ebedf2;
 	--qb-fg-muted: #646982;
 	--qb-border: #d3d3d3;
 	--qb-border-soft: #e3e3e3;
