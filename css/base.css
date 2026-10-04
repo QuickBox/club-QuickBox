@@ -309,9 +309,16 @@ textarea[disabled] {
 	background-color: var(--qb-scrollbar-thumb-hover);
 }
 
-* {
-	scrollbar-width: thin;
-	scrollbar-color: var(--qb-scrollbar-thumb) var(--qb-scrollbar-track);
+/* Firefox reads the standard properties; Chromium must NOT, because setting
+ * either `scrollbar-width` or `scrollbar-color` on an element makes it ignore
+ * every `::-webkit-scrollbar*` rule and fall back to native end-cap arrow
+ * buttons drawn in the thumb color. Gating these to Firefox keeps Chromium on
+ * the `::-webkit-scrollbar` styling above, where the buttons are hidden. */
+@supports (-moz-appearance: none) {
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--qb-scrollbar-thumb) var(--qb-scrollbar-track);
+	}
 }
 
 /* Motion only where it reads as feedback; honour reduced-motion. */
