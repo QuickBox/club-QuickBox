@@ -232,10 +232,30 @@
 		return variant !== "defaulted";
 	}
 
+	/* Capacity-meter fill tint by usage: ok below 80%, amber past 80%, danger
+	 * past 90%. The fill is painted inline by each bar plugin's setValue, so
+	 * the tint is applied there (and re-applied on variant change). */
+	var METER_BARS = {
+		diskspace: "#meter-disk-value",
+		diskapceh: "#qmeter-disk-value",
+		quotaspace: "#qmeter-band-value"
+	};
+	function meterThresholdColor(pct) {
+		if (pct > 90) return token("--qb-destructive");
+		if (pct > 80) return token("--qb-state-paused");
+		return token("--qb-primary");
+	}
+	function tintMeterBar(sel) {
+		var el = sel && document.querySelector(sel);
+		if (!el) return;
+		var pct = parseFloat(el.style.width) || 0;
+		el.style.backgroundColor = meterThresholdColor(pct);
+	}
+
 	/* Repaint progress/meter gradients from the active variant tokens.
 	 * RGBackground cannot read a var() off a CSS rule, so resolved hex is
 	 * passed in. Completion bars use the brand gradient; capacity meters run
-	 * ok (primary) -> danger (destructive). */
+	 * ok (primary) -> danger (destructive) and take the usage-threshold tint. */
 	function paintMeters() {
 		var prgStart = token("--qb-prg-start");
 		var prgEnd = token("--qb-prg-end");
@@ -257,6 +277,22 @@
 					plg.prgStartColor = new RGBackground(ok);
 					plg.prgEndColor = new RGBackground(danger);
 				}
+			});
+			/* Wrap each bar plugin's setValue once so live updates re-tint, and
+			 * re-tint the current fill now for the active variant. */
+			Object.keys(METER_BARS).forEach(function (name) {
+				var plg = thePlugins.get(name);
+				var sel = METER_BARS[name];
+				if (plg && typeof plg.setValue === "function" && !plg._cqbTint) {
+					plg._cqbTint = true;
+					var orig = plg.setValue;
+					plg.setValue = function () {
+						var r = orig.apply(this, arguments);
+						tintMeterBar(sel);
+						return r;
+					};
+				}
+				tintMeterBar(sel);
 			});
 		}
 	}
