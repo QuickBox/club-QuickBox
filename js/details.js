@@ -27,16 +27,50 @@
 	 * (Plugins, File Manager, Speed, History, Tasks, Traffic, Log) always
 	 * render their own global content and never show the empty state. */
 	var TORRENT_TABS = { gcont: 1, FileList: 1, TrackerList: 1, PeerList: 1, Chunks: 1 };
+	/* Per-panel empty state: glyph + line shown inside each torrent-scoped tab
+	 * when no single torrent is selected. The line is tab-specific. */
+	var TORRENT_TAB_EMPTY = {
+		gcont:       { icon: "tab-general",  key: "cqb_det_empty_general",  fallback: "Select a torrent to see its overview" },
+		FileList:    { icon: "tab-files",    key: "cqb_det_empty_files",    fallback: "Select a torrent to see its files" },
+		TrackerList: { icon: "tab-trackers", key: "cqb_det_empty_trackers", fallback: "Select a torrent to see its trackers" },
+		PeerList:    { icon: "tab-peers",    key: "cqb_det_empty_peers",    fallback: "Select a torrent to see its peers" },
+		Chunks:      { icon: "tab-chunks",   key: "cqb_det_empty_pieces",   fallback: "Select a torrent to see its pieces" }
+	};
 	var noSelection = true;
 	var currentTab = "gcont";
 	var drawerEl = null;
+
+	/* Inject the empty-state node into one torrent panel (idempotent). The
+	 * panel is made a positioning context so the node fills it below the strip
+	 * and its opaque surface hides any stale data. Panels can be built lazily,
+	 * so this is called for the active tab on every refresh, not once up front. */
+	function ensureTabEmpty(tabKey) {
+		try {
+			var spec = TORRENT_TAB_EMPTY[tabKey];
+			if (!spec) return;
+			var panel = document.getElementById(tabKey);
+			if (!panel || panel.querySelector(".cqb-tab-empty")) return;
+			if (getComputedStyle(panel).position === "static") panel.style.position = "relative";
+			var empty = document.createElement("div");
+			empty.className = "cqb-tab-empty";
+			var glyph = maskSpan(spec.icon);
+			glyph.classList.add("cqb-tab-empty-glyph");
+			var text = document.createElement("div");
+			text.className = "cqb-tab-empty-text";
+			text.textContent = t(spec.key, spec.fallback);
+			empty.appendChild(glyph);
+			empty.appendChild(text);
+			panel.appendChild(empty);
+		} catch (e) { /* never break the bundle */ }
+	}
 
 	function refreshEmpty() {
 		try {
 			if (!drawerEl) drawerEl = document.getElementById("tdetails");
 			if (!drawerEl) return;
 			var show = noSelection && !!TORRENT_TABS[currentTab];
-			drawerEl.classList.toggle("cqb-empty", show);
+			if (show) ensureTabEmpty(currentTab);
+			drawerEl.classList.toggle("cqb-nosel", show);
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -114,7 +148,7 @@
 	function copyButton(getValue) {
 		var btn = document.createElement("button");
 		btn.type = "button";
-		btn.className = "cqb-copy-btn";
+		btn.className = "cqb-copy-btn cqb-icon-btn cqb-icon-btn--md";
 		btn.appendChild(maskSpan("fm-copy"));
 		if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_det_copy", "Copy"));
 		btn.addEventListener("click", function () {
@@ -377,7 +411,7 @@
 			pathWrap.appendChild(copyButton(function () { return spanText("bf"); }));
 			var fmBtn = null;
 			if (window.flm) {
-				fmBtn = el("button", "cqb-copy-btn cqb-fm-open", pathWrap);
+				fmBtn = el("button", "cqb-copy-btn cqb-fm-open cqb-icon-btn cqb-icon-btn--md", pathWrap);
 				fmBtn.type = "button";
 				fmBtn.appendChild(maskSpan("tab-filemanager"));
 				if (cqb && cqb.tooltip) cqb.tooltip(fmBtn, t("cqb_det_open_fm", "Open in File Manager"));
@@ -589,18 +623,8 @@
 	function installEmptyState() {
 		try {
 			var drawer = document.getElementById("tdetails");
-			if (!drawer || drawer.querySelector(".cqb-details-empty")) return;
-
-			var empty = document.createElement("div");
-			empty.className = "cqb-details-empty";
-			var glyph = document.createElement("div");
-			glyph.className = "cqb-empty-glyph";
-			var text = document.createElement("div");
-			text.className = "cqb-empty-text";
-			text.textContent = t("cqb_det_empty", "Select a torrent to see its details");
-			empty.appendChild(glyph);
-			empty.appendChild(text);
-			drawer.appendChild(empty);
+			if (!drawer || drawer.getAttribute("data-cqb-empty")) return;
+			drawer.setAttribute("data-cqb-empty", "1");
 			drawerEl = drawer;
 
 			if (window.theWebUI) {
@@ -652,11 +676,14 @@
 			var tools = document.createElement("div");
 			tools.className = "cqb-flm-tools";
 			var refresh = document.getElementById("flm-nav-refresh");
-			if (refresh) tools.appendChild(refresh); /* move -- click handler kept */
+			if (refresh) {
+				refresh.classList.add("cqb-icon-btn"); /* 32px square, handler kept */
+				tools.appendChild(refresh); /* move -- click handler kept */
+			}
 
 			var upBtn = document.createElement("button");
 			upBtn.type = "button";
-			upBtn.className = "cqb-flm-btn";
+			upBtn.className = "cqb-flm-btn cqb-icon-btn";
 			upBtn.appendChild(maskSpan("fm-dir-up"));
 			if (cqb && cqb.tooltip) cqb.tooltip(upBtn, t("cqb_det_parent_dir", "Parent directory"));
 			upBtn.addEventListener("click", function () {
@@ -669,7 +696,7 @@
 
 			var mkBtn = document.createElement("button");
 			mkBtn.type = "button";
-			mkBtn.className = "cqb-flm-btn";
+			mkBtn.className = "cqb-flm-btn cqb-icon-btn";
 			mkBtn.appendChild(maskSpan("fm-mkdir"));
 			if (cqb && cqb.tooltip) cqb.tooltip(mkBtn, t("cqb_det_new_folder", "New folder"));
 			mkBtn.addEventListener("click", function () {
@@ -935,7 +962,7 @@
 			var btn = ctrl.querySelector("button");
 			if (btn) {
 				btn.textContent = "";
-				btn.className = "cqb-flm-btn cqb-traf-clear";
+				btn.className = "cqb-flm-btn cqb-traf-clear cqb-icon-btn";
 				btn.appendChild(maskSpan("log-clear"));
 				if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_det_clear_stats", "Clear statistics"));
 			}
@@ -1084,6 +1111,15 @@
 
 	function tabBar() { return document.getElementById("tabbar"); }
 
+	/* The Log pane's core Clear button is a 32px pane-toolbar icon square; tag
+	 * it onto the shared primitive (idempotent, handler untouched). */
+	function tagClearLog() {
+		try {
+			var b = document.getElementById("clear_log");
+			if (b) b.classList.add("cqb-icon-btn");
+		} catch (e) {}
+	}
+
 	function tabItems(bar) {
 		var out = [];
 		var kids = bar.children;
@@ -1108,10 +1144,23 @@
 			if (!btn) return;
 			var np = document.getElementById("flm-navpath");
 			var group = np && (np.closest(".input-group") || np.parentNode);
-			if (!group || btn.parentNode === group) return;
-			btn.classList.add("cqb-flm-console");
-			if (cqb && cqb.tooltip) cqb.tooltip(btn, (btn.value || t("cqb_det_console", "Console")));
-			group.insertBefore(btn, group.querySelector(".cqb-flm-recent") || null);
+			if (!group) return;
+			var wrap = btn.parentNode;
+			var wrapped = wrap && wrap.classList && wrap.classList.contains("cqb-flm-console-wrap");
+			if (wrapped) {
+				if (wrap.parentNode === group) return; /* already placed */
+			} else {
+				/* Wrap the core <input> so it can carry a leading glyph (an input
+				 * cannot host a child or pseudo-element); the input and its handler
+				 * are moved, never replaced. */
+				btn.classList.add("cqb-flm-console");
+				if (cqb && cqb.tooltip) cqb.tooltip(btn, (btn.value || t("cqb_det_console", "Console")));
+				wrap = document.createElement("span");
+				wrap.className = "cqb-flm-console-wrap";
+				wrap.appendChild(maskSpan("fm-console"));
+				wrap.appendChild(btn);
+			}
+			group.insertBefore(wrap, group.querySelector(".cqb-flm-recent") || null);
 		} catch (e) {}
 	}
 
@@ -1272,6 +1321,7 @@
 				currentTab = id;
 				refreshEmpty();
 				if (id === "gcont") renderGeneral();
+				if (id === "lcont") tagClearLog();
 				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }
 				if (id === "Speed") { enhanceSpeedToolbar(); styleCharts(); resizeSpeed(); }
 				syncSpeedToolbar();
@@ -1290,6 +1340,7 @@
 	styleCharts();
 	hookTabShow();
 	watchTabStrip();
+	tagClearLog();
 	if (cqb && cqb.onVariant) cqb.onVariant(styleCharts);
 	/* One delayed pass -- the traffic and speed graphs are built during
 	 * lang-load, which may land just after this module runs. */

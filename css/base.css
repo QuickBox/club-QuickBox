@@ -530,3 +530,77 @@ input[type=submit],
 	cursor: pointer;
 	transition: background-color 0.15s ease;
 }
+
+/* ============================================================
+ * Icon-only control -- the one square primitive for every icon button
+ * or link: pane toolbars (32, default), dialog headers + card inline
+ * actions (28, --md), table/sidebar rows (24, --sm), top bar (36, --lg).
+ * Size, radius and glyph size come from one modifier; the core
+ * width/margin/padding and the near-white core hover/active washes are
+ * neutralized so the control is always a square muted glyph that tints
+ * its surface on hover and never covers row content.
+ * ============================================================ */
+.cqb-icon-btn {
+	--cqb-ib-size: 32px;
+	--cqb-ib-radius: 8px;
+	--cqb-ib-glyph: 16px;
+	box-sizing: border-box;
+	display: inline-grid;
+	place-items: center;
+	flex: none;
+	width: var(--cqb-ib-size);
+	height: var(--cqb-ib-size);
+	min-width: var(--cqb-ib-size);
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--cqb-ib-radius);
+	background: transparent;
+	background-image: none;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.cqb-icon-btn--sm { --cqb-ib-size: 24px; --cqb-ib-radius: 6px; --cqb-ib-glyph: 14px; }
+.cqb-icon-btn--md { --cqb-ib-size: 28px; --cqb-ib-radius: 8px; --cqb-ib-glyph: 16px; }
+.cqb-icon-btn--lg { --cqb-ib-size: 36px; --cqb-ib-radius: 8px; --cqb-ib-glyph: 20px; }
+
+/* Glyph: a masked SVG span (color follows the button via currentColor) or
+ * an inline <svg>. The mask-image itself is set per control. */
+.cqb-icon-btn > .cqb-icon,
+.cqb-icon-btn > svg {
+	width: var(--cqb-ib-glyph);
+	height: var(--cqb-ib-glyph);
+	flex: none;
+}
+.cqb-icon-btn > .cqb-icon {
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+/* :not(:disabled) raises specificity above the generic button:hover/:active
+ * washes above so the muted-to-foreground tint always wins on every variant. */
+.cqb-icon-btn:not(:disabled):hover {
+	background-color: var(--qb-surface-2);
+	background-image: none;
+	color: var(--qb-foreground);
+	border-color: transparent;
+}
+.cqb-icon-btn:not(:disabled):active {
+	background-color: var(--qb-surface-3);
+	background-image: none;
+	color: var(--qb-foreground);
+}
+.cqb-icon-btn:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: -1px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+.cqb-icon-btn:disabled,
+.cqb-icon-btn[disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
+}

@@ -166,28 +166,57 @@ li#tab_lcont {
 	mask: center / contain no-repeat;
 }
 
-/* FM console toggle, relocated from the strip into the FM toolbar. */
+/* FM console toggle, relocated from the strip into the FM toolbar. It is a
+ * ghost TEXT button (icon + label) -- a different family from the icon-square
+ * tools -- at the 32px toolbar height, radius and hover. The core <input> is
+ * wrapped (details.js) so it can carry a leading glyph. */
+.cqb-flm-console-wrap {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+	box-sizing: border-box;
+	height: 32px;
+	padding: 0 10px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: transparent;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.cqb-flm-console-wrap:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+.cqb-flm-console-wrap > .cqb-icon {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
 input.cqb-flm-console.Button,
 .cqb-flm-console {
 	flex: none;
-	min-height: 30px;
-	height: 30px;
+	min-height: 0;
+	height: auto;
 	margin: 0;
-	padding: 0 10px;
+	padding: 0;
 	font-family: var(--qb-font);
 	font-size: 12px;
 	font-weight: 500;
-	color: var(--qb-fg-muted);
+	color: inherit;
 	background: transparent;
-	border: 1px solid var(--qb-border);
-	border-radius: var(--qb-radius);
+	border: 0;
+	border-radius: 0;
 	cursor: pointer;
-	transition: background-color 0.15s ease, color 0.15s ease;
 }
 input.cqb-flm-console.Button:hover,
 .cqb-flm-console:hover {
-	background: var(--qb-surface-3);
-	color: var(--qb-foreground);
+	background: transparent;
+	color: inherit;
 }
 
 /* ============================================================
@@ -559,46 +588,11 @@ div#gcont.tab {
 .cqb-trunc .cqb-mid-b { white-space: nowrap; flex: none; }
 .cqb-trunc.cqb-mono { font-size: 12px; letter-spacing: 0.01em; }
 
-.cqb-copy-btn {
-	width: 26px;
-	height: 26px;
-	flex: none;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 0;
-	margin: 0;
-	border: 1px solid transparent;
-	border-radius: var(--qb-radius);
-	background: transparent;
-	color: var(--qb-fg-muted);
-	cursor: pointer;
-	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
-}
-.cqb-copy-btn .cqb-icon {
-	width: 15px;
-	height: 15px;
-	background-color: currentColor;
-	-webkit-mask: center / contain no-repeat;
-	mask: center / contain no-repeat;
-}
-.cqb-copy-btn:hover {
-	background: var(--qb-surface-3);
-	color: var(--qb-foreground);
-	border-color: var(--qb-border);
-}
-.cqb-copy-btn:focus-visible {
-	outline: none;
-	border-color: var(--qb-ring);
-	box-shadow: 0 0 0 2px var(--qb-focus);
-}
+/* Card inline actions (Tracker URL / Save-path copy + open, Hash copy) are
+ * 28px icon squares (.cqb-icon-btn--md); only the copied-flash tint is
+ * specific to them. They sit flex-centered on the value line (gap in
+ * .cqb-trunc-wrap) so they never push or overlap the value. */
 .cqb-copy-btn.cqb-copied { color: var(--qb-primary-text); }
-.cqb-copy-btn:disabled {
-	opacity: 0.4;
-	cursor: not-allowed;
-	background: transparent;
-	border-color: transparent;
-}
 
 .cqb-comment {
 	text-align: left;
@@ -695,64 +689,54 @@ div#lcont div {
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
-button#clear_log {
+/* The Log clear button is the 32px pane-toolbar icon square (.cqb-icon-btn);
+ * only its absolute placement inside the console is kept here. */
+button#clear_log.cqb-icon-btn {
 	position: absolute;
 	top: 48px;
 	right: 20px;
-	width: 32px;
-	height: 32px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	margin: 0;
-	padding: 0;
-	border: 1px solid var(--qb-border);
-	border-radius: var(--qb-radius);
-	background: var(--qb-surface-2);
-	color: var(--qb-fg-muted);
-	cursor: pointer;
-	transition: background-color 0.15s ease, color 0.15s ease;
 }
-
-button#clear_log:hover {
-	background: var(--qb-surface-3);
-	color: var(--qb-foreground);
-}
-
-button#clear_log svg { width: 16px; height: 16px; }
 
 /* ============================================================
- * Pane empty state -- centered glyph + prompt (toggled by details.js).
+ * No-torrent empty state -- a centered glyph + tab-specific prompt that
+ * lives INSIDE the active torrent-scoped panel (General / Files / Trackers
+ * / Peers / Chunks), below the tab strip, never a drawer-level overlay. The
+ * tab strip stays pixel-identical with and without a selection: the state
+ * class (cqb-nosel, deliberately NOT the list-level `.cqb-empty`) only
+ * toggles these descendants and adds no box to the drawer. The opaque
+ * surface fill covers any stale data from a previously selected torrent.
+ * details.js injects one node per torrent panel and sets each panel relative.
  * ============================================================ */
-.cqb-details-empty {
+.cqb-tab-empty {
 	display: none;
 	position: absolute;
-	inset: 41px 0 0 0;
-	z-index: 2;
+	inset: 0;
+	z-index: 1;
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 12px;
+	padding: 24px;
 	background: var(--qb-surface);
 	color: var(--qb-fg-muted);
 	text-align: center;
-	padding: 24px;
 }
 
-div#tdetails.cqb-empty .cqb-details-empty {
+div#tdetails.cqb-nosel .cqb-tab-empty {
 	display: flex;
 }
 
-.cqb-details-empty .cqb-empty-glyph {
+.cqb-tab-empty .cqb-tab-empty-glyph {
 	width: 40px;
 	height: 40px;
-	background-color: var(--qb-fg-muted);
+	flex: none;
 	opacity: 0.55;
-	-webkit-mask: url(../images/icons/empty-state.svg) center / contain no-repeat;
-	mask: url(../images/icons/empty-state.svg) center / contain no-repeat;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
 }
 
-.cqb-details-empty .cqb-empty-text {
+.cqb-tab-empty .cqb-tab-empty-text {
 	font-size: 13px;
 	max-width: 280px;
 	line-height: 1.5;
@@ -815,29 +799,16 @@ div#tdetails.cqb-empty .cqb-details-empty {
 	border-right: 1px solid var(--qb-border);
 }
 
-button#flm-nav-refresh,
-.cqb-flm-btn {
-	width: 30px;
-	height: 30px;
-	display: inline-flex !important;
-	align-items: center;
-	justify-content: center;
-	flex: none;
-	margin: 0;
-	padding: 0 !important;
-	border: 1px solid transparent;
-	border-radius: var(--qb-radius);
-	background: transparent !important;
-	color: var(--qb-fg-muted);
-	cursor: pointer;
-	transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-button#flm-nav-refresh:hover,
-.cqb-flm-btn:hover {
-	background: var(--qb-surface-3) !important;
-	color: var(--qb-foreground);
-	border-color: var(--qb-border);
+/* The refresh / dir-up / mkdir tools are 32px pane-toolbar icon squares
+ * (.cqb-icon-btn); the id-and-class form beats the core plugin's own
+ * `#flm-nav-refresh` width so the square holds. */
+button#flm-nav-refresh.cqb-icon-btn,
+.cqb-flm-tools .cqb-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
 }
 
 /* Replace the refresh sprite with a masked glyph. */
@@ -919,15 +890,18 @@ button#flm-nav-refresh .sprite-refresh {
 }
 
 /* "Recent folders" -- the history <select>, enhanced by the shared select,
- * collapsed to a compact clock trigger at the toolbar's far right. Only as
- * wide as its glyph + chevron; the popover lists the path history. */
+ * collapsed to a 36px square clock trigger at the toolbar's far right; the
+ * chevron and value label are dropped so only the glyph shows. The popover
+ * still lists the path history. */
 .cqb-flm-recent.cqb-select-trigger,
 .cqb-flm-recent.cqb-select-trigger[data-cqb-grow] {
 	flex: none;
-	width: auto;
-	min-width: 0;
-	gap: 3px;
-	padding: 0 7px;
+	width: 36px;
+	height: 36px;
+	min-width: 36px;
+	gap: 0;
+	padding: 0;
+	justify-content: center;
 	background: transparent;
 	border-color: transparent;
 	color: var(--qb-fg-muted);
@@ -943,7 +917,8 @@ button#flm-nav-refresh .sprite-refresh {
 	mask: url(../images/icons/statusbar-clock.svg) center / 16px no-repeat;
 }
 
-.cqb-flm-recent .cqb-select-value { display: none; }
+.cqb-flm-recent .cqb-select-value,
+.cqb-flm-recent .cqb-select-chevron { display: none; }
 
 .cqb-flm-recent.cqb-select-trigger:hover,
 .cqb-flm-recent.cqb-select-trigger[aria-expanded="true"] {
@@ -951,6 +926,16 @@ button#flm-nav-refresh .sprite-refresh {
 	border-color: var(--qb-border);
 	color: var(--qb-foreground);
 }
+
+/* The breadcrumb opens a fixed 12px after the icon-tool group (6px flex gap
+ * + 6px margin that beats the stock margin reset), so it reads as attached to
+ * the path, not floating. */
+#flm-navigation-head .cqb-breadcrumb { margin-left: 6px; }
+
+/* Keep the last column (Permissions) 12px clear of the vertical scrollbar so
+ * neither its header label nor its values sit under the thumb. */
+#flm-browser-table thead td:last-child,
+#flm-browser-table tbody td:last-child { padding-right: 12px; }
 
 /* File table fills the pane: Name flexes into the free space, the tabular
  * columns keep their widths; the stock dxSTable would otherwise leave the
