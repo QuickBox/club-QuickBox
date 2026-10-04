@@ -180,13 +180,12 @@
 
 #stg #stg_c .lm.list-group .list-group-item.active {
 	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
-	color: var(--qb-primary);
-	font-weight: 600;
-	box-shadow: inset 3px 0 0 var(--qb-primary);
+	color: var(--qb-primary-text);
+	font-weight: 500;
 }
 
 #stg #stg_c .lm.list-group .list-group-item.active .cqb-icon {
-	background-color: var(--qb-primary);
+	background-color: var(--qb-primary-text);
 }
 
 #stg #stg_c .lm.list-group .list-group-item:focus-visible {
@@ -229,8 +228,6 @@
 /* Page title + description */
 #stg .cqb-stg-head {
 	margin: 0 0 16px;
-	padding-left: 11px;
-	border-left: 3px solid var(--qb-primary);
 }
 
 #stg .cqb-stg-head .cqb-stg-title {
