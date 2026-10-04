@@ -83,6 +83,25 @@ git checkout --force latest && git pull
 
 On QuickBox Pro an existing install picks up the latest club-QuickBox by updating ruTorrent as an admin, with your admin username: `qb update rutorrent -u <username>`.
 
+## Prefer the v1 look?
+
+The classic club-QuickBox v1 skin is still there if you like it better, and you can switch back any time. On QuickBox Pro, do it as root:
+
+```bash
+cd /srv/rutorrent/plugins/theme/themes/club-QuickBox
+git fetch origin v1
+git checkout v1
+chown -R www-data:www-data .
+```
+
+Then hard-refresh your browser.
+
+On a manual install, clone with `-b v1` instead of `-b latest` into ruTorrent's `plugins/theme/themes/`.
+
+One thing to know on QuickBox Pro: `qb update rutorrent` checks the theme back out to `latest`, so after a ruTorrent update you are on v2 again and need to repeat the switch.
+
+v1 is frozen now and will not get further updates, because all the new work goes into v2.
+
 ## Credits
 
 The icon glyphs are from [Material Design Icons](https://pictogrammers.com/library/mdi/), used under the Apache License 2.0. club-QuickBox itself is released into the public domain, so you are free to copy, modify and use it anywhere. See [LICENSE](LICENSE).
