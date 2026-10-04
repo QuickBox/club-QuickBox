@@ -480,7 +480,6 @@
 		/* Trackers: a stacked field -- label, chips, a 6-row box, a helper. */
 		var tLabel = dlg.querySelector('label[for="trackers"]');
 		var tRow = trackers.closest(".row");
-		trackers.setAttribute("rows", "6");
 		var tWrap = document.createElement("div");
 		tWrap.className = "cqb-field-v";
 		if (tLabel) tWrap.appendChild(tLabel);

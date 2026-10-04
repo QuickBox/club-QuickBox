@@ -1108,7 +1108,9 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 #tcreate #trackers {
-	min-height: 118px;
+	box-sizing: border-box;
+	height: 120px;
+	min-height: 96px;
 	resize: vertical;
 }
 
