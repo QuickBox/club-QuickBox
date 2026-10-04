@@ -139,7 +139,7 @@
 .stable tbody tr td div:not(.meter-value),
 .stable-body td div:not(.meter-value) {
 	font-family: var(--qb-font) !important;
-	font-size: 12px;
+	font-size: 11px;
 	line-height: 16px;
 	height: 20px !important;
 	overflow: hidden;
@@ -218,75 +218,7 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 	color: var(--qb-fg-muted);
 }
 
-/* ============================================================
- * Progress -- slim rounded track + gradient fill + % overlay.
- * The progress cell is td[rawvalue] with two direct children:
- * span.meter-text (figure) + div.meter-value (fill, gradient painted
- * inline by the engine / init.js). The track is a centered 8px band
- * drawn on the cell background.
- * ============================================================ */
-.stable-body td[rawvalue],
-.stable tbody td[rawvalue] {
-	position: relative;
-	padding: 0 10px !important;
-}
-
-/* Fixed 120px rounded track; the fill width is a pixel value (table.js). */
-.stable-body td[rawvalue]::before,
-.stable tbody td[rawvalue]::before {
-	content: "";
-	position: absolute;
-	left: 10px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 120px;
-	height: 8px;
-	border-radius: 999px;
-	background: var(--qb-surface-2);
-	z-index: 0;
-}
-
-.meter-value {
-	position: absolute;
-	left: 10px;
-	top: 50%;
-	transform: translateY(-50%);
-	z-index: 1;
-	float: none;
-	border: 0 !important;
-	background-color: var(--qb-primary);
-	border-radius: 999px;
-	height: 8px !important;
-	margin: 0 !important;
-	max-width: 120px;
-	min-width: 2px;
-}
-
-/* The figure sits to the RIGHT of the track, never over it. */
-.meter-text {
-	position: absolute;
-	left: 138px;
-	top: 0;
-	bottom: 0;
-	right: 6px;
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-	float: none;
-	color: var(--qb-foreground);
-	font-family: var(--qb-font);
-	font-size: 11px;
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
-	text-align: left;
-	text-shadow: none;
-	z-index: 1;
-	pointer-events: none;
-}
-
-.stable-body tr.selected span.meter-value {
-	color: var(--qb-foreground);
-}
+/* Progress cells are styled in css/table.css (single-track recipe). */
 
 /* ============================================================
  * Status / type icon cell

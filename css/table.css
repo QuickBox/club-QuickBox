@@ -144,3 +144,57 @@ div#TrackerList {
 .Status_Queued_Up, .Status_Queued_Down { -webkit-mask-image: url(../images/icons/state-queued.svg); mask-image: url(../images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
 .Status_Checking { -webkit-mask-image: url(../images/icons/state-checking.svg); mask-image: url(../images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
 .Status_RSS { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); background-color: var(--qb-accent-text); }
+
+/* ============================================================
+ * Progress (Done) -- one track, the fill inside it.
+ * The core writes the percent as the fill's inline width and updates
+ * .meter-value in place, so it is never wrapped or moved. table.js
+ * mirrors that percent onto the cell as --cqb-p (0..1); the fill width
+ * is recomputed here against the track so a 100% cap never clips.
+ * ============================================================ */
+td:has(> .meter-value) {
+	position: relative;
+}
+
+td:has(> .meter-value)::before {
+	content: "";
+	position: absolute;
+	left: 10px;
+	right: 58px;
+	top: 50%;
+	height: 6px;
+	margin-top: -3px;
+	border-radius: 999px;
+	background: var(--qb-muted, var(--qb-surface-2));
+	z-index: 0;
+}
+
+td:has(> .meter-value) .meter-value {
+	position: absolute;
+	left: 10px !important;
+	top: 50% !important;
+	margin-top: -3px;
+	height: 6px !important;
+	border-radius: 999px;
+	width: calc((100% - 68px) * var(--cqb-p, 0)) !important;
+	min-width: 0;
+	float: none;
+	z-index: 1;
+}
+
+td:has(> .meter-value) .meter-text {
+	position: absolute;
+	right: 10px;
+	left: auto;
+	top: 50%;
+	transform: translateY(-50%);
+	height: auto;
+	width: auto;
+	line-height: 1;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	float: none;
+}

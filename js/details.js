@@ -32,6 +32,18 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
+	/* The restored tab is already shown by the core before this module is
+	 * injected, so the theTabs.show wrapper never fires for it -- read the
+	 * live active tab instead of trusting the "gcont" default. */
+	function resolveActiveTab() {
+		try {
+			if (window.theTabs && theTabs.activeId) return theTabs.activeId;
+			var li = document.querySelector("#tabbar li.selected, #tabbar li.active");
+			if (li && li.id && li.id.indexOf("tab_") === 0) return li.id.slice(4);
+		} catch (e) {}
+		return currentTab;
+	}
+
 	function maskSpan(name) {
 		var s = document.createElement("span");
 		s.className = "cqb-icon";
@@ -134,6 +146,7 @@
 				}
 				noSelection = !theWebUI.dID;
 			}
+			currentTab = resolveActiveTab();
 			refreshEmpty();
 		} catch (e) { /* never break the bundle */ }
 	}
