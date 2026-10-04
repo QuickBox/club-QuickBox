@@ -26,3 +26,12 @@ theUILang.cqb_grp_network    = "Network";
 theUILang.cqb_grp_session    = "Session and timeouts";
 theUILang.cqb_grp_flags      = "Flags";
 theUILang.cqb_stg_empty      = "No matching trackers";
+
+theUILang.qbAutoLabel       = "AutoLabel";
+theUILang.qbAutoMove        = "AutoMove";
+theUILang.qbAutoWatch       = "AutoWatch";
+theUILang.qbCookiesHelp     = "One host per line. Format: host|name1=value1;name2=value2 (example: tracker.example|uid=123;pass=abc)";
+theUILang.qbFindAtHelp      = "One lookup per line. Format: name|url -- use {HASH} for the torrent hash (example: Name|https://example.org/?q={HASH})";
+theUILang.qbAnnounceHelp    = "One announce URL per line.";
+
+theUILang.qbBrowse          = "Browse";
