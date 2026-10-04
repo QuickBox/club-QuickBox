@@ -691,53 +691,6 @@
 
 #stg .cqb-acct-dot.cqb-on { background-color: var(--qb-primary); }
 
-#stg .cqb-switch {
-	position: relative;
-	display: inline-block;
-	width: 34px;
-	height: 18px;
-	cursor: pointer;
-	vertical-align: middle;
-}
-
-#stg .cqb-switch input {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	margin: 0;
-	opacity: 0;
-	cursor: pointer;
-}
-
-#stg .cqb-switch .cqb-switch-track {
-	position: absolute;
-	inset: 0;
-	border-radius: 999px;
-	background-color: var(--qb-surface-3);
-	transition: background-color 0.15s ease;
-}
-
-#stg .cqb-switch .cqb-switch-track::after {
-	content: "";
-	position: absolute;
-	top: 2px;
-	left: 2px;
-	width: 14px;
-	height: 14px;
-	border-radius: 50%;
-	background-color: var(--qb-fg-muted);
-	transition: transform 0.15s ease, background-color 0.15s ease;
-}
-
-#stg .cqb-switch input:checked + .cqb-switch-track { background-color: var(--qb-primary); }
-#stg .cqb-switch input:checked + .cqb-switch-track::after {
-	transform: translateX(16px);
-	background-color: var(--qb-primary-fg);
-}
-
-#stg .cqb-switch input:focus-visible + .cqb-switch-track { box-shadow: 0 0 0 2px var(--qb-focus); }
-
 #stg .cqb-accounts input[type="text"],
 #stg .cqb-accounts input[type="password"] {
 	background-color: transparent;

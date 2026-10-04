@@ -394,6 +394,180 @@
 		return true;
 	}
 
+	/* Rebuild the Create New Torrent dialog as a v4 form. Every core node is
+	 * moved, never cloned, so #path_edit/#trackers/#source/#piece_size and the
+	 * core submit stay fully wired. Preloaded, so a one-shot (idempotent) run. */
+	function enhanceCreate() {
+		var dlg = document.getElementById("tcreate");
+		if (!dlg || dlg.getAttribute("data-cqb-create") === "1") return false;
+		var trackers = document.getElementById("trackers");
+		var pathEdit = document.getElementById("path_edit");
+		var createBtn = document.getElementById("torrentCreate");
+		if (!trackers || !pathEdit || !createBtn) return false;
+		dlg.setAttribute("data-cqb-create", "1");
+
+		/* Headings read inside the card; drop the trailing colons from labels. */
+		dlg.querySelectorAll("label").forEach(function (l) {
+			l.textContent = l.textContent.replace(/\s*:\s*$/, "");
+		});
+
+		pathEdit.setAttribute("placeholder", t("cqb_create_source_ph", "Path to a file or folder, or pick one"));
+
+		var cp = (window.thePlugins && thePlugins.get) ? thePlugins.get("create") : null;
+
+		/* Recent trackers as append-chips above the textarea; clicking a chip
+		 * appends it, the x removes it from the store through the core path. */
+		var chipRow = document.createElement("div");
+		chipRow.className = "cqb-tracker-chips";
+
+		function appendTracker(url) {
+			var val = trackers.value;
+			if (val.indexOf(url) >= 0) { trackers.value = val.trim(); trackers.focus(); return; }
+			trackers.value = val.split(/\r?\n/).concat([url]).join("\r").trim();
+			trackers.dispatchEvent(new Event("input", { bubbles: true }));
+			trackers.focus();
+		}
+		function deleteRecent(url) {
+			if (!cp || !window.theWebUI) return;
+			cp.deleteFromRecentTrackers = url + "\r";
+			theWebUI.request("?action=rtdelete", [cp.getRecentTrackers, cp]);
+		}
+		function renderChips() {
+			chipRow.textContent = "";
+			var rt = cp && cp.recentTrackers && cp.recentTrackers.recent_trackers;
+			if (!rt) return;
+			Object.keys(rt).forEach(function (domain) {
+				var url = rt[domain];
+				var chip = document.createElement("span");
+				chip.className = "cqb-tchip";
+				var lab = document.createElement("span");
+				lab.className = "cqb-tchip-label";
+				lab.textContent = domain;
+				if (cqb && cqb.tooltip) cqb.tooltip(lab, url);
+				lab.addEventListener("click", function () { appendTracker(url); });
+				var x = document.createElement("button");
+				x.type = "button";
+				x.className = "cqb-tchip-x";
+				x.setAttribute("aria-label", t("remove", "Remove") + " " + domain);
+				x.addEventListener("click", function (e) {
+					e.preventDefault();
+					e.stopPropagation();
+					deleteRecent(url);
+				});
+				chip.appendChild(lab);
+				chip.appendChild(x);
+				chipRow.appendChild(chip);
+			});
+		}
+		/* Re-render chips whenever core reloads the recent list (load + delete). */
+		if (cp && typeof cp.getRecentTrackers === "function" && !cp.getRecentTrackers.__cqbWrapped) {
+			var origGRT = cp.getRecentTrackers;
+			cp.getRecentTrackers = function () {
+				var r = origGRT.apply(this, arguments);
+				try { renderChips(); } catch (e) { /* chips are best-effort */ }
+				return r;
+			};
+			cp.getRecentTrackers.__cqbWrapped = true;
+		}
+		renderChips();
+
+		/* Hide the core recent-trackers dropdown + delete button; chips replace them. */
+		var rtBtn = document.getElementById("recentTrackers");
+		if (rtBtn) { var g = rtBtn.closest(".btn-group") || rtBtn; g.style.display = "none"; }
+		var delBtn = document.getElementById("deleteFromRecentTrackers");
+		if (delBtn) delBtn.style.display = "none";
+
+		/* Trackers: a stacked field -- label, chips, a 6-row box, a helper. */
+		var tLabel = dlg.querySelector('label[for="trackers"]');
+		var tRow = trackers.closest(".row");
+		trackers.setAttribute("rows", "6");
+		var tWrap = document.createElement("div");
+		tWrap.className = "cqb-field-v";
+		if (tLabel) tWrap.appendChild(tLabel);
+		tWrap.appendChild(chipRow);
+		tWrap.appendChild(trackers);
+		var tHelp = document.createElement("div");
+		tHelp.className = "cqb-help";
+		tHelp.textContent = t("cqb_help_trackers", "One tracker URL per line.");
+		tWrap.appendChild(tHelp);
+		if (tRow && tRow.parentNode) { tRow.parentNode.insertBefore(tWrap, tRow); tRow.remove(); }
+
+		/* Comment + Source (the source tag) sit side by side as stacked fields. */
+		var commentInput = document.getElementById("comment");
+		var sourceInput = document.getElementById("source");
+		if (commentInput && sourceInput) {
+			var cRow = commentInput.closest(".row");
+			var sRow = sourceInput.closest(".row");
+			var grid = document.createElement("div");
+			grid.className = "cqb-row-2";
+			[["comment", commentInput], ["source", sourceInput]].forEach(function (f) {
+				var fv = document.createElement("div");
+				fv.className = "cqb-field-v";
+				var lbl = dlg.querySelector('label[for="' + f[0] + '"]');
+				if (lbl) fv.appendChild(lbl);
+				fv.appendChild(f[1]);
+				grid.appendChild(fv);
+			});
+			if (cRow && cRow.parentNode) {
+				cRow.parentNode.insertBefore(grid, cRow);
+				cRow.remove();
+				if (sRow && sRow.parentNode) sRow.remove();
+			}
+		}
+
+		/* Options as switch rows with a one-line helper. */
+		var HELP = {
+			start_seeding: t("cqb_help_seed", "Start seeding as soon as the torrent is created."),
+			"private": t("cqb_help_private", "Mark as private: no DHT or peer exchange."),
+			hybrid: t("cqb_help_hybrid", "Create a v1 + v2 hybrid torrent.")
+		};
+		var opts = document.createElement("div");
+		opts.className = "cqb-opts";
+		var otherFs = null;
+		["start_seeding", "private", "hybrid"].forEach(function (id) {
+			var cb = document.getElementById(id);
+			if (!cb) return;
+			var lbl = dlg.querySelector('label[for="' + id + '"]') || document.getElementById("lbl_" + id);
+			var col = cb.closest("[class*='col-']") || cb.parentNode;
+			if (!otherFs) otherFs = col && col.closest("fieldset");
+			var opt = document.createElement("div");
+			opt.className = "cqb-opt";
+			var sw = document.createElement("label");
+			sw.className = "cqb-switch";
+			sw.appendChild(cb);
+			var track = document.createElement("span");
+			track.className = "cqb-switch-track";
+			sw.appendChild(track);
+			var txt = document.createElement("div");
+			txt.className = "cqb-opt-text";
+			if (lbl) txt.appendChild(lbl);
+			var help = document.createElement("div");
+			help.className = "cqb-help";
+			help.textContent = HELP[id] || "";
+			txt.appendChild(help);
+			opt.appendChild(sw);
+			opt.appendChild(txt);
+			opts.appendChild(opt);
+		});
+		if (otherFs) {
+			var oldRow = otherFs.querySelector(".row");
+			if (oldRow) { otherFs.insertBefore(opts, oldRow); oldRow.remove(); }
+			else otherFs.appendChild(opts);
+		}
+
+		/* Footer: a primary "Create torrent" (no ellipsis), off until a source
+		 * is set. The core submit handler stays on the same button. */
+		createBtn.textContent = t("torrentCreate", "Create torrent").replace(/\s*(\.{2,}|…)\s*$/, "");
+		function syncCreate() { createBtn.disabled = !pathEdit.value.trim(); }
+		pathEdit.addEventListener("input", syncCreate);
+		if (window.theDialogManager && theDialogManager.addHandler) {
+			theDialogManager.addHandler("tcreate", "afterShow", syncCreate);
+		}
+		syncCreate();
+
+		return true;
+	}
+
 	function enhanced(id, attr) {
 		var el = document.getElementById(id);
 		return el ? el.getAttribute(attr) === "1" : false;
@@ -454,8 +628,11 @@
 	function run() {
 		try { enhanceAddTorrent(); } catch (e) { /* never break the dialog */ }
 		try { enhanceTaskConsole(); } catch (e) { /* never break the dialog */ }
+		try { enhanceCreate(); } catch (e) { /* never break the dialog */ }
 		try { sweepBrowse(); patchDirBrowser(); } catch (e) { /* never break the dialog */ }
-		return enhanced("tadd", "data-cqb-add") && enhanced("tskConsole", "data-cqb-tsk");
+		return enhanced("tadd", "data-cqb-add") &&
+			enhanced("tskConsole", "data-cqb-tsk") &&
+			enhanced("tcreate", "data-cqb-create");
 	}
 
 	if (run()) return;
