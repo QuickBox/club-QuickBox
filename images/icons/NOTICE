@@ -1,0 +1,15 @@
+Material Design Icons
+=====================
+
+The SVG icons in this directory are derived from Material Design Icons
+by Pictogrammers (https://github.com/Templarian/MaterialDesign).
+
+License: Apache 2.0 (Apache-2.0)
+https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+
+Each icon is a single glyph path extracted from the Material Design Icons
+set and rewritten as a minimal, monochrome, 24x24 viewBox SVG for use with
+CSS mask-image. Color is supplied by the theme's own CSS custom properties;
+the source glyph artwork is unmodified in shape.
+
+No endorsement by the Material Design Icons project is implied.
