@@ -556,7 +556,7 @@ dialog.browseFrame .rmenuitem.active {
 /* ============================================================
  * Add Torrent (#tadd): Source card + Options card (rev30)
  * ============================================================ */
-.dlg-window#tadd { width: min(620px, 94vw); max-height: 80vh; }
+.dlg-window#tadd { width: min(740px, 94vw); max-height: 80vh; }
 
 /* A v4 panel card: 20px padding, 16px between cards, 12px field gap. */
 .dlg-window#tadd .cqb-card {
@@ -609,15 +609,17 @@ dialog.browseFrame .rmenuitem.active {
 	cursor: pointer;
 }
 
-.dlg-window#tadd .cqb-seg-btn:not(:disabled):hover {
-	background: transparent;
+/* Hover only lifts an INACTIVE segment; the active one already reads selected. */
+.dlg-window#tadd .cqb-seg-btn:not(.is-active):not(:disabled):hover {
+	background: color-mix(in srgb, var(--qb-foreground) 6%, transparent);
 	color: var(--qb-foreground);
 }
 
 .dlg-window#tadd .cqb-seg-btn.is-active {
-	background: var(--qb-surface);
-	border-color: var(--qb-border);
+	background: color-mix(in srgb, var(--qb-primary) 12%, var(--qb-surface));
+	border-color: transparent;
 	color: var(--qb-foreground);
+	font-weight: 600;
 	box-shadow: var(--qb-shadow-soft);
 }
 
@@ -668,7 +670,7 @@ dialog.browseFrame .rmenuitem.active {
 	gap: 8px 16px;
 }
 
-@container (max-width: 440px) {
+@container (max-width: 640px) {
 	.dlg-window#tadd .cqb-opts-grid { grid-template-columns: 1fr; }
 }
 
@@ -1536,7 +1538,9 @@ ul.CMenu li ul li a.dis:hover {
  * .container-fluid would otherwise expand to 95vw), with the
  * shortcut keys as kbd chips in a two-column kbd | action grid.
  * ============================================================ */
-.dlg-window#dlgHelp { width: min(420px, 94vw); }
+/* Override core `#dlgHelp{max-width:300px}` (style.css): set both so the card
+ * is a comfortable content width, never the viewport. */
+.dlg-window#dlgHelp { width: min(380px, 94vw); max-width: min(380px, 94vw); }
 
 #dlgHelp .container-fluid { padding: 8px 16px 12px; }
 
