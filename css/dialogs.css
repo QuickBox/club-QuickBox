@@ -434,31 +434,24 @@ div.dlg-window > .cont {
 
 /* ============================================================
  * Directory-browse control + popover (core rDirBrowser markup)
+ * The input + button share the global .cqb-input-group chrome; a
+ * dialog-scoped reset lets the group own the border/ring instead of
+ * each child (the .dlg-window input rules above are more specific).
  * ============================================================ */
-.dlg-window .browseEdit {
-	flex-grow: 1;
+.dlg-window .cqb-input-group > input,
+.dlg-window .cqb-input-group > select,
+.dlg-window .cqb-input-group > .browseEdit {
+	min-height: 34px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
 }
 
-.dlg-window button.browseButton {
-	flex: none;
-	min-width: 36px;
-	width: 36px;
-	padding: 0;
-	font-size: 0;
-	color: transparent;
-}
-
-.dlg-window button.browseButton::before {
-	content: "";
-	width: 18px;
-	height: 18px;
-	background-color: var(--qb-fg-muted);
-	-webkit-mask: url(../images/icons/file-folder.svg) center / 18px no-repeat;
-	mask: url(../images/icons/file-folder.svg) center / 18px no-repeat;
-}
-
-.dlg-window button.browseButton:hover::before {
-	background-color: var(--qb-foreground);
+.dlg-window .cqb-input-group > input:focus,
+.dlg-window .cqb-input-group > select:focus,
+.dlg-window .cqb-input-group > .browseEdit:focus {
+	border: 0;
+	box-shadow: none;
 }
 
 dialog.browseFrame {

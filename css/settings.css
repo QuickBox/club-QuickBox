@@ -650,55 +650,6 @@
 #stg .cqb-accounts th.cqb-col-auto,
 #stg .cqb-accounts td.cqb-col-auto { width: 150px; }
 
-/* Grouped path input + browse button (one unit, shared border). */
-#stg .cqb-input-group {
-	display: flex;
-	align-items: stretch;
-}
-
-#stg .cqb-input-group > input,
-#stg .cqb-input-group > .browseEdit {
-	flex: 1 1 auto;
-	min-width: 0;
-	min-height: 32px;
-	margin: 0;
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-#stg .cqb-browse {
-	position: relative;
-	flex: none;
-	width: 36px;
-	min-height: 32px;
-	margin: 0;
-	padding: 0;
-	background-color: var(--qb-surface-2);
-	background-image: none;
-	border: 1px solid var(--qb-border);
-	border-left: 0;
-	border-radius: 0 var(--qb-radius) var(--qb-radius) 0;
-	cursor: pointer;
-}
-
-#stg .cqb-browse::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background-color: var(--qb-icon);
-	-webkit-mask: url(../images/icons/file-folder.svg) center / 16px no-repeat;
-	mask: url(../images/icons/file-folder.svg) center / 16px no-repeat;
-}
-
-#stg .cqb-browse:hover { background-color: var(--qb-surface-3); }
-#stg .cqb-browse:hover::before { background-color: var(--qb-icon-hover); }
-
-#stg .cqb-browse:focus-visible {
-	outline: 2px solid var(--qb-ring);
-	outline-offset: 1px;
-	z-index: 1;
-}
-
 /* Advanced key tiles: human label, raw-key subtext, byte hint. */
 #stg .cqb-ao-field > label {
 	margin-bottom: 1px;

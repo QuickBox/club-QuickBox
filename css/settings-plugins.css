@@ -11,36 +11,6 @@
  */
 
 /* ============================================================
- * Path field + browse button: one attached input group
- * (input and a 36px folder icon-button share a border, inner corners square)
- * ============================================================ */
-#stg .cqb-input-group {
-	display: flex;
-	align-items: stretch;
-}
-
-#stg .cqb-input-group > input,
-#stg .cqb-input-group > select {
-	flex: 1 1 auto;
-	min-width: 0;
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-#stg .cqb-input-group > button.browseButton {
-	flex: none;
-	width: 36px;
-	min-width: 36px;
-	min-height: 32px;
-	margin: 0 0 0 -1px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-}
-
-/* ============================================================
  * Textareas: a sensible height instead of filling the page
  * ============================================================ */
 #stg #st_cookies textarea,

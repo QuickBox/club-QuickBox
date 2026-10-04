@@ -392,11 +392,62 @@
 		return el ? el.getAttribute(attr) === "1" : false;
 	}
 
+	/* Wrap a core rDirBrowser pair (the `.browseEdit` input + its adjacent
+	 * `.browseButton`) into one `.cqb-input-group` so the path field and its
+	 * browse button read as a single control. Nodes move; handlers are bound
+	 * to the elements by core and survive the move, so nothing is re-wired. */
+	function wrapBrowsePair(btn) {
+		if (!btn) return;
+		var input = btn.previousElementSibling;
+		if (!input || !input.classList || !input.classList.contains("browseEdit")) return;
+		var parent = btn.parentNode;
+		if (!parent) return;
+		if (parent.classList && parent.classList.contains("cqb-input-group")) {
+			btn.classList.add("cqb-browse");
+			return; /* already grouped (e.g. a Settings page owns its own) */
+		}
+		var group = document.createElement("div");
+		group.className = "cqb-input-group";
+		parent.insertBefore(group, input);
+		group.appendChild(input);
+		group.appendChild(btn);
+		btn.classList.add("cqb-browse");
+		btn.textContent = "";
+		if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_browse", t("Browse", "Browse")));
+	}
+
+	/* Wrap every already-built browse pair inside a dialog window. */
+	function sweepBrowse() {
+		var btns = document.querySelectorAll(".dlg-window button.browseButton");
+		Array.prototype.forEach.call(btns, wrapBrowsePair);
+	}
+
+	/* Future browse controls are built lazily as plugin dialogs initialise;
+	 * wrap each the moment core creates it, without polling. */
+	var dirPatched = false;
+	function patchDirBrowser() {
+		if (dirPatched) return;
+		if (!window.theWebUI || typeof theWebUI.rDirBrowser !== "function") return;
+		var Orig = theWebUI.rDirBrowser;
+		var Wrapped = function (edit_id, withFiles, height) {
+			var inst = new Orig(edit_id, withFiles, height);
+			try {
+				var b = document.getElementById(edit_id + "_btn");
+				if (b && b.closest && b.closest(".dlg-window")) wrapBrowsePair(b);
+			} catch (e) { /* leave the native control intact */ }
+			return inst;
+		};
+		Wrapped.prototype = Orig.prototype;
+		theWebUI.rDirBrowser = Wrapped;
+		dirPatched = true;
+	}
+
 	/* Both dialogs are preloaded, but the task console is built a little after
 	 * the add dialog; retry (idempotently) until both are decorated. */
 	function run() {
 		try { enhanceAddTorrent(); } catch (e) { /* never break the dialog */ }
 		try { enhanceTaskConsole(); } catch (e) { /* never break the dialog */ }
+		try { sweepBrowse(); patchDirBrowser(); } catch (e) { /* never break the dialog */ }
 		return enhanced("tadd", "data-cqb-add") && enhanced("tskConsole", "data-cqb-tsk");
 	}
 
