@@ -22,7 +22,6 @@ panel-label {
 	--badge-color: var(--qb-fg-muted);
 	--icon-letter-color: var(--qb-fg-muted);
 	--badge-background-color: var(--qb-pill-bg);
-	--status-image: url('../plugins/theme/themes/club-QuickBox/images/status_icons.png');
 }
 
 panel-label:hover {
@@ -40,19 +39,70 @@ panel-label[selected]:hover {
 	background-color: var(--qb-surface-3);
 }
 
-panel-label[icon="file"] { --icon-offset: 0 -256px; }
+/* Category/view glyphs: SVG masks tinted per state, drawn into the shadow
+ * DOM via the exposed icon part. A fixed 16px box plus an 8px gap keeps the
+ * glyph column off the label text; url: favicons and single letters are left
+ * to the core (no exact selector matches them). */
+panel-label[icon="all"]::part(icon),
+panel-label[icon="down"]::part(icon),
+panel-label[icon="up"]::part(icon),
+panel-label[icon="up-down"]::part(icon),
+panel-label[icon="inactive"]::part(icon),
+panel-label[icon="paused"]::part(icon),
+panel-label[icon="completed"]::part(icon),
+panel-label[icon="checking"]::part(icon),
+panel-label[icon="error"]::part(icon),
+panel-label[icon="error-down"]::part(icon),
+panel-label[icon="error-up"]::part(icon),
+panel-label[icon="queued-down"]::part(icon),
+panel-label[icon="queued-up"]::part(icon),
+panel-label[icon="search"]::part(icon),
+panel-label[icon="rss"]::part(icon),
+panel-label[icon="rss-dis"]::part(icon),
+panel-label[icon="rss-group"]::part(icon),
+panel-label[icon="file"]::part(icon),
+panel-label[icon="directory"]::part(icon),
+panel-label[icon="config"]::part(icon),
+panel-label[icon="tag"]::part(icon),
+panel-label[icon="measure"]::part(icon),
+panel-label[icon="storage"]::part(icon) {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	background-image: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 16px;
+	mask-size: 16px;
+}
 
-panel-label[icon="directory"] { --icon-offset: 0 -272px; }
-
-panel-label[icon="config"] { --icon-offset: 0 -288px; }
-
-panel-label[icon="tag"] { --icon-offset: 0 -304px; }
-
-panel-label[icon="measure"] { --icon-offset: 0 -320px; }
-
-panel-label[icon="storage"] { --icon-offset: 0 -336px; }
-
-panel-label[icon="search"] { --icon-offset: 0 -352px; }
+panel-label[icon="all"]::part(icon) { -webkit-mask-image: url(../images/icons/sidebar-all.svg); mask-image: url(../images/icons/sidebar-all.svg); }
+panel-label[icon="down"]::part(icon) { -webkit-mask-image: url(../images/icons/state-downloading.svg); mask-image: url(../images/icons/state-downloading.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-seeding.svg); mask-image: url(../images/icons/state-seeding.svg); background-color: var(--qb-state-seeding); }
+panel-label[icon="up-down"]::part(icon) { -webkit-mask-image: url(../images/icons/state-active.svg); mask-image: url(../images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="inactive"]::part(icon) { -webkit-mask-image: url(../images/icons/state-stopped.svg); mask-image: url(../images/icons/state-stopped.svg); background-color: var(--qb-state-stopped); }
+panel-label[icon="paused"]::part(icon) { -webkit-mask-image: url(../images/icons/state-paused.svg); mask-image: url(../images/icons/state-paused.svg); background-color: var(--qb-state-paused); }
+panel-label[icon="completed"]::part(icon) { -webkit-mask-image: url(../images/icons/state-finished.svg); mask-image: url(../images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
+panel-label[icon="checking"]::part(icon) { -webkit-mask-image: url(../images/icons/state-checking.svg); mask-image: url(../images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="error"]::part(icon),
+panel-label[icon="error-down"]::part(icon),
+panel-label[icon="error-up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-error.svg); mask-image: url(../images/icons/state-error.svg); background-color: var(--qb-state-error); }
+panel-label[icon="queued-down"]::part(icon),
+panel-label[icon="queued-up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-queued.svg); mask-image: url(../images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
+panel-label[icon="search"]::part(icon) { -webkit-mask-image: url(../images/icons/toolbar-search.svg); mask-image: url(../images/icons/toolbar-search.svg); }
+panel-label[icon="rss"]::part(icon),
+panel-label[icon="rss-group"]::part(icon) { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); }
+panel-label[icon="rss-dis"]::part(icon) { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); background-color: var(--qb-fg-muted); }
+panel-label[icon="file"]::part(icon) { -webkit-mask-image: url(../images/icons/file-generic.svg); mask-image: url(../images/icons/file-generic.svg); }
+panel-label[icon="directory"]::part(icon) { -webkit-mask-image: url(../images/icons/file-folder.svg); mask-image: url(../images/icons/file-folder.svg); }
+panel-label[icon="config"]::part(icon) { -webkit-mask-image: url(../images/icons/toolbar-settings.svg); mask-image: url(../images/icons/toolbar-settings.svg); }
+panel-label[icon="tag"]::part(icon) { -webkit-mask-image: url(../images/icons/header-label.svg); mask-image: url(../images/icons/header-label.svg); }
+panel-label[icon="measure"]::part(icon),
+panel-label[icon="storage"]::part(icon) { -webkit-mask-image: url(../images/icons/meter-disk.svg); mask-image: url(../images/icons/meter-disk.svg); }
 
 /* Category list */
 #CatList,
@@ -112,7 +162,6 @@ category-list {
 .label-icon {
 	min-width: 16px;
 	min-height: 16px;
-	background-image: url('../images/status_icons.png');
 	background-repeat: no-repeat;
 }
 
@@ -127,7 +176,6 @@ category-list {
 
 .label-icon img[id^="lbl_"] {
 	width: 16px;
-	background-image: url('../images/status_icons.png');
 	background-repeat: no-repeat;
 }
 
