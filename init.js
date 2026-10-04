@@ -97,20 +97,23 @@
 			lk.onerror = cssDone;
 		}
 	}
-	/* Catch the sheets the plugin inserts after this file runs; stop once all
-	 * three are keyed, with a safety cap so the observer never lingers. */
+	/* The theme plugin loads some self-sheets after this file runs -- notably it
+	 * calls loadCSS("plugins") twice (once in its config hook, once in allDone),
+	 * and the allDone one fires AFTER the three sheets are first keyed. Stopping
+	 * the observer on allSheetsKeyed() or a timer therefore missed that second
+	 * insertion and left an unkeyed, stale-cacheable duplicate. So the observer
+	 * runs for the session: it keys the first link for each self-sheet and drops
+	 * every later duplicate (rekeyLink), leaving exactly one keyed link per sheet
+	 * on every load. A <link> add from any other plugin is a cheap no-op. */
 	if (!allSheetsKeyed() && window.MutationObserver) {
-		var headObs = new MutationObserver(function (muts) {
+		new MutationObserver(function (muts) {
 			for (var mi = 0; mi < muts.length; mi++) {
 				var added = muts[mi].addedNodes;
 				for (var ai = 0; ai < added.length; ai++) {
 					if (added[ai] && added[ai].tagName === "LINK") rekeyLink(added[ai]);
 				}
 			}
-			if (allSheetsKeyed()) headObs.disconnect();
-		});
-		headObs.observe(document.head || root, { childList: true });
-		setTimeout(function () { headObs.disconnect(); }, 10000);
+		}).observe(document.head || root, { childList: true });
 	}
 	setTimeout(clearHold, 2500);
 
