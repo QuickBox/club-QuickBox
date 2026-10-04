@@ -96,7 +96,7 @@
 	 * (it loads plugins/theme/lang/*.js), so register inline; a future loaded
 	 * catalog can still override via the ||. */
 	theUILang.qbAppearance = theUILang.qbAppearance || "Appearance";
-	theUILang.qbVariantAuto = theUILang.qbVariantAuto || "Auto (follow dashboard)";
+	theUILang.qbVariantAuto = theUILang.qbVariantAuto || "Auto (dashboard)";
 	theUILang.qbVariantSpectre = theUILang.qbVariantSpectre || "Spectre";
 	theUILang.qbVariantReel = theUILang.qbVariantReel || "Reel";
 

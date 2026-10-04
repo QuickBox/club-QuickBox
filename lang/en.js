@@ -7,6 +7,6 @@
  */
 
 theUILang.qbAppearance      = "Appearance";
-theUILang.qbVariantAuto     = "Auto (follow dashboard)";
+theUILang.qbVariantAuto     = "Auto (dashboard)";
 theUILang.qbVariantSpectre  = "Spectre";
 theUILang.qbVariantReel     = "Reel";
