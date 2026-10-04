@@ -177,9 +177,7 @@ div.stable-body table tbody tr.even:hover:nth-child(2n+1) td {
 	text-shadow: none;
 }
 
-.stable-body tr.selected td:first-child {
-	box-shadow: inset 2px 0 0 0 var(--qb-primary);
-}
+/* Selected row = tint only (no left-edge accent bar). */
 
 /* First numeric sub-column stays muted for scan hierarchy. */
 div.stable-body table tbody tr.even td:nth-child(2n+1) {

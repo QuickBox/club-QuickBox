@@ -62,7 +62,26 @@
 		watch(document.getElementById("FileList"));
 	}
 
+	/* The core ships the Size column at 70px, too narrow for values like
+	 * "756.00 MiB"; lift it to a fit floor (by stable column id, only when
+	 * narrower, so a user who widened it keeps their width). */
+	var WIDTH_FLOOR = { size: 84 };
+	function enforceColumnWidths() {
+		try {
+			var t = window.theWebUI && theWebUI.tables ? theWebUI.tables.trt : null;
+			var obj = t && t.obj;
+			if (!obj || !obj.colsdata) return;
+			var changed = false;
+			obj.colsdata.forEach(function (c) {
+				var floor = WIDTH_FLOOR[c.id];
+				if (floor && (parseInt(c.width, 10) || 0) < floor) { c.width = floor; changed = true; }
+			});
+			if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn();
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	init();
+	enforceColumnWidths();
 	/* Tables can finish rendering just after this module is injected. */
-	setTimeout(init, 1200);
+	setTimeout(function () { init(); enforceColumnWidths(); }, 1200);
 })(window.cqb);

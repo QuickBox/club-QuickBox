@@ -180,6 +180,10 @@ td:has(> .meter-value) .meter-value {
 	min-width: 0;
 	float: none;
 	z-index: 1;
+	/* The core writes an inline background-color (black when the gradient
+	 * is unpainted), so force the brand gradient to keep the fill visible. */
+	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
+	border: 0 !important;
 }
 
 td:has(> .meter-value) .meter-text {
