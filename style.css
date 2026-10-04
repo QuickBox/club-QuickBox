@@ -45,6 +45,14 @@
 	--qb-prg-start: #26ae7f;
 	--qb-prg-end: #2aebcb;
 	--qb-pill-bg: rgba(0, 0, 0, 0.28);
+	/* Icon color tokens (round 2 wires the SVG icon set via mask-image). */
+	--qb-icon: #94a3b8;
+	--qb-icon-hover: #e0e6ed;
+	--qb-state-downloading: #38bdf8;
+	--qb-state-seeding: #26ae7f;
+	--qb-state-paused: #fbbf24;
+	--qb-state-stopped: #94a3b8;
+	--qb-state-error: #e7515a;
 }
 
 :root[data-qb-variant="reel"] {
@@ -81,6 +89,13 @@
 	--qb-prg-start: #cc8c00;
 	--qb-prg-end: #f0a500;
 	--qb-pill-bg: rgba(0, 0, 0, 0.3);
+	--qb-icon: #9c958d;
+	--qb-icon-hover: #e3e0db;
+	--qb-state-downloading: #38bdf8;
+	--qb-state-seeding: #f0a500;
+	--qb-state-paused: #d9a441;
+	--qb-state-stopped: #9c958d;
+	--qb-state-error: #e7515a;
 }
 
 /* ============================================================

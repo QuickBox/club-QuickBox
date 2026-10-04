@@ -9,9 +9,11 @@
  *  another tab is followed without a reload.
  *
  *  This file runs inside the theme plugin's init closure: plugin, dxSTable,
- *  thePlugins, theUILang, theWebUI, RGBackground and $ are all in scope.
+ *  thePlugins, theUILang, theWebUI, RGBackground and $ are all in scope. The
+ *  leading semicolon terminates the preceding concatenated statement, whose
+ *  own trailing semicolon is absent, so this IIFE is never read as its call.
  */
-(function () {
+;(function () {
 	var VARIANTS = ["spectre", "reel"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var root = document.documentElement;
