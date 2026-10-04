@@ -43,6 +43,7 @@ theUILang.qbBrowse          = "Browse";
 
 /* Add / Create / task-console dialogs (dialogs.js). */
 theUILang.cqb_add_drop_hint   = "Drag .torrent files here or {browse}";
+theUILang.cqb_tl_drop_hint    = "Drag a .png here or {browse}";
 theUILang.cqb_mi_general      = "General";
 theUILang.cqb_task_mediainfo  = "Media Info";
 theUILang.cqb_task_screenshots = "Screenshots";
@@ -60,6 +61,11 @@ theUILang.cqb_help_trackers   = "One tracker URL per line.";
 theUILang.cqb_help_seed       = "Start seeding as soon as the torrent is created.";
 theUILang.cqb_help_private    = "Mark as private: no DHT or peer exchange.";
 theUILang.cqb_help_hybrid     = "Create a v1 + v2 hybrid torrent.";
+
+/* Inline edit of a torrent option (dialogs.js). */
+theUILang.cqb_edit_yes        = "Yes";
+theUILang.cqb_edit_no         = "No";
+theUILang.cqb_edit_change     = "Change";
 
 /* Chunks pane (chunks.js). */
 theUILang.cqb_chunks_chunks     = "Chunks";

@@ -102,6 +102,12 @@ One thing to know on QuickBox Pro: `qb update rutorrent` checks the theme back o
 
 v1 is frozen now and will not get further updates, because all the new work goes into v2.
 
+## Translations
+
+club-QuickBox ships in English, Danish, German, Spanish, French, Portuguese and Chinese (Simplified), and follows the language you pick in ruTorrent.
+
+Want your language too? See [TRANSLATING.md](TRANSLATING.md) for how to add one and send it in.
+
 ## Credits
 
 The icon glyphs are from [Material Design Icons](https://pictogrammers.com/library/mdi/), used under the Apache License 2.0. club-QuickBox itself is released into the public domain, so you are free to copy, modify and use it anywhere. See [LICENSE](LICENSE).
