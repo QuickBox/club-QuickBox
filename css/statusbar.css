@@ -1,0 +1,55 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- statusbar surface -- the footer status cells and speed arrows.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Status Bar */
+#StatusBar {
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	font-family: inherit;
+	padding: 0px 10px;
+	margin-top: 0px;
+}
+
+#StatusBar table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+#StatusBar table tr td {
+	background-color: var(--qb-surface);
+	border: none;
+	padding-right: 5px;
+}
+
+.statuscell td:not(:last-child) {
+	padding-right: 5px;
+}
+
+#st_up .icon,
+#st_down .icon {
+	height: 21px;
+	width: 21px;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: 6px center;
+	mask-position: 6px center;
+	-webkit-mask-size: 14px;
+	mask-size: 14px;
+}
+
+#st_up .icon { -webkit-mask-image: url(images/icons/statusbar-upload.svg); mask-image: url(images/icons/statusbar-upload.svg); background-color: var(--qb-speed-up); }
+
+#st_down .icon { -webkit-mask-image: url(images/icons/statusbar-download.svg); mask-image: url(images/icons/statusbar-download.svg); background-color: var(--qb-speed-down); }
+
+#stup_speed { color: var(--qb-speed-up) !important; }
+
+#stdown_speed { color: var(--qb-speed-down) !important; }
+
+#stup_total,
+#stdown_total {
+	color: var(--qb-speed-total);
+}

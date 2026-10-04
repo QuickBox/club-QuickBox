@@ -1,0 +1,83 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- details surface -- the details drawer, its tabs and stat text.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+div#tdetails {
+	background-color: var(--qb-surface);
+}
+
+div#lcont {
+	line-height: 1rem;
+	background: var(--qb-surface);
+}
+
+div#tdcont {
+	background: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+/* Tabs */
+.nav-tabs {
+	--bs-nav-tabs-border-width: 1px;
+	--bs-nav-tabs-border-color: var(--qb-border);
+	--bs-nav-tabs-border-radius: var(--qb-radius);
+	--bs-nav-tabs-link-hover-border-color: var(--qb-border) var(--qb-border) var(--qb-border);
+	--bs-nav-tabs-link-active-color: var(--qb-foreground);
+	--bs-nav-tabs-link-active-bg: var(--qb-surface);
+	--bs-nav-tabs-link-active-border-color: var(--qb-border) var(--qb-surface) var(--qb-border);
+	border-bottom: 1px solid var(--qb-border);
+}
+
+.tabbar li.nav-item a.nav-link {
+	border: 1px solid var(--qb-border);
+	background-color: var(--qb-surface-2);
+	margin-bottom: 0px;
+	margin-top: 6px;
+}
+
+.tabbar li.nav-item.selected a.nav-link {
+	border-top: 2px solid var(--qb-primary);
+	color: unset;
+}
+
+.tabbar li.nav-item a.nav-link:hover {
+	border-top: 2px solid var(--qb-primary);
+	color: unset;
+}
+
+div.tab {
+	background-color: var(--qb-surface);
+	font-family: inherit;
+}
+
+div.graph_tab,
+div.table_tab {
+	background-color: var(--qb-surface);
+	color: var(--qb-fg-muted);
+	font-family: inherit;
+}
+
+li#tab_lcont {
+	width: fit-content;
+	display: inline-flex;
+}
+
+/* Detail text colors */
+span#dl,
+span#ds {
+	color: var(--qb-speed-down);
+}
+
+span#ra {
+	color: var(--qb-primary);
+}
+
+span#ul,
+span#us {
+	color: var(--qb-speed-up);
+}
+
+span.det {
+	color: var(--qb-fg-muted);
+}

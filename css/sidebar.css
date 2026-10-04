@@ -1,0 +1,188 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- sidebar surface -- category panels, the category list and labels.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Side / category panels */
+category-panel {
+	color: var(--qb-foreground);
+	--open-background-image: none;
+	--close-background-image: none;
+	--heading-background-color: var(--qb-surface-2);
+	--heading-border-color: transparent;
+}
+
+panel-label {
+	color: var(--qb-foreground);
+	border: none;
+	padding: 4px;
+	background-color: var(--qb-surface);
+	--prefix-color: var(--qb-foreground);
+	--prefix-fontsize: 21px;
+	--badge-color: var(--qb-fg-muted);
+	--icon-letter-color: var(--qb-fg-muted);
+	--badge-background-color: var(--qb-pill-bg);
+	--status-image: url('../plugins/theme/themes/club-QuickBox/images/status_icons.png');
+}
+
+panel-label:hover {
+	background-color: var(--qb-surface-2);
+}
+
+panel-label[selected] {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-primary);
+	text-shadow: none;
+	--badge-color: var(--qb-primary);
+}
+
+panel-label[selected]:hover {
+	background-color: var(--qb-surface-3);
+}
+
+panel-label[icon="file"] { --icon-offset: 0 -256px; }
+
+panel-label[icon="directory"] { --icon-offset: 0 -272px; }
+
+panel-label[icon="config"] { --icon-offset: 0 -288px; }
+
+panel-label[icon="tag"] { --icon-offset: 0 -304px; }
+
+panel-label[icon="measure"] { --icon-offset: 0 -320px; }
+
+panel-label[icon="storage"] { --icon-offset: 0 -336px; }
+
+panel-label[icon="search"] { --icon-offset: 0 -352px; }
+
+/* Category list */
+#CatList,
+category-list {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+#CatList ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#CatList ul li {
+	background-repeat: no-repeat;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font-family: var(--qb-font);
+	font-size: 12px;
+	line-height: 16px;
+	padding: 5px 25px;
+	margin: 0;
+}
+
+#CatList ul li:hover {
+	background-color: var(--qb-surface-2);
+}
+
+#CatList ul li.sel {
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-accent-text);
+}
+
+#CatList ul li span {
+	color: var(--qb-fg-muted);
+}
+
+#CatList ul li.sel span {
+	color: var(--qb-accent-text);
+}
+
+.catpanel {
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 25px;
+	padding: 2px 28px;
+	text-shadow: none;
+}
+
+/* Label icons */
+.label-icon {
+	min-width: 16px;
+	min-height: 16px;
+	background-image: url('images/status_icons.png');
+	background-repeat: no-repeat;
+}
+
+.label-count,
+.label-size {
+	background-color: var(--qb-pill-bg);
+	color: var(--qb-foreground);
+	padding: 0.1em 0.3em;
+	border-radius: 0.8em;
+	font-size: 10px;
+}
+
+.label-icon img[id^="lbl_"] {
+	width: 16px;
+	background-image: url('images/status_icons.png');
+	background-repeat: no-repeat;
+}
+
+.label-icon img[src^="plugins"] {
+	background-image: none;
+	width: 16px;
+}
+
+/* Side panels */
+#offcanvas-sidepanel {
+	background-color: var(--qb-surface) !important;
+	border: 1px solid var(--qb-border) !important;
+}
+
+#side-panel {
+	border: 1px solid var(--qb-border);
+}
+
+category-panel::part(heading) {
+	font-size: 12px;
+}
+
+div[part="heading"] {
+	display: flex;
+	background-color: var(--qb-surface-2);
+	border-top: 1px solid var(--qb-border);
+	border-bottom: 1px solid var(--qb-border);
+	padding: 2px 5px 2px 21px;
+	margin: 0;
+	line-height: 16px;
+	cursor: pointer;
+	user-select: none;
+}
+
+div[part=heading]::before {
+	content: "";
+	display: block;
+	width: 16px;
+	height: 28px !important;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(images/icons/panel-expanded.svg) center / 14px no-repeat;
+	mask: url(images/icons/panel-expanded.svg) center / 14px no-repeat;
+}
+
+:host([closed]) div[part="heading"]::before {
+	-webkit-mask-image: url(images/icons/panel-collapsed.svg);
+	mask-image: url(images/icons/panel-collapsed.svg);
+}
+
+[part="count"],
+[part="size"] {
+	color: var(--qb-foreground);
+	background-color: var(--qb-pill-bg);
+	padding: 0.1em 0.3em;
+	border-radius: 0.8em;
+	font-size: 10px;
+	white-space: nowrap;
+}

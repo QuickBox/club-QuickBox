@@ -1,0 +1,56 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- extras surface -- notifications, capacity meters and plugin chrome.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Notifications */
+.noty_bar.noty_theme_default.noty_error {
+	background-color: var(--qb-destructive);
+	border-color: var(--qb-destructive);
+	color: var(--qb-destructive-fg);
+}
+
+/* Meter values (capacity bars styled via CSS classes read by init.js) */
+.meter-value-start-color {
+	background-color: var(--qb-primary) !important;
+}
+
+.meter-value-end-color {
+	background-color: var(--qb-destructive) !important;
+}
+
+#meter-disk-value,
+#qmeter-band-value,
+#qmeter-disk-value {
+	border: inset 1px var(--qb-border);
+}
+
+#meter-band-text,
+#meter-disk-text,
+#qmeter-disk-text {
+	color: var(--qb-fg-muted);
+	font-family: inherit;
+	font-size: 11px;
+	text-shadow: none;
+	z-index: 1;
+}
+
+#traf_graph_ctrl {
+	margin-top: -5px;
+}
+
+.legendLabel {
+	color: var(--qb-fg-muted) !important;
+}
+
+#PluginList {
+	margin-top: 0;
+}
+
+#maincont {
+	margin: 0;
+}
+
+li.cat.tracker {
+	padding: 3px 4px !important;
+}

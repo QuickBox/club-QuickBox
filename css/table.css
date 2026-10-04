@@ -1,0 +1,163 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- table surface -- torrent/file/peer lists, status icons, dividers.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Dividers */
+#VDivider,
+#HDivider {
+	background-color: var(--qb-border);
+	cursor: n-resize;
+	height: 5px;
+	width: 100%;
+}
+
+#HDivider {
+	cursor: e-resize;
+	width: 5px;
+	height: auto;
+}
+
+#HDivider:hover,
+#VDivider:hover {
+	background-color: var(--qb-primary);
+}
+
+/* Selection marquee */
+#sel {
+	border: 1px dotted var(--qb-ring);
+}
+
+.Icon_Dir, .Icon_File {
+	background-color: var(--qb-icon);
+	background-image: none;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+.Icon_Dir { -webkit-mask-image: url(images/icons/file-folder.svg); mask-image: url(images/icons/file-folder.svg); }
+
+.Icon_File { -webkit-mask-image: url(images/icons/file-generic.svg); mask-image: url(images/icons/file-generic.svg); }
+
+/* Lists / torrent table shell */
+#list-table {
+	border: 1px solid var(--qb-border);
+	background-color: var(--qb-surface);
+}
+
+div#List,
+div#FileList,
+div#PeerList,
+div#Speed,
+div#TrackerList {
+	--header-border-color: var(--qb-border);
+	--header-bg-image: none;
+	--row-border-color: var(--qb-border-soft);
+	--row-odd-bg-color: var(--qb-surface-2);
+	--row-even-bg-color: var(--qb-surface);
+	--row-active-bg-color: var(--qb-surface-3);
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	margin-right: 6px;
+}
+
+div#gcont table {
+	font-family: var(--qb-font);
+	font-size: 12px;
+	line-height: 13px;
+	width: 100%;
+	border-spacing: 0;
+	margin: 0;
+}
+
+div#gcont div.row.Header {
+	font-size: 14px;
+	font-weight: bold;
+	background: var(--qb-surface-2);
+	padding: 0.5rem;
+}
+
+div#gcont table td.Header {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	padding: 8px;
+}
+
+div#gcont table tr {
+	background-color: var(--qb-surface);
+	color: var(--qb-foreground);
+}
+
+div#gcont table tr:nth-child(even) {
+	background-color: var(--qb-surface-2);
+}
+
+div#gcont table tr td {
+	padding: 8px;
+}
+
+/* Torrent-row status/type icon cell: masked glyph, color from the state class */
+.stable-icon {
+	background-image: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 14px;
+	mask-size: 14px;
+}
+
+/* File-list type icons */
+.Icon_Torrent, .Icon_Vid, .Icon_Mp3, .Icon_Img, .Icon_Nfo,
+.Icon_Sfv, .Icon_UpD, .Icon_Rar, .Icon_Zip {
+	background: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: left center;
+	mask-position: left center;
+	-webkit-mask-size: 14px;
+	mask-size: 14px;
+}
+
+.Icon_Torrent { -webkit-mask-image: url(images/icons/file-torrent.svg); mask-image: url(images/icons/file-torrent.svg); }
+
+.Icon_Vid { -webkit-mask-image: url(images/icons/file-video.svg); mask-image: url(images/icons/file-video.svg); }
+
+.Icon_Mp3 { -webkit-mask-image: url(images/icons/file-audio.svg); mask-image: url(images/icons/file-audio.svg); }
+
+.Icon_Img { -webkit-mask-image: url(images/icons/file-image.svg); mask-image: url(images/icons/file-image.svg); }
+
+.Icon_Nfo { -webkit-mask-image: url(images/icons/file-nfo.svg); mask-image: url(images/icons/file-nfo.svg); }
+
+.Icon_Sfv { -webkit-mask-image: url(images/icons/file-sfv.svg); mask-image: url(images/icons/file-sfv.svg); }
+
+.Icon_UpD { -webkit-mask-image: url(images/icons/fm-dir-up.svg); mask-image: url(images/icons/fm-dir-up.svg); }
+
+.Icon_Rar, .Icon_Zip { -webkit-mask-image: url(images/icons/file-archive.svg); mask-image: url(images/icons/file-archive.svg); }
+
+/* Torrent status glyph + per-state token color (set on the .stable-icon cell) */
+.Status_Down { -webkit-mask-image: url(images/icons/toolbar-move-down.svg); mask-image: url(images/icons/toolbar-move-down.svg); background-color: var(--qb-state-downloading); }
+
+.Status_Up { -webkit-mask-image: url(images/icons/toolbar-move-up.svg); mask-image: url(images/icons/toolbar-move-up.svg); background-color: var(--qb-state-seeding); }
+
+.Status_Up_Down { -webkit-mask-image: url(images/icons/state-active.svg); mask-image: url(images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
+
+.Status_Incompleted { -webkit-mask-image: url(images/icons/toolbar-stop.svg); mask-image: url(images/icons/toolbar-stop.svg); background-color: var(--qb-state-stopped); }
+
+.Status_Paused { -webkit-mask-image: url(images/icons/toolbar-pause.svg); mask-image: url(images/icons/toolbar-pause.svg); background-color: var(--qb-state-paused); }
+
+.Status_Error, .Status_Error_Up, .Status_Error_Down { -webkit-mask-image: url(images/icons/state-error.svg); mask-image: url(images/icons/state-error.svg); background-color: var(--qb-state-error); }
+
+.Status_Completed { -webkit-mask-image: url(images/icons/state-finished.svg); mask-image: url(images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
+
+.Status_Queued_Up, .Status_Queued_Down { -webkit-mask-image: url(images/icons/state-queued.svg); mask-image: url(images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
+
+.Status_Checking { -webkit-mask-image: url(images/icons/state-checking.svg); mask-image: url(images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
+
+.Status_RSS { -webkit-mask-image: url(images/icons/toolbar-rss.svg); mask-image: url(images/icons/toolbar-rss.svg); background-color: var(--qb-accent-text); }

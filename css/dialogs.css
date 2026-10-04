@@ -1,0 +1,230 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- dialogs surface -- modals, the settings window and context menus.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Dialog Close Button */
+a.dlg-close {
+	background: var(--qb-icon);
+	-webkit-mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+	border: none;
+	float: right;
+	height: 14px;
+	margin: 5px;
+	width: 14px;
+}
+
+a.dlg-close:hover {
+	background: var(--qb-icon-hover);
+	-webkit-mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+}
+
+/* Context Menu */
+.CMenu li a::before,
+.CMenu li a::after {
+	content: "";
+	display: block;
+	width: 0;
+	height: 1rem;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+ul.CMenu {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	box-shadow: var(--qb-shadow-soft);
+	opacity: 0.99;
+	width: 180px;
+	padding: 0;
+	list-style: none;
+}
+
+ul.CMenu li {
+	background-color: var(--qb-surface);
+	width: 180px;
+}
+
+ul.CMenu li:hover {
+	background-color: var(--qb-surface-2);
+}
+
+ul.CMenu li.menuitem:first-child { border-radius: var(--qb-radius) var(--qb-radius) 0 0; }
+
+ul.CMenu li.menuitem:last-child { border-radius: 0 0 var(--qb-radius) var(--qb-radius); }
+
+ul.CMenu li a {
+	background: transparent;
+	color: var(--qb-foreground);
+	padding: 3px 14px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+ul.CMenu li a.dis,
+ul.CMenu li a.dis:hover {
+	color: var(--qb-fg-muted);
+	opacity: 0.5;
+}
+
+ul.CMenu li hr {
+	background-color: var(--qb-border);
+	border: none;
+	border-bottom: 1px solid var(--qb-border);
+	height: 1px;
+	margin: 0;
+	padding: 0;
+}
+
+ul.CMenu li a.exp::after {
+	width: 0.9rem;
+	margin-left: auto;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask-image: url(images/icons/menu-expand.svg);
+	mask-image: url(images/icons/menu-expand.svg);
+}
+
+ul.CMenu li a.exp:hover::after { background-color: var(--qb-primary-fg); }
+
+ul.CMenu li a.sel::before {
+	width: 0.9rem;
+	background-color: var(--qb-primary);
+	-webkit-mask-image: url(images/icons/menu-check.svg);
+	mask-image: url(images/icons/menu-check.svg);
+}
+
+ul.CMenu li a.sel:hover::before { background-color: var(--qb-primary-fg); }
+
+ul.CMenu li a.sel {
+	color: var(--qb-primary);
+}
+
+ul.CMenu li ul li a.sel {
+	color: var(--qb-primary);
+}
+
+ul.CMenu li a:hover {
+	background-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-family: var(--qb-font);
+	font-weight: 600;
+	text-shadow: none;
+}
+
+ul.CMenu li:hover ul li a {
+	background-color: var(--qb-surface);
+	color: var(--qb-fg-muted);
+}
+
+ul.CMenu li:hover ul li a:hover {
+	background-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	text-shadow: none;
+}
+
+ul.CMenu li ul li a.dis,
+ul.CMenu li ul li a.dis:hover {
+	background-color: var(--qb-surface);
+	color: var(--qb-fg-muted);
+	opacity: 0.5;
+}
+
+/* Modals / dialogs */
+#modalbg {
+	background-color: var(--qb-overlay);
+}
+
+div#modalbg {
+	background-color: var(--qb-overlay);
+	opacity: 0.7;
+}
+
+div.dlg-window {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow);
+	color: var(--qb-foreground);
+	padding: 0;
+}
+
+div#stg_c {
+	display: flex;
+	flex-direction: row;
+	background-color: var(--qb-surface);
+}
+
+div#stg .lm {
+	flex: 0 0 auto;
+	padding: 0.25rem 0.5rem;
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: 0 0 0 var(--qb-radius-lg);
+	overflow: hidden auto;
+}
+
+.lm li a {
+	color: var(--qb-foreground);
+	padding: 1px 2px;
+	flex-grow: 1;
+}
+
+.lm li a.focus {
+	background-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	border-radius: var(--qb-radius);
+}
+
+div#stg-pages {
+	padding: 0 0.5rem;
+	height: 550px;
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	overflow-x: auto;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+.stg_con {
+	display: none;
+	margin-bottom: auto;
+	background-color: var(--qb-surface);
+	overflow: hidden auto;
+}
+
+.stg_con legend {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	margin: 0 0 0.4rem 0;
+	padding: 3px 8px;
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+	border-radius: var(--qb-radius);
+}
+
+div.dlg-header {
+	background-color: var(--qb-surface-2);
+	border-bottom: 1px solid var(--qb-border);
+	font-family: var(--qb-font);
+	font-size: 14px;
+	padding: 0.75rem 0.75rem 0.75rem 3rem;
+	color: var(--qb-foreground);
+}
+
+#tskConsole {
+	width: 620px;
+	height: auto;
+}

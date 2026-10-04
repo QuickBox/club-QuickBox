@@ -1,0 +1,301 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- base surface -- document, forms, buttons, links, scrollbars, loader.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+body,
+html {
+	background-color: var(--qb-background);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	text-shadow: none;
+	margin: 0;
+	padding: 0;
+	line-height: 1.5;
+}
+
+/* Preload Images */
+#preload {
+	display: none;
+	background-image: url('images/status_icons.png'), url('images/headers.png');
+	background-repeat: no-repeat;
+}
+
+/* Loading Indicator: pure-CSS token-colored ring, no raster */
+#ind {
+	width: 28px;
+	height: 28px;
+	background: none;
+	border: 3px solid var(--qb-border);
+	border-top-color: var(--qb-primary);
+	border-radius: 50%;
+	animation: qb-spin 0.8s linear infinite;
+	cursor: default;
+}
+
+@keyframes qb-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* General Links */
+a {
+	color: var(--qb-accent-text);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	text-decoration: none;
+}
+
+a:hover,
+a:focus {
+	color: var(--qb-primary);
+	text-decoration: underline;
+}
+
+.dropdown-menu {
+	--bs-dropdown-border-color: var(--menu-border-color);
+	--bs-dropdown-bg: var(--menu-background-color);
+	--bs-dropdown-link-color: var(--menu-color);
+	--bs-dropdown-link-active-color: var(--menu-highlight-color);
+	--bs-dropdown-link-active-bg: var(--menu-highlight-background-color);
+	--bs-dropdown-link-hover-color: var(--menu-highlight-color);
+	--bs-dropdown-link-hover-bg: var(--menu-highlight-background-color);
+}
+
+.list-group {
+	--bs-list-group-border-color: transparent;
+	--bs-list-group-border-width: 0;
+	--bs-list-group-bg: var(--menu-background-color);
+	--bs-list-group-color: var(--menu-color);
+	--bs-list-group-active-color: var(--menu-highlight-color);
+	--bs-list-group-active-border-color: transparent;
+	--bs-list-group-active-bg: var(--menu-highlight-background-color);
+	--bs-list-group-action-hover-color: var(--menu-highlight-color);
+	--bs-list-group-action-hover-bg: var(--menu-highlight-background-color);
+	--bs-list-group-action-active-color: var(--menu-highlight-color);
+	--bs-list-group-action-active-bg: var(--menu-highlight-background-color);
+	--bs-list-group-item-padding-x: 0.25rem;
+	--bs-list-group-item-padding-y: 0.25rem;
+}
+
+/* Bootstrap 5 form controls + buttons */
+.form-control,
+.form-select {
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	border-radius: var(--qb-radius);
+}
+
+.form-control:focus,
+.form-select:focus {
+	background-color: var(--qb-input);
+	border-color: var(--qb-ring);
+	color: var(--qb-foreground);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+.form-control::placeholder {
+	color: var(--qb-fg-muted);
+	opacity: 1;
+}
+
+.btn {
+	border-radius: var(--qb-radius);
+}
+
+.btn-primary {
+	--bs-btn-bg: var(--qb-primary);
+	--bs-btn-border-color: var(--qb-primary);
+	--bs-btn-color: var(--qb-primary-fg);
+	--bs-btn-hover-bg: var(--qb-accent);
+	--bs-btn-hover-border-color: var(--qb-accent);
+	--bs-btn-hover-color: var(--qb-accent-fg);
+	--bs-btn-active-bg: var(--qb-accent);
+	--bs-btn-active-border-color: var(--qb-accent);
+}
+
+.btn-secondary,
+.btn-default {
+	--bs-btn-bg: var(--qb-surface-2);
+	--bs-btn-border-color: var(--qb-border);
+	--bs-btn-color: var(--qb-foreground);
+	--bs-btn-hover-bg: var(--qb-surface-3);
+	--bs-btn-hover-border-color: var(--qb-border);
+	--bs-btn-hover-color: var(--qb-foreground);
+}
+
+/* Horizontal Rule */
+hr {
+	border: none;
+	border-top: 1px solid var(--qb-border);
+	margin: 1em 0;
+	height: 1px;
+}
+
+/* Containers */
+#cover {
+	background-color: var(--qb-background);
+}
+
+#msg {
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	border-bottom: 1px solid var(--qb-border);
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	font-weight: 700;
+	text-shadow: none;
+	padding: 10px;
+}
+
+#sc {
+	border: 1px solid var(--qb-border);
+	background-color: var(--qb-background);
+}
+
+#sc li.se_act div {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+}
+
+#lng {
+	background-color: var(--qb-background);
+	border: 1px solid var(--qb-border);
+}
+
+/* Fieldsets + inputs */
+fieldset {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	margin: 0.25rem 0;
+	padding: 0.25rem 0.5rem;
+}
+
+input[type="file"],
+input[type="password"],
+input[type=number],
+input[type="text"],
+select {
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	border-radius: var(--qb-radius);
+}
+
+input[type="file"][disabled],
+input[type="password"][disabled],
+input[type=number][disabled],
+input[type="text"][disabled],
+select[disabled] {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	opacity: 0.6;
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--qb-fg-muted);
+	opacity: 1;
+}
+
+input.Button {
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	cursor: pointer;
+	padding: 6px 12px;
+	font-weight: 400;
+	border-radius: var(--qb-radius);
+	font-size: 14px;
+	transition: background-color 0.2s ease;
+}
+
+input.Button:hover,
+input.Button:focus {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+	text-shadow: none;
+}
+
+input:focus-visible,
+select:focus-visible,
+button:focus-visible,
+a.Button:focus-visible,
+.nav-link:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Textarea */
+textarea {
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	padding: 10px;
+	border-radius: var(--qb-radius);
+}
+
+textarea[disabled] {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	opacity: 0.6;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+	width: 12px;
+	height: 12px;
+}
+
+::-webkit-scrollbar-button {
+	display: none;
+}
+
+::-webkit-scrollbar-track-piece {
+	background-color: var(--qb-scrollbar-track);
+	border: 1px solid var(--qb-scrollbar-track);
+	border-radius: var(--qb-radius-lg);
+}
+
+::-webkit-scrollbar-thumb {
+	background-color: var(--qb-scrollbar-thumb);
+	border-radius: var(--qb-radius-lg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--qb-scrollbar-thumb-hover);
+}
+
+* {
+	scrollbar-color: var(--qb-scrollbar-thumb) var(--qb-scrollbar-track);
+}
+
+legend {
+	color: var(--qb-fg-muted);
+}
+
+/* Generic buttons */
+button:not(:disabled):hover,
+input[type=button]:not(:disabled):hover,
+a.Button:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+}
+
+button,
+input[type=button],
+input[type=submit],
+.Button {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	margin: 0.25rem;
+	padding: 1px 10px;
+	background: var(--qb-surface-2);
+	color: var(--qb-foreground);
+	width: 80px;
+	text-wrap: nowrap;
+	font-size: 12px;
+}

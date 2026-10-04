@@ -18,6 +18,12 @@
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var root = document.documentElement;
 
+	/* Load the per-surface CSS modules moved out of style.css. The array
+	 * order is the cascade order (base first, extras last); each resolves to
+	 * plugins/theme/themes/club-QuickBox/css/<name>.css via plugin.path. */
+	["base", "topbar", "sidebar", "table", "details", "dialogs", "statusbar", "extras"]
+		.forEach(function (name) { plugin.loadCSS("css/" + name); });
+
 	function storedOverride() {
 		try {
 			var v = window.localStorage.getItem(OVERRIDE_KEY);
