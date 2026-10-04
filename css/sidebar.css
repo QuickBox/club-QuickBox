@@ -1,0 +1,400 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- sidebar surface -- category panels, the category list and labels.
+ *  Moved out of style.css; every color reads from a --qb-* token.
+ */
+
+/* Side / category panels. Section headings are flat (no bands): 11px
+ * uppercase muted with a tinted SVG chevron; the raster chevron is killed. */
+category-panel {
+	color: var(--qb-foreground);
+	--open-background-image: none;
+	--close-background-image: none;
+	--heading-background-color: transparent;
+	--heading-border-color: transparent;
+}
+
+category-panel::part(heading) {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--qb-fg-muted);
+	padding: 14px 8px 4px;
+}
+
+category-panel::part(heading)::before {
+	width: 14px !important;
+	height: 14px !important;
+	background: var(--qb-fg-muted) !important;
+	-webkit-mask: url(../images/icons/panel-expanded.svg) center / 12px no-repeat !important;
+	mask: url(../images/icons/panel-expanded.svg) center / 12px no-repeat !important;
+}
+
+/* Rows: 34px, radius 8, inset 8px from the panel edge; glyph + gap + label. */
+panel-label {
+	color: var(--qb-foreground);
+	border: none;
+	min-height: 34px;
+	margin: 1px 8px;
+	padding: 0 8px;
+	border-radius: var(--qb-radius);
+	font-size: 13px;
+	background-color: transparent;
+	--prefix-color: var(--qb-foreground);
+	--prefix-fontsize: 21px;
+	--badge-color: var(--qb-fg-muted);
+	--icon-letter-color: var(--qb-fg-muted);
+	--badge-background-color: var(--qb-pill-bg);
+	--badge-padding: 0 6px;
+	--badge-border-radius: 999px;
+}
+
+panel-label:hover {
+	background-color: var(--qb-surface-2);
+}
+
+panel-label[selected] {
+	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	color: var(--qb-primary-text);
+	font-weight: 500;
+	text-shadow: none;
+	--badge-color: var(--qb-primary-text);
+}
+
+panel-label[selected]:hover {
+	background-color: color-mix(in srgb, var(--qb-primary) 18%, transparent);
+}
+
+/* Count is a right-aligned circle for one digit (min-width = height), growing
+ * into a pill once a second digit arrives; size trails it as muted text. */
+panel-label::part(count) {
+	margin-left: auto;
+	box-sizing: border-box;
+	min-width: 20px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+}
+
+panel-label::part(size) {
+	background: transparent !important;
+	color: var(--qb-fg-muted) !important;
+	padding: 0 0 0 4px !important;
+	border-radius: 0 !important;
+}
+
+/* The "No Label" bucket ships a red raster via tracklabels; mask it to an SVG. */
+panel-label[icon$="label=nlb"]::part(icon) {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	background-image: none !important;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/header-label.svg) center / 16px no-repeat;
+	mask: url(../images/icons/header-label.svg) center / 16px no-repeat;
+}
+
+/* The "save view" control in the Views heading: a square 24x24 icon button
+ * (radius 6, 14px muted glyph) rather than the stock bordered box. The glyph
+ * is a ::before mask so the button itself can carry a hover surface; the core
+ * click handler stays intact. */
+#pview_save_view_button.Button {
+	position: relative;
+	box-sizing: border-box;
+	min-width: 24px;
+	width: 24px;
+	min-height: 24px;
+	height: 24px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 6px;
+	font-size: 0;
+	background-color: transparent;
+	background-image: none;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+#pview_save_view_button.Button::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/toolbar-add.svg) center / 14px no-repeat;
+	mask: url(../images/icons/toolbar-add.svg) center / 14px no-repeat;
+}
+
+#pview_save_view_button.Button:hover {
+	background-color: var(--qb-surface-2);
+}
+
+#pview_save_view_button.Button:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+#pview_save_view_button.Button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* Category/view glyphs: SVG masks tinted per state, drawn into the shadow
+ * DOM via the exposed icon part. A fixed 16px box plus an 8px gap keeps the
+ * glyph column off the label text; url: favicons and single letters are left
+ * to the core (no exact selector matches them). */
+panel-label[icon="all"]::part(icon),
+panel-label[icon="down"]::part(icon),
+panel-label[icon="up"]::part(icon),
+panel-label[icon="up-down"]::part(icon),
+panel-label[icon="inactive"]::part(icon),
+panel-label[icon="paused"]::part(icon),
+panel-label[icon="completed"]::part(icon),
+panel-label[icon="checking"]::part(icon),
+panel-label[icon="error"]::part(icon),
+panel-label[icon="error-down"]::part(icon),
+panel-label[icon="error-up"]::part(icon),
+panel-label[icon="queued-down"]::part(icon),
+panel-label[icon="queued-up"]::part(icon),
+panel-label[icon="search"]::part(icon),
+panel-label[icon="rss"]::part(icon),
+panel-label[icon="rss-dis"]::part(icon),
+panel-label[icon="rss-group"]::part(icon),
+panel-label[icon="file"]::part(icon),
+panel-label[icon="directory"]::part(icon),
+panel-label[icon="config"]::part(icon),
+panel-label[icon="tag"]::part(icon),
+panel-label[icon="measure"]::part(icon),
+panel-label[icon="storage"]::part(icon) {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	background-image: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 16px;
+	mask-size: 16px;
+}
+
+panel-label[icon="all"]::part(icon) { -webkit-mask-image: url(../images/icons/sidebar-all.svg); mask-image: url(../images/icons/sidebar-all.svg); }
+panel-label[icon="down"]::part(icon) { -webkit-mask-image: url(../images/icons/state-downloading.svg); mask-image: url(../images/icons/state-downloading.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-seeding.svg); mask-image: url(../images/icons/state-seeding.svg); background-color: var(--qb-state-seeding); }
+panel-label[icon="up-down"]::part(icon) { -webkit-mask-image: url(../images/icons/state-active.svg); mask-image: url(../images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="inactive"]::part(icon) { -webkit-mask-image: url(../images/icons/state-stopped.svg); mask-image: url(../images/icons/state-stopped.svg); background-color: var(--qb-state-stopped); }
+panel-label[icon="paused"]::part(icon) { -webkit-mask-image: url(../images/icons/state-paused.svg); mask-image: url(../images/icons/state-paused.svg); background-color: var(--qb-state-paused); }
+panel-label[icon="completed"]::part(icon) { -webkit-mask-image: url(../images/icons/state-finished.svg); mask-image: url(../images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
+panel-label[icon="checking"]::part(icon) { -webkit-mask-image: url(../images/icons/state-checking.svg); mask-image: url(../images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
+panel-label[icon="error"]::part(icon),
+panel-label[icon="error-down"]::part(icon),
+panel-label[icon="error-up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-error.svg); mask-image: url(../images/icons/state-error.svg); background-color: var(--qb-state-error); }
+panel-label[icon="queued-down"]::part(icon),
+panel-label[icon="queued-up"]::part(icon) { -webkit-mask-image: url(../images/icons/state-queued.svg); mask-image: url(../images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
+panel-label[icon="search"]::part(icon) { -webkit-mask-image: url(../images/icons/toolbar-search.svg); mask-image: url(../images/icons/toolbar-search.svg); }
+panel-label[icon="rss"]::part(icon),
+panel-label[icon="rss-group"]::part(icon) { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); }
+panel-label[icon="rss-dis"]::part(icon) { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); background-color: var(--qb-fg-muted); }
+panel-label[icon="file"]::part(icon) { -webkit-mask-image: url(../images/icons/file-generic.svg); mask-image: url(../images/icons/file-generic.svg); }
+panel-label[icon="directory"]::part(icon) { -webkit-mask-image: url(../images/icons/file-folder.svg); mask-image: url(../images/icons/file-folder.svg); }
+panel-label[icon="config"]::part(icon) { -webkit-mask-image: url(../images/icons/toolbar-settings.svg); mask-image: url(../images/icons/toolbar-settings.svg); }
+panel-label[icon="tag"]::part(icon) { -webkit-mask-image: url(../images/icons/header-label.svg); mask-image: url(../images/icons/header-label.svg); }
+panel-label[icon="measure"]::part(icon),
+panel-label[icon="storage"]::part(icon) { -webkit-mask-image: url(../images/icons/meter-disk.svg); mask-image: url(../images/icons/meter-disk.svg); }
+
+/* Category list */
+#CatList,
+category-list {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+#CatList ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#CatList ul li {
+	background-repeat: no-repeat;
+	border: 1px solid transparent;
+	cursor: pointer;
+	font-family: var(--qb-font);
+	font-size: 12px;
+	line-height: 16px;
+	padding: 5px 25px;
+	margin: 0;
+}
+
+#CatList ul li:hover {
+	background-color: var(--qb-surface-2);
+}
+
+#CatList ul li.sel {
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	color: var(--qb-accent-text);
+}
+
+#CatList ul li span {
+	color: var(--qb-fg-muted);
+}
+
+#CatList ul li.sel span {
+	color: var(--qb-accent-text);
+}
+
+.catpanel {
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 25px;
+	padding: 2px 28px;
+	text-shadow: none;
+}
+
+/* Label icons */
+.label-icon {
+	min-width: 16px;
+	min-height: 16px;
+	background-repeat: no-repeat;
+}
+
+.label-count,
+.label-size {
+	background-color: var(--qb-pill-bg);
+	color: var(--qb-foreground);
+	padding: 0.1em 0.3em;
+	border-radius: 0.8em;
+	font-size: 10px;
+}
+
+.label-icon img[id^="lbl_"] {
+	width: 16px;
+	background-repeat: no-repeat;
+}
+
+.label-icon img[src^="plugins"] {
+	background-image: none;
+	width: 16px;
+}
+
+/* Side panels */
+#offcanvas-sidepanel {
+	background-color: var(--qb-surface) !important;
+	border: 1px solid var(--qb-border) !important;
+}
+
+#side-panel {
+	border: 1px solid var(--qb-border);
+}
+
+/* ============================================================
+ * Icon rail -- the collapsed sidebar (data-cqb-rail on <html>).
+ * The 264px sidebar drops to a fixed 76px column; the main column
+ * (flex:1 1 auto) reclaims the space. Rows become a centered 20px glyph
+ * in a 36px target with the count as a corner badge; labels/size hide and
+ * the custom tooltip carries "Label (count)". Section headings collapse to
+ * hairline separators. Active = tint + primary-text, no edge bar. Every
+ * core panel-label click/filter handler is untouched.
+ * ============================================================ */
+:root[data-cqb-rail] #offcanvas-sidepanel {
+	flex: 0 0 76px !important;
+	width: 76px !important;
+	min-width: 76px !important;
+	max-width: 76px !important;
+	overflow-x: hidden;
+}
+
+/* Lock the sidebar divider while collapsed so the stored hsplit survives
+ * untouched and restores on expand (the rail width wins meanwhile). */
+:root[data-cqb-rail] #HDivider {
+	pointer-events: none;
+	cursor: default;
+}
+
+/* Rows: a centered glyph in a 36px target; label, size and separator hide. */
+:root[data-cqb-rail] panel-label {
+	position: relative;
+	justify-content: center;
+	margin: 1px 10px;
+	padding: 0;
+	min-height: 36px;
+}
+
+:root[data-cqb-rail] panel-label::part(text),
+:root[data-cqb-rail] panel-label::part(size),
+:root[data-cqb-rail] panel-label::part(separator) {
+	display: none !important;
+}
+
+:root[data-cqb-rail] panel-label::part(icon) {
+	flex: 0 0 20px !important;
+	margin-right: 0 !important;
+	width: 20px !important;
+	height: 20px !important;
+	-webkit-mask-size: 20px !important;
+	mask-size: 20px !important;
+}
+
+/* Count -> a small corner badge pinned to the row's top-right gutter, clear of
+ * the centered 20px glyph (the host is positioned, so the shadow part anchors
+ * to it). A ring in the surface tone lifts it off the row. */
+:root[data-cqb-rail] panel-label::part(count) {
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	margin: 0 !important;
+	box-sizing: border-box;
+	min-width: 14px;
+	height: 14px;
+	line-height: 14px;
+	padding: 0 2px;
+	font-size: 9px;
+	border-radius: 999px;
+	text-align: center;
+	box-shadow: 0 0 0 1.5px var(--qb-surface);
+}
+
+/* v4 rail parity: a zero count carries no badge. */
+:root[data-cqb-rail] panel-label[count="0"]::part(count),
+:root[data-cqb-rail] panel-label[count=""]::part(count) {
+	display: none !important;
+}
+
+:root[data-cqb-rail] panel-label[selected]::part(count) {
+	color: var(--qb-primary-text);
+}
+
+/* The Views "save view" button has no room in the rail. */
+:root[data-cqb-rail] #pview_save_view_button.Button {
+	display: none;
+}
+
+/* Section headings -> hairline separators (label + chevron hidden). */
+:root[data-cqb-rail] category-panel::part(heading) {
+	font-size: 0 !important;
+	letter-spacing: 0 !important;
+	height: 1px;
+	padding: 0 !important;
+	margin: 10px 14px;
+	background-color: var(--qb-border);
+	overflow: hidden;
+}
+
+:root[data-cqb-rail] category-panel::part(heading)::before {
+	display: none !important;
+}
+
+/* The first section needs no leading separator. */
+:root[data-cqb-rail] category-list > category-panel:first-of-type::part(heading) {
+	margin-top: 2px;
+	height: 0;
+}
+

@@ -1,0 +1,645 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- topbar surface.
+ *  The top app bar: a tinted QuickBox mark, a filled primary Add action,
+ *  grouped 36px icon buttons divided by hairlines, a single search field with
+ *  a keyboard hint, a live speed widget, the variant palette, and the account
+ *  controls (settings, help, logoff) pinned right. Every color is a token.
+ *  The topbar module (js/topbar.js) restructures the DOM; this styles it.
+ */
+
+/* ============================================================
+ * Bar shell -- 56px app bar with the variant gradient along its base.
+ * ============================================================ */
+/* The app bar is 56px; the core sizes #t and the main-area height calc from
+ * this var, so keep it in step or the footer is pushed off-screen. */
+:root {
+	--navbar-height: 56px;
+}
+
+#t {
+	min-height: 56px;
+	width: 100%;
+	padding: 0;
+	background-color: var(--qb-surface);
+	background-image: var(--qb-header-gradient);
+	background-repeat: no-repeat;
+	background-position: left bottom;
+	background-size: 100% 2px;
+	border-bottom: 1px solid var(--qb-border);
+	white-space: nowrap;
+}
+
+#t .container-fluid {
+	min-height: 56px;
+	padding: 0 12px;
+}
+
+/* The core separators are replaced by the module's own group dividers. */
+#t .TB_Separator {
+	display: none;
+}
+
+/* Desktop layout: one flex row, account controls pushed to the right. */
+@media (min-width: 768px) {
+	#t .navbar-nav {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		gap: 6px;
+		width: 100%;
+		flex-wrap: nowrap;
+	}
+
+	#t #rc {
+		margin-left: auto;
+	}
+}
+
+/* ============================================================
+ * Brand -- tinted QuickBox mark + muted wordmark.
+ * ============================================================ */
+.cqb-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	padding: 0 10px 0 2px;
+	margin-right: 2px;
+	flex: none;
+}
+
+.cqb-brand-mark {
+	width: 26px;
+	height: 26px;
+	flex: none;
+	background-color: var(--qb-primary);
+	background-image: var(--qb-header-gradient);
+	-webkit-mask: url(../images/brand/qb-mark.svg) center / contain no-repeat;
+	mask: url(../images/brand/qb-mark.svg) center / contain no-repeat;
+}
+
+/* Light variant: a solid primary mark, no gradient. */
+:root[data-qb-variant="defaulted"] .cqb-brand-mark {
+	background-image: none;
+}
+
+.cqb-brand-word {
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Sidebar rail toggle -- the leftmost control, a square 36px button
+ * from the icon-button family. A hamburger that morphs to an X when the
+ * sidebar is collapsed (data-collapsed="true"), tinted with tokens.
+ * ============================================================ */
+#t .cqb-nav-toggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	flex: none;
+	margin: 0 2px 0 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--qb-radius);
+	background-color: transparent;
+	background-image: none;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+
+#t .cqb-nav-toggle:hover {
+	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	background-image: none;
+	color: var(--qb-foreground);
+	text-decoration: none;
+}
+
+#t .cqb-nav-toggle:active {
+	background-color: color-mix(in srgb, var(--qb-primary) 20%, transparent);
+}
+
+#t .cqb-nav-toggle:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
+#t .cqb-nav-toggle span {
+	position: relative;
+	display: block;
+	width: 17px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+	transition: transform 180ms ease, opacity 180ms ease;
+}
+
+#t .cqb-nav-toggle span::before,
+#t .cqb-nav-toggle span::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	width: 17px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+	transition: transform 180ms ease, opacity 180ms ease;
+}
+
+#t .cqb-nav-toggle span::before { top: -6px; }
+#t .cqb-nav-toggle span::after { top: 6px; }
+
+/* Collapsed (rail): the bars cross into an X that invites re-expanding. */
+#t .cqb-nav-toggle[data-collapsed="true"] span { transform: rotate(45deg); }
+#t .cqb-nav-toggle[data-collapsed="true"] span::before { transform: translateY(6px) rotate(90deg); }
+#t .cqb-nav-toggle[data-collapsed="true"] span::after { transform: translateY(-6px) rotate(90deg); }
+
+@media (prefers-reduced-motion: reduce) {
+	#t .cqb-nav-toggle span,
+	#t .cqb-nav-toggle span::before,
+	#t .cqb-nav-toggle span::after {
+		transition: none;
+	}
+}
+
+/* ============================================================
+ * Icon buttons -- 36px hit target, 18px glyph, token tint.
+ * ============================================================ */
+#t a.cqb-btn {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--qb-radius);
+	background-color: transparent;
+	background-image: none;
+	cursor: pointer;
+	transition: background-color 0.15s ease-out, transform 0.15s ease-out;
+}
+
+/* Hover: a soft primary-tinted surface, the glyph shifts to the primary text
+ * tone, and the button lifts 1px. No forced white wash. */
+#t a.cqb-btn:hover {
+	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	background-image: none;
+	transform: translateY(-1px);
+	text-decoration: none;
+	filter: none;
+}
+
+/* Pressed: a deeper tint and a subtle scale-in (override the core padding shift). */
+#t a.cqb-btn:active {
+	background-color: color-mix(in srgb, var(--qb-primary) 20%, transparent);
+	background-image: none;
+	transform: scale(0.96);
+	padding: 0;
+}
+
+#t a.cqb-btn:focus-visible {
+	background-image: none;
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+#t a.cqb-btn.disabled,
+#t a.cqb-btn[disabled] {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* Neutralize the core/Bootstrap anchor hover wash; our tint rule re-adds it. */
+#t a:hover {
+	background-color: transparent;
+}
+
+/* The mobile-only text labels plugins append next to their glyph (but keep
+ * the Add action's own label). */
+#t a.cqb-btn > span:not(.cqb-add-label) {
+	display: none;
+}
+
+#t div.nav-icon {
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	flex: none;
+	cursor: pointer;
+	background-color: var(--qb-icon);
+	background-image: none;
+	background-repeat: no-repeat;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 20px;
+	mask-size: 20px;
+	transition: background-color 0.15s ease-out;
+}
+
+#t a.cqb-btn:hover div.nav-icon,
+#t a.cqb-btn:active div.nav-icon {
+	background-color: var(--qb-primary-text);
+}
+
+/* Toggle / open buttons keep a 2px primary underline and a primary glyph. */
+#t a.cqb-btn.active div.nav-icon,
+#t .btn-group.show .cqb-btn div.nav-icon {
+	background-color: var(--qb-primary-text);
+}
+
+#t a.cqb-btn.active::after,
+#t .btn-group.show .cqb-btn::after {
+	content: "";
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	bottom: 3px;
+	height: 2px;
+	border-radius: 1px;
+	background-color: var(--qb-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#t a.cqb-btn {
+		transition: background-color 0.15s ease-out;
+	}
+
+	#t a.cqb-btn:hover,
+	#t a.cqb-btn:active {
+		transform: none;
+	}
+}
+
+/* Glyph wiring (one mask per toolbar action). */
+#t div#add { -webkit-mask-image: url(../images/icons/toolbar-add.svg); mask-image: url(../images/icons/toolbar-add.svg); }
+#t div#create { -webkit-mask-image: url(../images/icons/toolbar-create.svg); mask-image: url(../images/icons/toolbar-create.svg); }
+#t div#remove { -webkit-mask-image: url(../images/icons/toolbar-remove.svg); mask-image: url(../images/icons/toolbar-remove.svg); }
+#t div#start { -webkit-mask-image: url(../images/icons/toolbar-start.svg); mask-image: url(../images/icons/toolbar-start.svg); }
+#t div#pause { -webkit-mask-image: url(../images/icons/toolbar-pause.svg); mask-image: url(../images/icons/toolbar-pause.svg); }
+#t div#stop { -webkit-mask-image: url(../images/icons/toolbar-stop.svg); mask-image: url(../images/icons/toolbar-stop.svg); }
+#t div#moveu { -webkit-mask-image: url(../images/icons/toolbar-move-up.svg); mask-image: url(../images/icons/toolbar-move-up.svg); }
+#t div#moved { -webkit-mask-image: url(../images/icons/toolbar-move-down.svg); mask-image: url(../images/icons/toolbar-move-down.svg); }
+#t div#search { -webkit-mask-image: url(../images/icons/toolbar-search.svg); mask-image: url(../images/icons/toolbar-search.svg); }
+#t div#rss { -webkit-mask-image: url(../images/icons/toolbar-rss.svg); mask-image: url(../images/icons/toolbar-rss.svg); }
+#t div#setting { -webkit-mask-image: url(../images/icons/toolbar-settings.svg); mask-image: url(../images/icons/toolbar-settings.svg); }
+#t div#help { -webkit-mask-image: url(../images/icons/toolbar-help.svg); mask-image: url(../images/icons/toolbar-help.svg); }
+#t div#plugins { -webkit-mask-image: url(../images/icons/toolbar-plugins.svg); mask-image: url(../images/icons/toolbar-plugins.svg); }
+#t div#chat { -webkit-mask-image: url(../images/icons/toolbar-chat.svg); mask-image: url(../images/icons/toolbar-chat.svg); }
+#t div#logoff { -webkit-mask-image: url(../images/icons/logoff.svg); mask-image: url(../images/icons/logoff.svg); }
+#t div#autodl-tb { -webkit-mask-image: url(../images/icons/toolbar-autodl.svg); mask-image: url(../images/icons/toolbar-autodl.svg); }
+
+/* ============================================================
+ * Primary Add action -- filled, labelled, the toolbar's signature button.
+ * ============================================================ */
+#t a#mnu_add.cqb-add-primary {
+	width: auto;
+	height: 36px;
+	gap: 7px;
+	padding: 0 14px;
+	background-color: var(--qb-primary);
+	border-radius: var(--qb-radius-lg);
+}
+
+#t a#mnu_add.cqb-add-primary:hover,
+#t a#mnu_add.cqb-add-primary:focus {
+	filter: brightness(1.06);
+	background-color: var(--qb-primary);
+	background-image: none;
+}
+
+#t a#mnu_add.cqb-add-primary div#add,
+#t a#mnu_add.cqb-add-primary:hover div#add {
+	background-color: var(--qb-primary-fg);
+}
+
+.cqb-add-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--qb-primary-fg);
+}
+
+/* ============================================================
+ * Button groups + dividers.
+ * ============================================================ */
+.cqb-tb-group {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex: none;
+}
+
+.cqb-tb-sep {
+	width: 1px;
+	height: 20px;
+	margin: 0 8px;
+	flex: none;
+	background-color: var(--qb-border);
+}
+
+/* The plugins dropdown is a btn-group; strip Bootstrap's caret and padding. */
+#t .btn-group {
+	display: inline-flex;
+	align-items: center;
+}
+
+#t .dropdown-toggle::after {
+	display: none;
+}
+
+/* ============================================================
+ * Right cluster -- search, speed, palette, account controls.
+ * ============================================================ */
+#t #rc {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+}
+
+/* Search field: one bordered box, leading icon inside, trailing hint chip. */
+.cqb-search {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	width: 260px;
+	height: 36px;
+	padding: 0 10px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cqb-search:focus-within {
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* The search glyph sits inside the field, not as a button. */
+#t .cqb-search a#mnu_search {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	border-radius: 0;
+}
+
+#t .cqb-search a#mnu_search:hover {
+	background-color: transparent;
+	background-image: none;
+	transform: none;
+	filter: none;
+}
+
+#t .cqb-search a#mnu_search div#search {
+	width: 16px;
+	height: 16px;
+	-webkit-mask-size: 16px;
+	mask-size: 16px;
+	background-color: var(--qb-fg-muted);
+}
+
+#t .cqb-search #query {
+	flex: 1;
+	min-width: 0;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+}
+
+#t .cqb-search #query:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+#t .cqb-search #query::placeholder {
+	color: var(--qb-fg-muted);
+	opacity: 1;
+}
+
+.cqb-kbd {
+	flex: none;
+	padding: 1px 6px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background-color: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	font-size: 10px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+/* The GO action stays wired but hidden; Enter and the search button submit. */
+#t a#mnu_go {
+	display: none !important;
+}
+
+/* Loading indicator sits quietly at the end of the cluster. */
+#t #rc #ind {
+	flex: none;
+}
+
+/* ============================================================
+ * Speed widget -- live down/up rates + a 60s sparkline.
+ * ============================================================ */
+.cqb-speed {
+	display: inline-flex;
+	align-items: center;
+	gap: 9px;
+	height: 36px;
+	padding: 0 10px;
+	flex: none;
+}
+
+.cqb-speed-rates {
+	display: inline-flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 1px;
+	line-height: 1.15;
+}
+
+.cqb-speed-rate {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	color: var(--qb-foreground);
+}
+
+.cqb-speed-glyph {
+	width: 11px;
+	height: 11px;
+	flex: none;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+.cqb-speed-glyph.down {
+	background-color: var(--qb-speed-down);
+	-webkit-mask-image: url(../images/icons/statusbar-download.svg);
+	mask-image: url(../images/icons/statusbar-download.svg);
+}
+
+.cqb-speed-glyph.up {
+	background-color: var(--qb-speed-up);
+	-webkit-mask-image: url(../images/icons/statusbar-upload.svg);
+	mask-image: url(../images/icons/statusbar-upload.svg);
+}
+
+.cqb-topbar-spark {
+	display: block;
+	width: 72px;
+	height: 26px;
+	flex: none;
+}
+
+/* ============================================================
+ * Variant palette -- a glyph button opening a token-styled menu.
+ * ============================================================ */
+.cqb-palette {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+}
+
+#t .cqb-palette-btn {
+	width: 36px;
+	height: 36px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: var(--qb-radius);
+	background-color: transparent;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+#t .cqb-palette-btn:hover,
+#t .cqb-palette-btn.open {
+	background-color: var(--qb-surface-2);
+}
+
+.cqb-palette-glyph {
+	width: 18px;
+	height: 18px;
+	flex: none;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(../images/icons/palette-switch.svg) center / 18px no-repeat;
+	mask: url(../images/icons/palette-switch.svg) center / 18px no-repeat;
+}
+
+#t .cqb-palette-btn:hover .cqb-palette-glyph,
+#t .cqb-palette-btn.open .cqb-palette-glyph {
+	background-color: var(--qb-icon-hover);
+}
+
+.cqb-palette-menu {
+	position: absolute;
+	top: 44px;
+	right: 0;
+	z-index: 1200;
+	min-width: 176px;
+	padding: 5px;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow-soft);
+}
+
+.cqb-palette-menu[hidden] {
+	display: none;
+}
+
+.cqb-palette-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	height: 32px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--qb-radius);
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.cqb-palette-item:hover {
+	background-color: var(--qb-surface-2);
+}
+
+.cqb-palette-item.active {
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	color: var(--qb-primary-text, var(--qb-primary));
+}
+
+.cqb-palette-swatch {
+	width: 12px;
+	height: 12px;
+	flex: none;
+	border-radius: 3px;
+	border: 1px solid var(--qb-border);
+}
+
+.cqb-palette-check {
+	width: 14px;
+	height: 14px;
+	margin-left: auto;
+	flex: none;
+	background-color: var(--qb-primary);
+	-webkit-mask: url(../images/icons/menu-check.svg) center / 14px no-repeat;
+	mask: url(../images/icons/menu-check.svg) center / 14px no-repeat;
+	visibility: hidden;
+}
+
+.cqb-palette-item.active .cqb-palette-check {
+	visibility: visible;
+}
+
+/* ============================================================
+ * Responsive -- keep every control legible and non-overlapping at 1366.
+ * ============================================================ */
+@media (max-width: 1500px) {
+	.cqb-search {
+		width: 200px;
+	}
+}
+
+@media (max-width: 1280px) {
+	.cqb-brand-word {
+		display: none;
+	}
+
+	.cqb-search {
+		width: 168px;
+	}
+
+	.cqb-topbar-spark {
+		display: none;
+	}
+}

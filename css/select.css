@@ -1,0 +1,294 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- custom select.
+ *
+ *  The v4 dashboard Select, mirrored for ruTorrent: a 36px trigger (border,
+ *  input surface, radius 8, chevron) over a body-level portal panel (card
+ *  surface, soft shadow, 32px option rows, a check glyph on the selected row,
+ *  uppercase group headers, an optional filter field for long lists). The
+ *  native <select> stays in the DOM, visually hidden, as the source of truth;
+ *  js/select.js keeps the two in sync. Token-only, no raster, no left-edge bars.
+ */
+
+/* ------------------------------------------------------------------ *
+ * Native select -- kept functional, taken out of sight and out of flow.
+ * Not display:none, so form submit and core $$('...').val() keep working.
+ * ------------------------------------------------------------------ */
+select.cqb-native {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	min-width: 0 !important;
+	padding: 0 !important;
+	margin: -1px !important;
+	border: 0 !important;
+	opacity: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	pointer-events: none !important;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+/* ------------------------------------------------------------------ *
+ * Trigger -- the visible control the user operates.
+ * ------------------------------------------------------------------ */
+.cqb-select-trigger {
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	height: 36px;
+	max-width: 100%;
+	min-width: 120px;
+	padding: 0 10px 0 12px;
+	font-family: var(--qb-font);
+	font-size: 14px;
+	line-height: 1.2;
+	color: var(--qb-foreground);
+	background: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	cursor: pointer;
+	text-align: left;
+	transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+/* Fill a field row / flex container the way the native select used to. */
+.cqb-select-trigger[data-cqb-grow] {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto;
+}
+.cqb-select-trigger[data-cqb-block] {
+	display: flex;
+	width: 100%;
+}
+/* When an inline trigger sits in a row with room, js/select.js measures the
+ * longest option and publishes it as --cqb-fit-width so the trigger is at
+ * least that wide and its text never clips; capped at the row by 100%. */
+.cqb-select-trigger[data-cqb-fit] {
+	min-width: min(var(--cqb-fit-width, 120px), 100%);
+}
+/* The collapsed icon trigger (File Manager Recent folders) stays a square and
+ * never auto-fits; written after the fit rule so it wins at equal specificity
+ * even though the class is added after the first measure. */
+.cqb-select-trigger.cqb-flm-recent {
+	min-width: 0;
+}
+.cqb-select-trigger:hover {
+	border-color: var(--qb-fg-muted);
+	background: var(--qb-input);
+}
+.cqb-select-trigger:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 3px var(--qb-focus);
+}
+.cqb-select-trigger[aria-expanded="true"] {
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 3px var(--qb-focus);
+}
+.cqb-select-trigger:disabled,
+.cqb-select-trigger[aria-disabled="true"] {
+	opacity: .4;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+.cqb-select-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cqb-select-value.cqb-is-placeholder {
+	color: var(--qb-fg-muted);
+}
+
+/* Chevron -- a pure-CSS "v" tinted by a token, so there is no raster and no
+ * url() background (the mask double/invisible gates stay clean). */
+.cqb-select-chevron {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+}
+.cqb-select-chevron::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	margin-top: -3px;
+	border-right: 2px solid var(--qb-fg-muted);
+	border-bottom: 2px solid var(--qb-fg-muted);
+	transform: rotate(45deg);
+	transition: transform .15s ease;
+}
+.cqb-select-trigger[aria-expanded="true"] .cqb-select-chevron::before {
+	margin-top: 2px;
+	transform: rotate(-135deg);
+}
+
+/* ------------------------------------------------------------------ *
+ * Panel -- portalled to <body>, anchored to the trigger.
+ * ------------------------------------------------------------------ */
+.cqb-select-panel {
+	position: fixed;
+	z-index: 99998;
+	display: flex;
+	flex-direction: column;
+	max-width: calc(100vw - 16px);
+	overflow: hidden;
+	font-family: var(--qb-font);
+	color: var(--qb-foreground);
+	background: color-mix(in srgb, var(--qb-surface) 95%, transparent);
+	border: 1px solid color-mix(in srgb, var(--qb-border) 60%, transparent);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow-soft);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	opacity: 0;
+	transform: scale(.98);
+	transform-origin: top center;
+	transition: opacity .12s ease, transform .12s ease;
+}
+.cqb-select-panel.cqb-flip-up {
+	transform-origin: bottom center;
+}
+.cqb-select-panel.cqb-open {
+	opacity: 1;
+	transform: scale(1);
+}
+
+/* Filter field for long lists. */
+.cqb-select-search {
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-bottom: 1px solid var(--qb-border);
+}
+.cqb-select-search-icon {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/toolbar-search.svg) center / contain no-repeat;
+	mask: url(../images/icons/toolbar-search.svg) center / contain no-repeat;
+}
+.cqb-select-search input {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 24px;
+	padding: 0;
+	font-family: var(--qb-font);
+	font-size: 13px;
+	color: var(--qb-foreground);
+	background: transparent;
+	border: 0;
+	outline: none;
+}
+.cqb-select-search input::placeholder {
+	color: var(--qb-fg-muted);
+}
+
+/* Scrolling list -- one thin themed scrollbar, no clipped rows. */
+.cqb-select-list {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 4px;
+	scrollbar-width: thin;
+	scrollbar-color: var(--qb-scrollbar-thumb) transparent;
+}
+.cqb-select-list::-webkit-scrollbar { width: 8px; }
+.cqb-select-list::-webkit-scrollbar-track { background: transparent; }
+.cqb-select-list::-webkit-scrollbar-thumb {
+	background: var(--qb-scrollbar-thumb);
+	border-radius: var(--qb-radius-lg);
+	border: 2px solid var(--qb-surface);
+}
+.cqb-select-list::-webkit-scrollbar-thumb:hover { background: var(--qb-scrollbar-thumb-hover); }
+
+.cqb-select-group {
+	padding: 8px 10px 4px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+.cqb-select-group:first-child { padding-top: 4px; }
+
+.cqb-select-option {
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-height: 32px;
+	padding: 6px 10px;
+	font-family: var(--qb-font);
+	font-size: 14px;
+	line-height: 1.3;
+	color: var(--qb-foreground);
+	text-align: left;
+	background: transparent;
+	border: 0;
+	/* Core ruTorrent ships `button { margin }`; without this reset every option
+	 * is nudged ~3px right (left inset != right inset) and the rows gain uneven
+	 * vertical gaps. Keep options flush so text starts at the standard inset. */
+	margin: 0;
+	border-radius: 6px;
+	cursor: pointer;
+}
+.cqb-select-option.cqb-in-group { padding-left: 20px; }
+.cqb-select-option-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+/* Highlight (keyboard + hover) -- a muted surface wash, never an edge bar. */
+.cqb-select-option.cqb-active {
+	background: color-mix(in srgb, var(--qb-muted) 60%, transparent);
+}
+/* Selected -- readable primary text + medium weight + check, NO tinted fill.
+ * When the selected row is also the active row it still shows only the shared
+ * muted highlight above; the selected state never adds its own fill. */
+.cqb-select-option[aria-selected="true"] {
+	color: var(--qb-primary-text);
+	font-weight: 500;
+}
+.cqb-select-option[aria-disabled="true"] {
+	opacity: .4;
+	cursor: not-allowed;
+}
+.cqb-select-check {
+	flex: none;
+	width: 12px;
+	height: 12px;
+	background-color: var(--qb-primary);
+	-webkit-mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+}
+
+.cqb-select-empty {
+	padding: 10px;
+	font-size: 13px;
+	color: var(--qb-fg-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cqb-select-panel,
+	.cqb-select-chevron::before,
+	.cqb-select-trigger { transition: none; }
+}

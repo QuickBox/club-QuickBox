@@ -1,0 +1,22 @@
+club-QuickBox icon library
+===========================
+
+The glyph path data in `library.json` is a curated subset of Material Design
+Icons (MDI), redistributed under the Apache License 2.0.
+
+  Project: Material Design Icons (Templarian/MaterialDesign)
+  Source:  https://github.com/Templarian/MaterialDesign
+  License: Apache-2.0
+           https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+
+Each entry stores the MDI glyph body (a 24x24 viewBox path) together with a
+QuickBox name, a category, and search tags. The icons are tinted at render
+time with the active theme token, so no original colour is retained.
+
+No third-party brand or application logos (for example the *arr media tools)
+are included; those names resolve to their neutral category glyph instead.
+
+Apache License 2.0 — summary of the redistribution terms honoured here:
+  - the work is provided "AS IS", without warranties or conditions;
+  - this NOTICE preserves the attribution and license pointer required when
+    redistributing the licensed material.

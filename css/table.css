@@ -1,0 +1,271 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- table surface.
+ *  Torrent-list shell, the detail list panes, the drawer resize handle,
+ *  torrent-state glyphs and file-type glyphs. Every color is a --qb-* token;
+ *  every glyph is an images/icons/*.svg mask tinted by a state token.
+ */
+
+/* ============================================================
+ * Resize handles
+ * VDivider = torrent table <-> details drawer (this lane).
+ * HDivider = sidebar <-> main column (shared hairline).
+ * ============================================================ */
+#VDivider,
+#HDivider {
+	background-color: var(--qb-border);
+	position: relative;
+	transition: background-color 0.15s ease;
+}
+
+#VDivider {
+	cursor: row-resize;
+	height: 8px;
+	width: 100%;
+}
+
+#HDivider {
+	cursor: col-resize;
+	width: 1px;
+	height: auto;
+}
+
+/* Centered grip on the drawer handle. */
+#VDivider::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 32px;
+	height: 2px;
+	border-radius: 999px;
+	background-color: var(--qb-fg-muted);
+	opacity: 0.5;
+	transition: opacity 0.15s ease;
+}
+
+div#VDivider:hover,
+div#HDivider:hover {
+	background: color-mix(in srgb, var(--qb-primary) 32%, transparent);
+}
+
+#VDivider:hover::after {
+	opacity: 1;
+	background-color: var(--qb-primary);
+}
+
+/* Selection marquee */
+#sel {
+	border: 1px dotted var(--qb-ring);
+	background-color: var(--qb-focus);
+}
+
+/* ============================================================
+ * Torrent-list shell + the detail list panes -- card surfaces
+ * separated by hairlines, no heavy boxes.
+ * ============================================================ */
+#list-table {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background-color: var(--qb-surface);
+	overflow: hidden;
+	margin: 6px;
+}
+
+#list-table > #List {
+	border: none;
+}
+
+div#List,
+div#FileList,
+div#PeerList,
+div#Speed,
+div#TrackerList {
+	--header-border-color: var(--qb-border);
+	--header-bg-image: none;
+	--row-border-color: var(--qb-border-soft);
+	--row-odd-bg-color: var(--cqb-row-stripe);
+	--row-even-bg-color: var(--qb-surface);
+	--row-active-bg-color: var(--qb-surface-3);
+	background-color: var(--qb-surface);
+	border: none;
+}
+
+/* ============================================================
+ * File-type glyphs (file list) -- masked SVG tinted --qb-icon.
+ * ============================================================ */
+.Icon_Dir,
+.Icon_File,
+.Icon_Torrent, .Icon_Vid, .Icon_Mp3, .Icon_Img, .Icon_Nfo,
+.Icon_Sfv, .Icon_UpD, .Icon_Rar, .Icon_Zip {
+	background-image: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: left center;
+	mask-position: left center;
+	-webkit-mask-size: 15px;
+	mask-size: 15px;
+}
+
+.Icon_Dir { -webkit-mask-image: url(../images/icons/file-folder.svg); mask-image: url(../images/icons/file-folder.svg); background-color: var(--qb-accent-text); }
+.Icon_File { -webkit-mask-image: url(../images/icons/file-generic.svg); mask-image: url(../images/icons/file-generic.svg); }
+.Icon_Torrent { -webkit-mask-image: url(../images/icons/file-torrent.svg); mask-image: url(../images/icons/file-torrent.svg); }
+.Icon_Vid { -webkit-mask-image: url(../images/icons/file-video.svg); mask-image: url(../images/icons/file-video.svg); }
+.Icon_Mp3 { -webkit-mask-image: url(../images/icons/file-audio.svg); mask-image: url(../images/icons/file-audio.svg); }
+.Icon_Img { -webkit-mask-image: url(../images/icons/file-image.svg); mask-image: url(../images/icons/file-image.svg); }
+.Icon_Nfo { -webkit-mask-image: url(../images/icons/file-nfo.svg); mask-image: url(../images/icons/file-nfo.svg); }
+.Icon_Sfv { -webkit-mask-image: url(../images/icons/file-sfv.svg); mask-image: url(../images/icons/file-sfv.svg); }
+.Icon_UpD { -webkit-mask-image: url(../images/icons/fm-dir-up.svg); mask-image: url(../images/icons/fm-dir-up.svg); }
+.Icon_Rar, .Icon_Zip { -webkit-mask-image: url(../images/icons/file-archive.svg); mask-image: url(../images/icons/file-archive.svg); }
+
+/* ============================================================
+ * Torrent-row status glyph -- a state-tinted dot; one SVG per state.
+ * The engine sets .stable-icon + a .Status_* class on the icon cell.
+ * The icon tint and mask scaffolding stay global (harmless: the mask is a
+ * no-op until a .Status_* / .Icon_* rule supplies a mask-image, and the tint
+ * sits behind any raster), but the raster BLANK is scoped below to the only
+ * two tables that mask their icons, so other dxSTables keep their own rasters
+ * (e.g. the geoip country flags in the peer list).
+ * ============================================================ */
+.stable-icon {
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 15px;
+	mask-size: 15px;
+}
+
+/* Blank the core sprite under every MASKED glyph -- the state icons (.Status_*)
+ * and the file glyphs (.Icon_*) -- in EVERY table (torrent list, file list,
+ * History, Tasks, any plugin table using those classes), so tstatus.png never
+ * paints through the SVG mask (the DOUBLE defect, which also shoved the row name
+ * under the icon). !important beats the core `.stable-icon { background:
+ * url(../images/tstatus.png) no-repeat }` (ruTorrent css/stable.css, specificity
+ * 0,1,0, non-important) regardless of load order. Targeting the masking classes
+ * (not `:not(.geoip)`) leaves BOTH content rasters intact: they carry no
+ * Status_/Icon_ class -- the geoip flag (.stable-icon.geoip + .geoip_flag_<cc>)
+ * and the tracker favicon (a core inline {src} background, which a `:not()`
+ * !important reset would have wrongly blanked). */
+.stable-icon[class*="Status_"],
+.stable-icon[class*="Icon_"] {
+	background-image: none !important;
+}
+
+.Status_Down { -webkit-mask-image: url(../images/icons/state-downloading.svg); mask-image: url(../images/icons/state-downloading.svg); background-color: var(--qb-state-downloading); }
+.Status_Up { -webkit-mask-image: url(../images/icons/state-seeding.svg); mask-image: url(../images/icons/state-seeding.svg); background-color: var(--qb-state-seeding); }
+.Status_Up_Down { -webkit-mask-image: url(../images/icons/state-active.svg); mask-image: url(../images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
+.Status_Incompleted { -webkit-mask-image: url(../images/icons/state-stopped.svg); mask-image: url(../images/icons/state-stopped.svg); background-color: var(--qb-state-stopped); }
+.Status_Paused { -webkit-mask-image: url(../images/icons/state-paused.svg); mask-image: url(../images/icons/state-paused.svg); background-color: var(--qb-state-paused); }
+.Status_Error, .Status_Error_Up, .Status_Error_Down { -webkit-mask-image: url(../images/icons/state-error.svg); mask-image: url(../images/icons/state-error.svg); background-color: var(--qb-state-error); }
+.Status_Completed { -webkit-mask-image: url(../images/icons/state-finished.svg); mask-image: url(../images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
+.Status_Queued_Up, .Status_Queued_Down { -webkit-mask-image: url(../images/icons/state-queued.svg); mask-image: url(../images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
+.Status_Checking { -webkit-mask-image: url(../images/icons/state-checking.svg); mask-image: url(../images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
+.Status_RSS { -webkit-mask-image: url(../images/icons/state-feed.svg); mask-image: url(../images/icons/state-feed.svg); background-color: var(--qb-accent-text); }
+
+/* ============================================================
+ * Progress (Done) -- one track, the fill inside it.
+ * The core writes the percent as the fill's inline width and updates
+ * .meter-value in place, so it is never wrapped or moved. table.js
+ * mirrors that percent onto the cell as --cqb-p (0..1); the fill width
+ * is recomputed here against the track so a 100% cap never clips.
+ * ============================================================ */
+td:has(> .meter-value) {
+	position: relative;
+}
+
+td:has(> .meter-value)::before {
+	content: "";
+	position: absolute;
+	left: 10px;
+	right: 58px;
+	top: 50%;
+	height: 6px;
+	margin-top: -3px;
+	border-radius: 999px;
+	background: var(--qb-muted, var(--qb-surface-2));
+	z-index: 0;
+}
+
+td:has(> .meter-value) .meter-value {
+	position: absolute;
+	left: 10px !important;
+	top: 50% !important;
+	margin-top: -3px;
+	height: 6px !important;
+	border-radius: 999px;
+	width: calc((100% - 68px) * var(--cqb-p, 0)) !important;
+	min-width: 0;
+	float: none;
+	z-index: 1;
+	/* The core writes an inline background-color (black when the gradient
+	 * is unpainted), so force the brand gradient to keep the fill visible. */
+	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
+	border: 0 !important;
+}
+
+td:has(> .meter-value) .meter-text {
+	position: absolute;
+	right: 10px;
+	left: auto;
+	top: 50%;
+	transform: translateY(-50%);
+	height: auto;
+	width: auto;
+	line-height: 1;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	float: none;
+}
+
+/* ============================================================
+ * Status cell -> a v4 state pill: a solid state dot + a tinted label on a
+ * subtle same-hue surface. js/table.js tags the cell with data-cqb-state
+ * from the core-computed row state; the status text itself is never written
+ * here. checking shares the downloading hue and queued the stopped hue, the
+ * same pairing the row state glyph uses, so both surfaces read identically.
+ * ============================================================ */
+#List td.stable-List-col-1[data-cqb-state] > div {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	box-sizing: border-box;
+	padding: 1px 8px;
+	border-radius: var(--qb-radius);
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 16px;
+	white-space: nowrap;
+	overflow: hidden;
+	color: var(--cqb-state, var(--qb-fg-muted));
+	background: color-mix(in srgb, var(--cqb-state, var(--qb-fg-muted)) 14%, transparent);
+}
+
+#List td.stable-List-col-1[data-cqb-state] > div::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 999px;
+	flex: none;
+	background: var(--cqb-state, var(--qb-fg-muted));
+}
+
+#List td.stable-List-col-1[data-cqb-state="downloading"] { --cqb-state: var(--qb-state-downloading); }
+#List td.stable-List-col-1[data-cqb-state="seeding"]     { --cqb-state: var(--qb-state-seeding); }
+#List td.stable-List-col-1[data-cqb-state="paused"]      { --cqb-state: var(--qb-state-paused); }
+#List td.stable-List-col-1[data-cqb-state="stopped"]     { --cqb-state: var(--qb-state-stopped); }
+#List td.stable-List-col-1[data-cqb-state="error"]       { --cqb-state: var(--qb-state-error); }
+#List td.stable-List-col-1[data-cqb-state="checking"]    { --cqb-state: var(--qb-state-downloading); }
+#List td.stable-List-col-1[data-cqb-state="queued"]      { --cqb-state: var(--qb-state-stopped); }
+
+/* Created On -> tabular-nums so the full "DD.MM.YYYY HH:MM:SS" stamp aligns
+ * cleanly; the colsdata width floor in js/table.js guarantees it fits. */
+#List td.stable-List-col-14 > div {
+	font-variant-numeric: tabular-nums;
+}

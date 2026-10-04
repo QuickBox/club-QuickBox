@@ -1,0 +1,822 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- dynamic label/tracker icons + picker.
+ *
+ *  Two surfaces:
+ *   1. Sidebar label/tracker rows rendered as token-tinted SVG masks. The glyph
+ *      is published as the inherited --cqb-mask custom property on the host
+ *      panel-label; the ::part(icon) rule paints it with !important so it wins
+ *      over the inline background-image the tracklabels plugin keeps setting.
+ *   2. The icon picker overlay -- a v4-dashboard dialog (search, category chips,
+ *      a scrolling glyph grid, a tint row, a live row preview, and a PNG upload
+ *      tab that keeps the plugin's own upload endpoint).
+ *  Every colour reads from a --qb-* token; module assets use ../images paths.
+ */
+
+/* ============================================================
+ * 1. Sidebar rows -- tinted SVG masks on the exposed icon part
+ * ============================================================ */
+panel-label[data-cqb-mask]::part(icon) {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	background-image: none !important;
+	background-color: var(--cqb-tint, var(--qb-icon)) !important;
+	-webkit-mask: var(--cqb-mask) center / 16px no-repeat !important;
+	mask: var(--cqb-mask) center / 16px no-repeat !important;
+}
+
+panel-label[data-cqb-mask][selected]::part(icon) {
+	background-color: var(--cqb-tint, var(--qb-primary-text)) !important;
+}
+
+/* Hover edit affordance: one shared 24px square button repositioned over the
+ * row on hover (panel-label is a closed shadow template with no slot, so an
+ * inline child cannot render -- a floating overlay is the only non-plugin path).
+ * It seats in the right-edge slot the count/size cluster vacates on hover (see
+ * the ::part fade below), so it never covers row content. */
+.cqb-row-edit {
+	position: fixed;
+	z-index: 9000;
+	width: 24px;
+	height: 24px;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 6px;
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+	display: none;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: var(--qb-shadow-soft);
+	transition: background-color 0.12s ease;
+}
+
+.cqb-row-edit.is-visible {
+	display: inline-flex;
+}
+
+.cqb-row-edit::before {
+	content: "";
+	width: 14px;
+	height: 14px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/fm-rename.svg) center / contain no-repeat;
+	mask: url(../images/icons/fm-rename.svg) center / contain no-repeat;
+}
+
+.cqb-row-edit:hover {
+	background-color: var(--qb-surface-3);
+}
+
+.cqb-row-edit:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+.cqb-row-edit:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+/* On hover of a label/tracker row, fade the count/size cluster so the edit
+ * button can take its place at the right edge without covering any content. */
+#plabel panel-label:hover::part(count),
+#plabel panel-label:hover::part(separator),
+#plabel panel-label:hover::part(size),
+#ptrackers panel-label:hover::part(count),
+#ptrackers panel-label:hover::part(separator),
+#ptrackers panel-label:hover::part(size) {
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+
+/* ============================================================
+ * 2. Picker overlay -- v4 dialog shell
+ * ============================================================ */
+.cqb-picker-backdrop {
+	position: fixed;
+	inset: 0;
+	z-index: 99998;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	background: rgba(0, 0, 0, 0.6);
+	-webkit-backdrop-filter: blur(3px);
+	backdrop-filter: blur(3px);
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.cqb-picker-backdrop.is-open {
+	opacity: 1;
+}
+
+.cqb-picker {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 560px;
+	max-height: min(82vh, 660px);
+	overflow: hidden;
+	background: var(--qb-surface);
+	color: var(--qb-foreground);
+	border: 1px solid var(--qb-border);
+	border-radius: 14px;
+	box-shadow: var(--qb-shadow);
+	transform: scale(0.97);
+	transition: transform 0.15s ease;
+	font-family: var(--qb-font);
+}
+
+.cqb-picker-backdrop.is-open .cqb-picker {
+	transform: scale(1);
+}
+
+/* Header */
+.cqb-picker-head {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 16px 18px 12px;
+	border-bottom: 1px solid var(--qb-border-soft);
+}
+
+/* 32px tinted glyph tile, matching every other dialog header. */
+.cqb-picker-head-icon {
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--qb-radius);
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.cqb-picker-head-icon::before {
+	content: "";
+	width: 18px;
+	height: 18px;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: url(../images/icons/header-label.svg) center / 18px no-repeat;
+	mask: url(../images/icons/header-label.svg) center / 18px no-repeat;
+}
+
+.cqb-picker-head-text {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.cqb-picker-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+	line-height: 1.3;
+}
+
+.cqb-picker-sub {
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+	margin-top: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cqb-picker-close {
+	flex: 0 0 28px;
+	width: 28px;
+	height: 28px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: var(--qb-radius);
+	background: transparent;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.cqb-picker-close::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+}
+
+.cqb-picker-close:hover {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+.cqb-picker-close:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+/* Tabs -- the details-drawer underline tab strip (css/details.css): 40px tall,
+ * 0 12px padding, a 2px --qb-primary underline spanning the label, muted text
+ * lifting to foreground on hover/active. Same idiom, same values. */
+.cqb-picker-tabs {
+	display: flex;
+	padding: 0 18px;
+	border-bottom: 1px solid var(--qb-border-soft);
+	flex: 0 0 auto;
+}
+
+.cqb-tab {
+	appearance: none;
+	display: inline-flex;
+	align-items: center;
+	height: 40px;
+	width: auto;
+	margin: 0 0 -1px 0;
+	padding: 0 12px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.cqb-tab:hover {
+	color: var(--qb-foreground);
+	border-bottom-color: var(--qb-border);
+}
+
+.cqb-tab[aria-selected="true"] {
+	color: var(--qb-foreground);
+	border-bottom-color: var(--qb-primary);
+}
+
+.cqb-tab:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Tab panels */
+.cqb-panel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	flex: 1 1 auto;
+}
+
+.cqb-panel[hidden] {
+	display: none;
+}
+
+/* Search + category chips */
+.cqb-picker-controls {
+	padding: 14px 18px 8px;
+	flex: 0 0 auto;
+}
+
+/* Search: the shared .cqb-input-group supplies the single 36px field and one
+ * focus-within ring; a leading magnifier glyph sits inside that one border so
+ * the control reads as a single box, not a box within a box. */
+.cqb-pk-search {
+	position: relative;
+	align-items: center;
+}
+
+.cqb-pk-search-ico {
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 14px;
+	height: 14px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/toolbar-search.svg) center / 14px no-repeat;
+	mask: url(../images/icons/toolbar-search.svg) center / 14px no-repeat;
+	pointer-events: none;
+}
+
+/* The input fills the whole group; only its left padding clears the glyph. */
+.cqb-pk-search > input {
+	padding-left: 32px;
+}
+
+.cqb-pk-search > input::placeholder {
+	color: var(--qb-fg-muted);
+}
+
+/* Category chips stay on ONE row so the grid keeps its height. Chips that will
+ * not fit are parked (display:none) and reached through the "More" popover, the
+ * same overflow idiom the detail tab strip uses. No wrap, no scrollbar. */
+.cqb-cat-chips {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 6px;
+	margin-top: 10px;
+	overflow: hidden;
+}
+
+.cqb-cat-chip {
+	flex: 0 0 auto;
+	appearance: none;
+	/* Core style.css pins every button to width:80px + margin:0.25rem, which
+	 * clips the chip label; reset both so the chip is content-sized. */
+	width: auto;
+	margin: 0;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 500;
+	white-space: nowrap;
+	padding: 4px 10px;
+	border-radius: 999px;
+	border: 1px solid var(--qb-border);
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+/* Chips that will not fit this row are parked out of the strip (and its width). */
+.cqb-cat-chip.cqb-cat-parked {
+	display: none;
+}
+
+/* "More (N)" overflow trigger -- a chip that opens the shared select popover. */
+.cqb-cat-more {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	width: auto;
+	margin: 0;
+	appearance: none;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 500;
+	white-space: nowrap;
+	padding: 4px 8px 4px 10px;
+	border-radius: 999px;
+	border: 1px solid var(--qb-border);
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.cqb-cat-more:hover,
+.cqb-cat-more[aria-expanded="true"] {
+	color: var(--qb-foreground);
+	border-color: var(--qb-fg-muted);
+}
+
+.cqb-cat-more .cqb-select-chevron {
+	width: 12px;
+	height: 12px;
+}
+
+.cqb-cat-more:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+.cqb-cat-chip:hover {
+	color: var(--qb-foreground);
+	border-color: var(--qb-fg-muted);
+}
+
+.cqb-cat-chip[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--qb-primary) 16%, transparent);
+	color: var(--qb-primary-text);
+	border-color: color-mix(in srgb, var(--qb-primary) 40%, transparent);
+}
+
+.cqb-cat-chip:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+/* Glyph grid */
+.cqb-grid-wrap {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 6px 18px 12px;
+}
+
+.cqb-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+	align-items: start;
+	gap: 6px;
+}
+
+.cqb-tile {
+	appearance: none;
+	position: relative;
+	/* Width is pinned to the grid track; aspect-ratio then drives the square
+	 * height from that width. Core ruTorrent ships button { padding: 0 14px;
+	 * min-height: 36px }, which (with the default stretch) otherwise inflates
+	 * each tile to 80px and clips the last column, so reset the box hard. */
+	width: 100%;
+	height: auto;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	aspect-ratio: 1 / 1;
+	align-self: start;
+	border: 1px solid transparent;
+	border-radius: var(--qb-radius);
+	background: var(--qb-surface-2);
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	transition: background-color 0.1s ease, border-color 0.1s ease;
+}
+
+.cqb-tile::before {
+	content: "";
+	width: 22px;
+	height: 22px;
+	background-color: var(--qb-icon);
+	-webkit-mask: var(--cqb-tile-mask) center / contain no-repeat;
+	mask: var(--cqb-tile-mask) center / contain no-repeat;
+}
+
+.cqb-tile:hover {
+	background: var(--qb-surface-3);
+}
+
+.cqb-tile:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+.cqb-tile[aria-pressed="true"] {
+	border-color: var(--qb-primary);
+	background: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+}
+
+.cqb-tile[aria-pressed="true"]::before {
+	background-color: var(--qb-primary-text);
+}
+
+.cqb-tile:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+.cqb-grid-empty {
+	padding: 32px 0;
+	text-align: center;
+	font-size: 13px;
+	color: var(--qb-fg-muted);
+}
+
+/* Footer */
+.cqb-picker-foot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 18px;
+	border-top: 1px solid var(--qb-border-soft);
+	flex: 0 0 auto;
+}
+
+.cqb-foot-spacer {
+	flex: 1 1 auto;
+}
+
+/* All .cqb-btn rules are scoped under the picker root: the top-bar lane reuses
+ * the same .cqb-btn class (js/topbar.js adds it to every #t a button), so an
+ * unscoped rule here would leak our padding/width into the 36x36 icon buttons. */
+.cqb-picker .cqb-btn {
+	appearance: none;
+	/* Neutralise core style.css button { width:80px; margin:0.25rem }. */
+	width: auto;
+	margin: 0;
+	font: inherit;
+	font-size: 13px;
+	font-weight: 500;
+	padding: 7px 14px;
+	border-radius: var(--qb-radius);
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.cqb-picker .cqb-btn:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+.cqb-picker .cqb-btn-ghost {
+	background: transparent;
+	color: var(--qb-fg-muted);
+	border-color: var(--qb-border);
+}
+
+.cqb-picker .cqb-btn-ghost:hover {
+	color: var(--qb-foreground);
+	background: var(--qb-surface-2);
+}
+
+.cqb-picker .cqb-btn-secondary {
+	background: var(--qb-surface-2);
+	color: var(--qb-foreground);
+	border-color: var(--qb-border);
+}
+
+.cqb-picker .cqb-btn-secondary:hover {
+	background: var(--qb-surface-3);
+}
+
+.cqb-picker .cqb-btn-primary {
+	background: var(--qb-primary);
+	color: var(--qb-primary-fg);
+}
+
+.cqb-picker .cqb-btn-primary:hover {
+	filter: brightness(1.06);
+}
+
+.cqb-picker .cqb-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Tint row + preview (shown on the Icons tab foot region) */
+.cqb-tintbar {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 18px;
+	border-top: 1px solid var(--qb-border-soft);
+	flex: 0 0 auto;
+	flex-wrap: wrap;
+}
+
+.cqb-tintbar-label {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-swatches {
+	display: flex;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+/* Each swatch is a 32px tap target with a 24px colour circle inside; the
+ * selected state is a ring around that circle, never an inner shape. Core
+ * style.css min-height otherwise stretches a fixed-width button into a pill,
+ * so size is driven entirely here. */
+.cqb-swatch {
+	appearance: none;
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: transparent;
+	cursor: pointer;
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.cqb-swatch::before {
+	content: "";
+	width: 24px;
+	height: 24px;
+	border-radius: 999px;
+	background: var(--cqb-swatch, var(--qb-icon));
+}
+
+.cqb-swatch.cqb-swatch-auto::before {
+	background: conic-gradient(var(--qb-primary), var(--qb-accent), var(--qb-primary));
+}
+
+.cqb-swatch[aria-pressed="true"]::before {
+	box-shadow: 0 0 0 2px var(--qb-surface), 0 0 0 4px var(--qb-primary);
+}
+
+.cqb-swatch:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: -2px;
+	border-radius: 999px;
+}
+
+.cqb-preview {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+	padding: 4px 12px 4px 8px;
+	border-radius: var(--qb-radius);
+	background: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	max-width: 180px;
+}
+
+.cqb-preview-icon {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	background-color: var(--cqb-prev-tint, var(--qb-icon));
+	-webkit-mask: var(--cqb-prev-mask) center / contain no-repeat;
+	mask: var(--cqb-prev-mask) center / contain no-repeat;
+}
+
+.cqb-preview-text {
+	font-size: 13px;
+	color: var(--qb-foreground);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Upload tab */
+.cqb-upload-body {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.cqb-icons-dropzone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 28px 16px;
+	border: 1.5px dashed var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.cqb-icons-dropzone.is-drag {
+	border-color: var(--qb-primary);
+	background: color-mix(in srgb, var(--qb-primary) 10%, transparent);
+	color: var(--qb-foreground);
+}
+
+.cqb-icons-dropzone-icon {
+	width: 30px;
+	height: 30px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+	mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+}
+
+.cqb-icons-dropzone-title {
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--qb-foreground);
+}
+
+.cqb-icons-dropzone-hint {
+	font-size: 12px;
+}
+
+.cqb-upload-preview {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 10px 12px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface);
+}
+
+.cqb-upload-preview img {
+	width: 40px;
+	height: 40px;
+	object-fit: contain;
+	image-rendering: auto;
+	background: var(--qb-surface-2);
+	border-radius: 6px;
+}
+
+.cqb-upload-preview-name {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 13px;
+	color: var(--qb-foreground);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cqb-upload-note {
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+	line-height: 1.5;
+}
+
+/* ============================================================
+ * 3. Core button state-rule neutraliser
+ * ------------------------------------------------------------
+ * Core ruTorrent style.css styles every <button> with a raster
+ * background and a hardcoded #F5F5F5 / #FAFAFA :hover / :active
+ * wash (selector specificity 0,2,1, which outranks a plain
+ * component :hover). Strip the raster on every control we own,
+ * and re-assert the themed surface on both core state rules at a
+ * winning specificity so our hovers read as designed on all four
+ * variants.
+ * ============================================================ */
+.cqb-picker button,
+button.cqb-row-edit {
+	background-image: none;
+}
+
+.cqb-picker .cqb-tab:hover,
+.cqb-picker .cqb-tab:active,
+.cqb-picker .cqb-tab[aria-selected="true"] {
+	background-color: transparent;
+}
+
+.cqb-picker .cqb-cat-chip:hover,
+.cqb-picker .cqb-cat-chip:active,
+.cqb-picker .cqb-cat-more:hover,
+.cqb-picker .cqb-cat-more:active {
+	background-color: var(--qb-surface-2);
+}
+
+.cqb-picker .cqb-cat-chip[aria-pressed="true"]:hover,
+.cqb-picker .cqb-cat-chip[aria-pressed="true"]:active {
+	background-color: color-mix(in srgb, var(--qb-primary) 16%, transparent);
+}
+
+.cqb-picker .cqb-tile:hover,
+.cqb-picker .cqb-tile:active {
+	background-color: var(--qb-surface-3);
+}
+
+.cqb-picker .cqb-tile[aria-pressed="true"]:hover,
+.cqb-picker .cqb-tile[aria-pressed="true"]:active {
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+}
+
+.cqb-picker .cqb-swatch:hover,
+.cqb-picker .cqb-swatch:active,
+.cqb-picker .cqb-swatch-auto:hover,
+.cqb-picker .cqb-swatch-auto:active {
+	background-color: transparent;
+}
+
+.cqb-picker .cqb-picker-close:hover,
+.cqb-picker .cqb-picker-close:active {
+	background-color: var(--qb-surface-3);
+}
+
+.cqb-picker .cqb-btn-ghost:hover,
+.cqb-picker .cqb-btn-ghost:active {
+	background-color: var(--qb-surface-2);
+}
+
+.cqb-picker .cqb-btn-secondary:hover,
+.cqb-picker .cqb-btn-secondary:active {
+	background-color: var(--qb-surface-3);
+}
+
+.cqb-picker .cqb-btn-primary:hover,
+.cqb-picker .cqb-btn-primary:active {
+	background-color: var(--qb-primary);
+}
+
+button.cqb-row-edit:hover,
+button.cqb-row-edit:active {
+	background-color: var(--qb-surface-3);
+}

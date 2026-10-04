@@ -1,0 +1,187 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- Chunks pane.
+ *  A canvas heatmap replaces the lettered boxes: a toolbar header of stat
+ *  chips plus a Downloaded/Seen segmented control, a full-width overview
+ *  strip, and a dense cell grid. The plugin's native header and #cTable grid
+ *  are hidden; their ids stay live so core keeps feeding data. Token-only.
+ */
+
+/* Hide the plugin's own header row and lettered grid; keep them in the DOM
+ * (the native #chunks_mode select and #cTable are still driven by core). */
+/* The header carries Bootstrap's .d-flex (display:flex !important), so the
+ * override must be !important to win. */
+#Chunks > div.d-flex.flex-row { display: none !important; }
+#Chunks #cCont { display: none; }
+
+#qb-chunks {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+	gap: 8px;
+	padding: 2px;
+}
+
+/* Header toolbar row -- same surface/height as the File Manager and Traffic
+ * pane toolbars for cross-pane consistency. */
+.qb-chunks-bar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex: none;
+	min-height: 40px;
+	padding: 0 10px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+.qb-chunks-stats {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.qb-chunks-chip {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.qb-chunks-chip-l {
+	font-size: 11px;
+	font-weight: 600;
+	font-style: normal;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+.qb-chunks-chip-v {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+	font-variant-numeric: tabular-nums;
+}
+
+.qb-chunks-note {
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+	white-space: nowrap;
+	padding-left: 14px;
+	border-left: 1px solid var(--qb-border);
+}
+
+/* Downloaded / Seen segmented control (v4 SegmentedControl idiom).
+ * Equal-width segments sized by the longer label, with a 3px inset track so
+ * the active pill never meets the track edge. */
+.qb-seg {
+	display: flex;
+	align-items: stretch;
+	gap: 2px;
+	flex: none;
+	height: 32px;
+	padding: 3px;
+	box-sizing: border-box;
+	background: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+}
+
+.qb-seg-btn {
+	flex: 1 1 0;
+	min-width: 114px;
+	height: 100%;
+	min-height: 0;
+	box-sizing: border-box;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	appearance: none;
+	border: 0;
+	margin: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+	padding: 0 14px;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.qb-seg-btn:hover { color: var(--qb-foreground); }
+
+/* Active pill: a raised surface fill with a tight shadow only -- no border, and
+ * not the large drop shadow, so it stays centered inside the 3px track inset. */
+.qb-seg-btn.is-active {
+	background: var(--qb-surface);
+	color: var(--qb-foreground);
+	font-weight: 600;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.qb-seg-btn:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Full-width completion overview. */
+.qb-chunks-overview {
+	display: block;
+	flex: none;
+	width: 100%;
+	height: 12px;
+}
+
+/* Dense cell grid; scrolls within the pane when taller than the drawer. */
+.qb-chunks-gridwrap {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+	scrollbar-color: var(--qb-scrollbar-thumb) transparent;
+}
+
+.qb-chunks-gridwrap::-webkit-scrollbar { width: 8px; }
+.qb-chunks-gridwrap::-webkit-scrollbar-track { background: transparent; }
+.qb-chunks-gridwrap::-webkit-scrollbar-thumb {
+	background: var(--qb-scrollbar-thumb);
+	border-radius: 4px;
+}
+.qb-chunks-gridwrap::-webkit-scrollbar-thumb:hover { background: var(--qb-scrollbar-thumb-hover); }
+
+#qb-chunks-grid { display: block; }
+
+/* Per-cell floating tooltip (token-styled, matches the shared tooltip). */
+.qb-chunks-tip {
+	position: fixed;
+	z-index: 99999;
+	pointer-events: none;
+	opacity: 0;
+	display: none;
+	max-width: 240px;
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 12px;
+	line-height: 1.4;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+	background: var(--qb-tooltip-bg);
+	color: var(--qb-tooltip-fg);
+	border: 1px solid var(--qb-tooltip-border);
+	box-shadow: var(--qb-shadow-soft);
+	transition: opacity 0.12s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.qb-seg-btn, .qb-chunks-tip { transition: none; }
+}

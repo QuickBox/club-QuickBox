@@ -1,0 +1,1208 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- details drawer.
+ *  Underline tabs with SVG glyphs, the General pane as stat cards, a
+ *  monospace Log console, pane empty states, and the plugin-pane toolbars
+ *  (file-manager path bar, RSS/Tasks/Chunks/Traffic/History). Token-only.
+ */
+
+/* ============================================================
+ * Drawer shell
+ * ============================================================ */
+div#tdetails {
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	display: flex;
+	flex-direction: column;
+	position: relative;
+}
+
+div#tdcont {
+	background: var(--qb-surface);
+	border: none;
+	padding: 16px !important;
+}
+
+/* ============================================================
+ * Underline tab strip (v4 Tabs idiom) -- 40px, 13px, SVG glyph,
+ * active = 2px primary underline + foreground. details.js fits the
+ * strip to the width (labels -> icon-only -> "More" menu) so it
+ * never scrolls horizontally.
+ * ============================================================ */
+.nav-tabs,
+.tabbar.nav-tabs {
+	--bs-nav-tabs-border-width: 0;
+	--bs-nav-tabs-border-color: transparent;
+	--bs-nav-tabs-link-hover-border-color: transparent;
+	--bs-nav-tabs-link-active-color: var(--qb-foreground);
+	--bs-nav-tabs-link-active-bg: transparent;
+	--bs-nav-tabs-link-active-border-color: transparent;
+	border-bottom: 1px solid var(--qb-border);
+	background: var(--qb-surface);
+	gap: 2px;
+	padding: 0 8px !important;
+	scrollbar-width: thin;
+}
+
+.tabbar li.nav-item {
+	margin: 0;
+}
+
+.tabbar li.nav-item a.nav-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	height: 40px;
+	margin: 0;
+	padding: 0 12px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Glyph before each tab label (mask so the label is never clipped). */
+.tabbar li.nav-item a.nav-link::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+#tab_gcont a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-general.svg); mask-image: url(../images/icons/tab-general.svg); }
+#tab_FileList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-files.svg); mask-image: url(../images/icons/tab-files.svg); }
+#tab_TrackerList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-trackers.svg); mask-image: url(../images/icons/tab-trackers.svg); }
+#tab_PeerList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-peers.svg); mask-image: url(../images/icons/tab-peers.svg); }
+#tab_Speed a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-speed.svg); mask-image: url(../images/icons/tab-speed.svg); }
+#tab_PluginList a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-plugins.svg); mask-image: url(../images/icons/tab-plugins.svg); }
+#tab_history a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-history.svg); mask-image: url(../images/icons/tab-history.svg); }
+#tab_flm-browser a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-filemanager.svg); mask-image: url(../images/icons/tab-filemanager.svg); }
+#tab_tasks a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-tasks.svg); mask-image: url(../images/icons/tab-tasks.svg); }
+#tab_Chunks a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-chunks.svg); mask-image: url(../images/icons/tab-chunks.svg); }
+#tab_traf a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-traffic.svg); mask-image: url(../images/icons/tab-traffic.svg); }
+#tab_lcont a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-log.svg); mask-image: url(../images/icons/tab-log.svg); }
+
+.tabbar li.nav-item a.nav-link:hover,
+.tabbar li.nav-item a.nav-link:focus {
+	color: var(--qb-foreground);
+	border-top: 0;
+	border-bottom-color: var(--qb-border);
+	background: transparent;
+	text-decoration: none;
+}
+
+.tabbar li.nav-item.selected a.nav-link,
+.tabbar li.nav-item a.nav-link.active {
+	color: var(--qb-foreground);
+	border-top: none;
+	border-bottom: 2px solid var(--qb-primary);
+	background: transparent;
+}
+
+.tabbar li.nav-item.selected a.nav-link::before {
+	background-color: var(--qb-primary);
+}
+
+li#tab_lcont {
+	width: auto;
+	display: inline-flex;
+}
+
+/* Never scroll the strip; details.js keeps it within the width. */
+.tabbar.nav-tabs { overflow: hidden; flex-wrap: nowrap; }
+
+/* Icon-only mode (narrow): non-active tabs drop their label to the glyph;
+ * the active tab keeps its label and its underline. The glyph is a fixed
+ * 16px mask, so font-size:0 hides only the text. */
+.tabbar.cqb-tabs-icononly li.nav-item:not(.selected) a.nav-link {
+	font-size: 0;
+	gap: 0;
+	padding: 0 10px;
+}
+
+/* Tabs parked into the "More" menu are out of the strip (and its width). */
+.tabbar li.nav-item.cqb-tab-parked { display: none; }
+
+/* "More" overflow trigger -- matches the tab idiom, opens the shared popover. */
+.tabbar .cqb-tab-more-item { margin: 0; display: inline-flex; flex: none; }
+.tabbar .cqb-tab-more {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 40px;
+	margin: 0;
+	padding: 0 10px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+.tabbar .cqb-tab-more:hover,
+.tabbar .cqb-tab-more[aria-expanded="true"] { color: var(--qb-foreground); }
+.cqb-tab-more .cqb-select-chevron { width: 14px; height: 14px; }
+
+/* Tab glyph inside a "More" popover row (mask-image set inline from the tab). */
+.cqb-tab-more-glyph {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+/* FM console toggle, relocated from the strip into the FM toolbar. It is a
+ * ghost TEXT button (icon + label) -- a different family from the icon-square
+ * tools -- at the 32px toolbar height, radius and hover. The core <input> is
+ * wrapped (details.js) so it can carry a leading glyph. */
+.cqb-flm-console-wrap {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+	box-sizing: border-box;
+	height: 32px;
+	padding: 0 10px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: transparent;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.cqb-flm-console-wrap:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+.cqb-flm-console-wrap > .cqb-icon {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+/* The inner core element keeps its click handler but paints NOTHING -- the
+ * id beats the core `#fMan_showconsole` grey-background + 80px width so there
+ * is no box inside the ghost wrapper. */
+#fMan_showconsole.cqb-flm-console,
+input.cqb-flm-console.Button,
+.cqb-flm-console {
+	flex: none;
+	width: auto;
+	min-width: 0;
+	min-height: 0;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	color: inherit;
+	background: transparent;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	cursor: pointer;
+}
+#fMan_showconsole.cqb-flm-console:hover,
+#fMan_showconsole.cqb-flm-console:focus,
+input.cqb-flm-console.Button:hover,
+.cqb-flm-console:hover {
+	background: transparent;
+	color: inherit;
+	box-shadow: none;
+}
+
+/* ============================================================
+ * General pane -- "torrent overview" (built from the torrent data by
+ * details.js). A hero row (completion ring, live speed sparklines, ratio
+ * gauge, time block) over three cards (Swarm / Tracker / Storage).
+ * ============================================================ */
+div#gcont.tab {
+	background-color: var(--qb-surface);
+	font-family: var(--qb-font);
+}
+
+.cqb-muted { color: var(--qb-fg-muted) !important; }
+.cqb-mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
+
+/* The General pane scrolls within the drawer so a card is never cut mid-row. */
+div#gcont.tab {
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+}
+
+.cqb-ov {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* ---- Hero row ---- */
+.cqb-ov-hero {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.cqb-hero-cell {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 8px;
+	min-width: 0;
+	flex: 1 1 220px;
+	padding: 14px 16px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface-2);
+}
+
+/* The composed overview card (ring + identity) gets the most room. */
+.cqb-hero-overview {
+	flex: 2.2 1 340px;
+	flex-direction: row;
+	align-items: center;
+	gap: 16px;
+}
+.cqb-overview-info {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+.cqb-ov-name {
+	display: flex;
+	min-width: 0;
+	width: 100%;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+}
+.cqb-ov-name .cqb-mid-a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+.cqb-ov-name .cqb-mid-b { white-space: nowrap; flex: none; }
+.cqb-ov-metaline {
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+/* Stacked time mini-stats (label over value, side by side). */
+.cqb-ministats {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+.cqb-ministat {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.cqb-ministat-label {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+.cqb-ministat-value {
+	color: var(--qb-foreground);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.cqb-hero-label {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.cqb-hero-sub {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* Completion ring */
+.cqb-ring { display: block; flex: none; }
+.cqb-ring-track {
+	fill: none;
+	stroke: var(--qb-border);
+	stroke-width: 6;
+}
+.cqb-ring-arc {
+	fill: none;
+	stroke: url(#cqb-ring-grad);
+	stroke-width: 6;
+	stroke-linecap: round;
+	transition: stroke-dashoffset 0.4s ease;
+}
+.cqb-ring-s1 { stop-color: var(--qb-prg-start); }
+.cqb-ring-s2 { stop-color: var(--qb-prg-end); }
+.cqb-ring-label {
+	fill: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 19px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.cqb-state-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 10px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	background: var(--qb-pill-bg);
+	color: var(--qb-fg-muted);
+}
+.cqb-state-pill::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex: none;
+	background: currentColor;
+}
+.cqb-state-pill[data-tone="downloading"] { color: var(--qb-state-downloading); }
+.cqb-state-pill[data-tone="seeding"] { color: var(--qb-state-seeding); }
+.cqb-state-pill[data-tone="paused"],
+.cqb-state-pill[data-tone="checking"] { color: var(--qb-state-paused); }
+.cqb-state-pill[data-tone="stopped"] { color: var(--qb-state-stopped); }
+.cqb-state-pill[data-tone="error"] { color: var(--qb-destructive-text); }
+
+/* Live speed + sparkline */
+.cqb-hero-speed { gap: 10px; }
+.cqb-spd {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+.cqb-spd-icon { width: 18px; height: 18px; flex: none; }
+.cqb-dir-down .cqb-spd-icon,
+.cqb-dir-down.cqb-spd .cqb-spd-icon { background-color: var(--qb-speed-down); }
+.cqb-dir-up .cqb-spd-icon,
+.cqb-dir-up.cqb-spd .cqb-spd-icon { background-color: var(--qb-speed-up); }
+.cqb-spd-text { min-width: 0; flex: none; }
+.cqb-spd-num {
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+	color: var(--qb-foreground);
+	white-space: nowrap;
+}
+.cqb-spd-lab {
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+.cqb-spark {
+	flex: 1 1 auto;
+	min-width: 48px;
+	height: 26px;
+	align-self: center;
+}
+.cqb-spark-line { fill: none; stroke-width: 1.75; vector-effect: non-scaling-stroke; }
+.cqb-spark-area { stroke: none; }
+.cqb-dir-down .cqb-spark-line { stroke: var(--qb-speed-down); }
+.cqb-dir-down .cqb-spark-area { fill: var(--qb-speed-down); fill-opacity: 0.14; }
+.cqb-dir-up .cqb-spark-line { stroke: var(--qb-speed-up); }
+.cqb-dir-up .cqb-spark-area { fill: var(--qb-speed-up); fill-opacity: 0.14; }
+
+/* Ratio gauge */
+.cqb-ratio-value {
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	color: var(--qb-primary-text);
+}
+.cqb-ratio-value[data-met="0"] { color: var(--qb-destructive-text); }
+.cqb-ratio-track {
+	position: relative;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--qb-border-soft);
+	overflow: hidden;
+}
+.cqb-ratio-fill {
+	height: 100%;
+	border-radius: 999px;
+	background: var(--qb-primary);
+	transition: width 0.4s ease;
+}
+.cqb-ratio-fill[data-met="0"] { background: var(--qb-destructive); }
+.cqb-ratio-tick {
+	position: absolute;
+	top: -2px;
+	bottom: -2px;
+	left: 100%;
+	width: 0;
+}
+
+/* Time block */
+.cqb-meta {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	min-width: 0;
+	padding: 3px 0;
+}
+.cqb-meta-wide { flex-direction: column; align-items: stretch; gap: 3px; }
+.cqb-meta-label {
+	flex: none;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.cqb-hero-time .cqb-meta-label { width: 72px; }
+.cqb-meta-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+	text-align: right;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cqb-meta-wide .cqb-meta-value { text-align: left; }
+
+/* ---- Cards ---- */
+.cqb-ov-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+	gap: 12px;
+}
+.cqb-card {
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	min-width: 0;
+	padding: 12px 14px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface);
+	box-shadow: var(--qb-shadow-soft);
+}
+.cqb-card-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-bottom: 7px;
+	border-bottom: 1px solid var(--qb-border-soft);
+}
+.cqb-card-icon { width: 16px; height: 16px; flex: none; background-color: var(--qb-primary-text); }
+.cqb-card-title {
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	color: var(--qb-foreground);
+}
+.cqb-card-body { display: flex; flex-direction: column; gap: 6px; }
+
+/* Swarm */
+.cqb-swarm-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.cqb-swarm-key {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+.cqb-swarm-val {
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.cqb-swarm-bar {
+	height: 5px;
+	border-radius: 999px;
+	background: var(--qb-border-soft);
+	overflow: hidden;
+	margin-bottom: 2px;
+}
+.cqb-swarm-fill { height: 100%; border-radius: 999px; transition: width 0.4s ease; }
+.cqb-swarm-fill.cqb-dir-up { background: var(--qb-speed-up); }
+.cqb-swarm-fill.cqb-dir-down { background: var(--qb-speed-down); }
+
+/* Truncating value row with trailing copy / action buttons */
+.cqb-trunc-wrap {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+}
+.cqb-trunc {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+}
+.cqb-trunc .cqb-mid-a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+.cqb-trunc .cqb-mid-b { white-space: nowrap; flex: none; }
+.cqb-trunc.cqb-mono { font-size: 12px; letter-spacing: 0.01em; }
+
+/* Card inline actions (Tracker URL / Save-path copy + open, Hash copy) are
+ * 28px icon squares (.cqb-icon-btn--md); only the copied-flash tint is
+ * specific to them. They sit flex-centered on the value line (gap in
+ * .cqb-trunc-wrap) so they never push or overlap the value. */
+.cqb-copy-btn.cqb-copied { color: var(--qb-primary-text); }
+
+.cqb-comment {
+	text-align: left;
+	white-space: normal;
+	overflow: visible;
+	line-height: 1.5;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+.cqb-comment a { color: var(--qb-accent-text); }
+
+/* Free-disk meter (mirrors the footer disk meter + its threshold tint). */
+.cqb-disk-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 10px;
+}
+.cqb-disk-val {
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.cqb-disk-track {
+	height: 4px;
+	border-radius: 999px;
+	background: var(--qb-border-soft);
+	overflow: hidden;
+}
+.cqb-disk-fill {
+	height: 100%;
+	border-radius: 999px;
+	background: var(--qb-primary);
+	transition: width 0.4s ease;
+}
+
+/* Tracker status pill: dot + label, toned by state. */
+.cqb-status-cell { display: flex; justify-content: flex-end; }
+.cqb-status-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	background: var(--qb-pill-bg);
+	color: var(--qb-fg-muted);
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cqb-status-pill::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex: none;
+	background: currentColor;
+}
+.cqb-status-pill[data-tone="ok"] { color: var(--qb-primary-text); }
+.cqb-status-pill[data-tone="updating"] { color: var(--qb-fg-muted); }
+.cqb-status-pill[data-tone="error"] { color: var(--qb-destructive-text); }
+
+/* ============================================================
+ * Table / graph panes
+ * ============================================================ */
+div.tab,
+div.graph_tab,
+div.table_tab {
+	background-color: var(--qb-surface);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+}
+
+/* ============================================================
+ * Log pane -- monospace console surface + icon clear button.
+ * ============================================================ */
+div#lcont {
+	background: var(--qb-input);
+	border: 1px solid var(--qb-border-soft);
+	border-radius: var(--qb-radius-lg);
+	padding: 10px 12px;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--qb-foreground);
+}
+
+div#lcont .message,
+div#lcont div {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+/* The Log clear button is the 32px pane-toolbar icon square (.cqb-icon-btn);
+ * only its absolute placement inside the console is kept here. */
+button#clear_log.cqb-icon-btn {
+	position: absolute;
+	top: 48px;
+	right: 20px;
+}
+
+/* ============================================================
+ * No-torrent empty state -- a centered glyph + tab-specific prompt that
+ * lives INSIDE the active torrent-scoped panel (General / Files / Trackers
+ * / Peers / Chunks), below the tab strip, never a drawer-level overlay. The
+ * tab strip stays pixel-identical with and without a selection: the state
+ * class (cqb-nosel, deliberately NOT the list-level `.cqb-empty`) only
+ * toggles these descendants and adds no box to the drawer. The opaque
+ * surface fill covers any stale data from a previously selected torrent.
+ * details.js injects one node per torrent panel and sets each panel relative.
+ * ============================================================ */
+.cqb-tab-empty {
+	display: none;
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	padding: 24px;
+	background: var(--qb-surface);
+	color: var(--qb-fg-muted);
+	text-align: center;
+}
+
+div#tdetails.cqb-nosel .cqb-tab-empty {
+	display: flex;
+}
+
+.cqb-tab-empty .cqb-tab-empty-glyph {
+	width: 40px;
+	height: 40px;
+	flex: none;
+	opacity: 0.55;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+.cqb-tab-empty .cqb-tab-empty-text {
+	font-size: 13px;
+	max-width: 280px;
+	line-height: 1.5;
+}
+
+/* While no torrent is selected, the torrent-scoped list panels show the prompt
+ * above; their core table header would otherwise paint a short column strip
+ * over it, so hide it here. The header returns the moment a torrent is picked. */
+div#tdetails.cqb-nosel #FileList thead,
+div#tdetails.cqb-nosel #TrackerList thead,
+div#tdetails.cqb-nosel #PeerList thead {
+	visibility: hidden;
+}
+
+/* ============================================================
+ * Defect 4 -- plugin-pane toolbars: the File Manager path bar and
+ * every sibling nav row. A 40px surface toolbar with an icon-button
+ * group and a clickable breadcrumb; the stock select stays wired but
+ * visually replaced by the breadcrumb.
+ * ============================================================ */
+#flm-navigation-head,
+#flm-navigation-head .container-fluid,
+#flm-navigation-head .row {
+	margin: 0;
+	padding: 0;
+	max-width: none;
+}
+
+#flm-navigation-head {
+	--cqb-flm-bar-h: 40px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	box-sizing: border-box;
+	height: var(--cqb-flm-bar-h);
+	/* No end padding: the first and last controls are flush segments of the
+	 * toolbar, meeting its border with no gap; interior spacing comes from the
+	 * input-group gap and the tool-group divider. */
+	padding: 0;
+	margin-bottom: 8px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+#flm-navigation-head .row {
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+	align-items: center;
+}
+
+#flm-navigation-head .input-group {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	width: auto;
+	padding: 0;
+}
+
+/* Zero the stock input-group child margins so the row sits flush. */
+#flm-navigation-head .input-group > * { margin: 0; }
+
+/* Icon-button group (refresh, dir-up, mkdir). */
+.cqb-flm-tools {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	flex: none;
+	padding-right: 6px;
+	margin-right: 2px;
+	border-right: 1px solid var(--qb-border);
+}
+
+/* The refresh / dir-up / mkdir tools are 32px pane-toolbar icon squares
+ * (.cqb-icon-btn); the id-and-class form beats the core plugin's own
+ * `#flm-nav-refresh` width so the square holds. */
+button#flm-nav-refresh.cqb-icon-btn,
+.cqb-flm-tools .cqb-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	min-width: 32px;
+}
+
+/* The toolbar surface is --qb-surface-2, so the primitive's --qb-surface-2
+ * hover would be invisible on it; lift the tools' hover to --qb-surface-3. */
+.cqb-flm-tools .cqb-icon-btn:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+}
+
+/* The refresh is the toolbar's FIRST control: a flush left segment -- full
+ * inner height, still square (so the shape gate reads it as a square), with
+ * its left corners matching the toolbar radius. Inner height = bar height
+ * minus its two 1px borders. */
+button#flm-nav-refresh.cqb-icon-btn {
+	width: calc(var(--cqb-flm-bar-h) - 2px);
+	height: calc(var(--cqb-flm-bar-h) - 2px);
+	min-width: calc(var(--cqb-flm-bar-h) - 2px);
+	border-radius: var(--qb-radius-lg) 0 0 var(--qb-radius-lg);
+	/* A legacy `#flm-nav-refresh` rule paints a surface-2 box + border at id
+	 * specificity; neutralise it here so the refresh is a transparent flush
+	 * segment that tints only on hover, like the other toolbar controls. */
+	background: transparent;
+	border-color: transparent;
+}
+button#flm-nav-refresh.cqb-icon-btn:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+	border-color: transparent;
+}
+
+/* Replace the refresh sprite with a masked glyph. */
+button#flm-nav-refresh .flm-sprite,
+button#flm-nav-refresh .sprite-refresh {
+	width: 16px;
+	height: 16px;
+	background: none !important;
+	background-color: currentColor !important;
+	-webkit-mask: url(../images/icons/fm-refresh.svg) center / 16px no-repeat;
+	mask: url(../images/icons/fm-refresh.svg) center / 16px no-repeat;
+}
+
+.cqb-flm-btn .cqb-icon {
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: center / 16px no-repeat;
+	mask: center / 16px no-repeat;
+}
+
+/* Hide the stock history <select>; the breadcrumb shows the path and the
+ * compact Recent trigger drives this control (kept wired, sr-only). */
+#flm-navpath.cqb-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Clickable breadcrumb path. */
+.cqb-breadcrumb {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: 1px;
+	min-width: 0;
+	overflow-x: auto;
+	scrollbar-width: thin;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+.cqb-breadcrumb .cqb-crumb {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	min-width: 0;
+	min-height: 0;
+	height: 30px;
+	margin: 0;
+	padding: 3px 7px;
+	border-radius: var(--qb-radius);
+	background: transparent;
+	border: none;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+/* The root crumb ("/") carries no text glyph the shape gate can read, so the
+ * core `button{width:80px}` made it an 80x36 RECT; give it a compact square. */
+.cqb-breadcrumb .cqb-crumb:first-child {
+	width: 30px;
+	min-width: 30px;
+	padding: 0;
+	justify-content: center;
+}
+
+.cqb-breadcrumb .cqb-crumb:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+.cqb-breadcrumb .cqb-crumb.cqb-crumb-current {
+	color: var(--qb-foreground);
+	font-weight: 600;
+	cursor: default;
+}
+
+.cqb-breadcrumb .cqb-crumb-sep {
+	flex: none;
+	color: var(--qb-fg-muted);
+	opacity: 0.6;
+	font-size: 12px;
+	padding: 0 1px;
+}
+
+/* "Recent folders" -- the history <select>, enhanced by the shared select,
+ * collapsed to a 32px square clock trigger at the toolbar's far right; the
+ * chevron and value label are dropped so only the glyph shows. The popover
+ * still lists the path history. */
+.cqb-flm-recent.cqb-select-trigger,
+.cqb-flm-recent.cqb-select-trigger[data-cqb-grow] {
+	flex: none;
+	box-sizing: border-box;
+	/* The toolbar's LAST control: a flush right segment, full inner height, still
+	 * square, with its right corners matching the toolbar radius. */
+	width: calc(var(--cqb-flm-bar-h) - 2px);
+	height: calc(var(--cqb-flm-bar-h) - 2px);
+	min-width: calc(var(--cqb-flm-bar-h) - 2px);
+	min-height: 0;
+	gap: 0;
+	padding: 0;
+	justify-content: center;
+	border-radius: 0 var(--qb-radius-lg) var(--qb-radius-lg) 0;
+	background: transparent;
+	border-color: transparent;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-flm-recent.cqb-select-trigger::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: url(../images/icons/statusbar-clock.svg) center / 16px no-repeat;
+	mask: url(../images/icons/statusbar-clock.svg) center / 16px no-repeat;
+}
+
+.cqb-flm-recent .cqb-select-value,
+.cqb-flm-recent .cqb-select-chevron { display: none; }
+
+.cqb-flm-recent.cqb-select-trigger:hover,
+.cqb-flm-recent.cqb-select-trigger[aria-expanded="true"] {
+	background: var(--qb-surface-3);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+/* The breadcrumb opens a fixed 12px after the icon-tool group (6px flex gap
+ * + 6px margin that beats the stock margin reset), so it reads as attached to
+ * the path, not floating. */
+#flm-navigation-head .cqb-breadcrumb { margin-left: 6px; }
+
+/* Keep the last column (Permissions) 12px clear of the vertical scrollbar so
+ * neither its header label nor its values sit under the thumb. */
+#flm-browser-table thead td:last-child,
+#flm-browser-table tbody td:last-child { padding-right: 12px; }
+
+/* File table fills the pane: Name flexes into the free space, the tabular
+ * columns keep their widths; the stock dxSTable would otherwise leave the
+ * right half of the pane empty. */
+#flm-browser-table table { width: 100%; }
+#flm-browser-table colgroup col:first-child,
+#flm-browser-table thead td[index="0"] { width: auto !important; }
+
+/* ============================================================
+ * Flot charts (Speed + Traffic tabs) -- token series colors are set
+ * from details.js; grid, axis labels and the legend are styled here.
+ * The core reads grid/legend colors off these two carrier elements.
+ * ============================================================ */
+.graph_tab_grid {
+	color: var(--qb-fg-muted);
+	background-color: transparent;
+	border: 1px solid var(--qb-border);
+}
+
+.graph_tab_legend {
+	color: var(--qb-foreground);
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+/* Axis tick labels -- 11px muted. */
+.tickLabel,
+.flot-tick-label {
+	color: var(--qb-fg-muted) !important;
+	font-size: 11px !important;
+	font-family: var(--qb-font) !important;
+}
+
+/* Legend as a token surface card, top-right inside the plot. */
+.legend table {
+	border: 1px solid var(--qb-border) !important;
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface) !important;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	box-shadow: var(--qb-shadow-soft);
+	padding: 3px 5px;
+}
+
+.legend > div {
+	border-radius: var(--qb-radius-lg) !important;
+	background-color: var(--qb-surface) !important;
+}
+
+.legend .legendLabel {
+	color: var(--qb-foreground);
+	font-size: 11px;
+	padding: 1px 8px 1px 4px;
+}
+
+.legend .legendColorBox > div {
+	border: none !important;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.legend .legendColorBox > div > div {
+	border-radius: 3px !important;
+}
+
+/* Traffic and Speed both drive inline series toggles in a toolbar row, so the
+ * stock flot legend never floats over either plot. */
+#traf .legend,
+#Speed .legend { display: none !important; }
+
+/* Speed pane toolbar -- a 40px surface row above the live plot holding the
+ * Download/Upload series toggles (the chips reuse the Traffic chip styles). */
+.cqb-speed-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px 10px;
+	box-sizing: border-box;
+	height: 40px;
+	padding: 0 12px;
+	margin-bottom: 10px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+/* ============================================================
+ * Traffic pane -- even 16px pane (from #tdcont), a surface toolbar carrying
+ * KPI chips (left), inline series toggles, and the period/tracker selects +
+ * Clear (right). The toolbar height is fixed so the plugin's graph-height
+ * math (#traf height minus #traf_graph_ctrl height) stays deterministic.
+ * ============================================================ */
+#traf_graph_ctrl,
+.cqb-pane-toolbar {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px 10px;
+	box-sizing: border-box;
+	min-height: 50px;
+	padding: 6px 12px;
+	margin-bottom: 10px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	overflow: visible;
+}
+
+#traf_graph_ctrl select,
+.cqb-pane-toolbar select {
+	height: 32px;
+	padding: 0 8px;
+	width: auto;
+	flex: none;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+}
+
+/* The plugin sizes the flot placeholder itself; keep a small top inset only. */
+#traf_graph { margin-top: 2px; }
+
+/* KPI chips (total down / up / ratio for the selected period). */
+.cqb-traf-kpi {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex: none;
+}
+.cqb-kpi {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 4px 10px 4px 8px;
+	border: 1px solid var(--qb-border-soft);
+	border-radius: var(--qb-radius);
+	background: var(--qb-surface);
+	white-space: nowrap;
+}
+.cqb-kpi-icon { width: 15px; height: 15px; flex: none; background-color: var(--qb-fg-muted); }
+.cqb-kpi.cqb-dir-down .cqb-kpi-icon { background-color: var(--qb-speed-down); }
+.cqb-kpi.cqb-dir-up .cqb-kpi-icon { background-color: var(--qb-speed-up); }
+.cqb-kpi-text { display: flex; flex-direction: column; line-height: 1.15; }
+.cqb-kpi-val {
+	font-size: 13px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--qb-foreground);
+}
+.cqb-kpi[data-met="1"] .cqb-kpi-val { color: var(--qb-primary-text); }
+.cqb-kpi[data-met="0"] .cqb-kpi-val { color: var(--qb-destructive-text); }
+.cqb-kpi-lab {
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+/* Inline series toggles replace the floating legend. */
+.cqb-traf-toggles { display: inline-flex; align-items: center; gap: 6px; flex: none; }
+.cqb-traf-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+	width: auto;
+	padding: 4px 10px;
+	border: 1px solid var(--qb-border);
+	border-radius: 999px;
+	background: var(--qb-surface);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: opacity 0.12s ease, background-color 0.12s ease;
+}
+.cqb-traf-toggle-lab { white-space: nowrap; }
+.cqb-traf-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.cqb-traf-toggle.cqb-dir-down .cqb-traf-dot { background: var(--qb-speed-down); }
+.cqb-traf-toggle.cqb-dir-up .cqb-traf-dot { background: var(--qb-speed-up); }
+.cqb-traf-toggle[aria-pressed="false"] {
+	opacity: 0.5;
+	background: transparent;
+	color: var(--qb-fg-muted);
+}
+.cqb-traf-toggle[aria-pressed="false"] .cqb-traf-dot { background: var(--qb-fg-muted); }
+.cqb-traf-toggle:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* The tracker/period selects keep their stock push to the right. */
+#traf_graph_ctrl select.ms-auto { margin-left: auto; }

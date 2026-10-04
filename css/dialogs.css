@@ -1,0 +1,2014 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- dialogs surface.
+ *  Chrome shared by every .dlg-window: modal backdrop, window frame, header
+ *  glyph tiles, form controls, footer buttons, the directory-browse popover,
+ *  the Add Torrent card layout and the context menu. Every color is a --qb-*
+ *  token; card, panel, menu and control radii use the shared --qb-radius /
+ *  --qb-radius-lg tokens, while the window frame keeps a fixed 14px shell.
+ *  Form rules are scoped to .dlg-window so the table and base surfaces are
+ *  left untouched.
+ */
+
+/* ============================================================
+ * Modal backdrop
+ * ============================================================ */
+#modalbg,
+div#modalbg {
+	background-color: var(--qb-overlay);
+	opacity: 0.6;
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
+}
+
+/* ============================================================
+ * Dialog window
+ * ============================================================ */
+div.dlg-window {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: 14px;
+	box-shadow: var(--qb-shadow);
+	color: var(--qb-foreground);
+	padding: 0;
+	overflow: hidden;
+}
+
+/* ============================================================
+ * Header: hairline bar, 32px glyph tile, 15px title, close button
+ * ============================================================ */
+div.dlg-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	position: sticky;
+	top: 0;
+	padding: 12px 14px;
+	background-color: transparent;
+	background-image: none;
+	border-bottom: 1px solid var(--qb-border);
+	border-radius: 14px 14px 0 0;
+	color: var(--qb-foreground);
+}
+
+/* The title div (#<id>-header) holds the glyph tile + the title text. */
+div.dlg-header > div:first-child {
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex: 1 1 auto;
+	min-height: 32px;
+	padding-left: 44px;
+	line-height: 1.3;
+	font-family: var(--qb-font);
+	font-size: 15px;
+	font-weight: 600;
+	background-image: none !important;
+}
+
+/* Tinted rounded tile behind the glyph. */
+div.dlg-header > div:first-child::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 32px;
+	border-radius: var(--qb-radius);
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+}
+
+/* The glyph, masked over the tile. Default = settings; per-id below. */
+div.dlg-header > div:first-child::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 32px;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: center / 18px no-repeat;
+	mask: center / 18px no-repeat;
+	-webkit-mask-image: url(../images/icons/header-settings.svg);
+	mask-image: url(../images/icons/header-settings.svg);
+}
+
+/* Per-dialog header glyphs (selectors mirror the live dialog ids). */
+#tadd-header::after,
+#dlgLoadTorrents-header::after,
+#tegLoadTorrents-header::after {
+	-webkit-mask-image: url(../images/icons/header-add-torrent.svg);
+	mask-image: url(../images/icons/header-add-torrent.svg);
+}
+#dlgBulkAdd-header::after {
+	-webkit-mask-image: url(../images/icons/header-bulk-add.svg);
+	mask-image: url(../images/icons/header-bulk-add.svg);
+}
+#padd-header::after {
+	-webkit-mask-image: url(../images/icons/header-add-peer.svg);
+	mask-image: url(../images/icons/header-add-peer.svg);
+}
+#dlgProps-header::after {
+	-webkit-mask-image: url(../images/icons/header-properties.svg);
+	mask-image: url(../images/icons/header-properties.svg);
+}
+#dlgHelp-header::after {
+	-webkit-mask-image: url(../images/icons/header-help.svg);
+	mask-image: url(../images/icons/header-help.svg);
+}
+#dlgAbout-header::after {
+	-webkit-mask-image: url(../images/icons/header-about.svg);
+	mask-image: url(../images/icons/header-about.svg);
+}
+#dlgLabel-header::after {
+	-webkit-mask-image: url(../images/icons/header-label.svg);
+	mask-image: url(../images/icons/header-label.svg);
+}
+#yesnoDlg-header::after {
+	-webkit-mask-image: url(../images/icons/header-confirm.svg);
+	mask-image: url(../images/icons/header-confirm.svg);
+}
+#tcreate-header::after {
+	-webkit-mask-image: url(../images/icons/header-create.svg);
+	mask-image: url(../images/icons/header-create.svg);
+}
+#dlg_datadir-header::after {
+	-webkit-mask-image: url(../images/icons/header-datadir.svg);
+	mask-image: url(../images/icons/header-datadir.svg);
+}
+#dlg_unpack-header::after {
+	-webkit-mask-image: url(../images/icons/header-unpack.svg);
+	mask-image: url(../images/icons/header-unpack.svg);
+}
+#dlgEditRatioRules-header::after {
+	-webkit-mask-image: url(../images/icons/header-ratio-rules.svg);
+	mask-image: url(../images/icons/header-ratio-rules.svg);
+}
+#tskConsole-header::after {
+	-webkit-mask-image: url(../images/icons/header-task-console.svg);
+	mask-image: url(../images/icons/header-task-console.svg);
+}
+#dlgRenameView-header::after {
+	-webkit-mask-image: url(../images/icons/header-rename.svg);
+	mask-image: url(../images/icons/header-rename.svg);
+}
+#tracklabels-dialog-header::after {
+	-webkit-mask-image: url(../images/icons/header-tracker-upload.svg);
+	mask-image: url(../images/icons/header-tracker-upload.svg);
+}
+#dlgAddRSS-header::after,
+#dlgAddRSSGroup-header::after,
+#dlgEditRSS-header::after,
+#dlgEditFilters-header::after,
+#dlgEditRules-header::after {
+	-webkit-mask-image: url(../images/icons/toolbar-rss.svg);
+	mask-image: url(../images/icons/toolbar-rss.svg);
+}
+
+/* Two dialogs paint the raster on the whole header, not the title div. */
+div#cadd div.dlg-header,
+div#logoffDlg div.dlg-header {
+	background-image: none !important;
+}
+#cadd-header::after {
+	-webkit-mask-image: url(../images/icons/header-comment.svg);
+	mask-image: url(../images/icons/header-comment.svg);
+}
+#logoffDlg-header::after {
+	-webkit-mask-image: url(../images/icons/logoff.svg);
+	mask-image: url(../images/icons/logoff.svg);
+}
+
+/* Close button: 28px rounded hit area, masked glyph, hover wash, focus ring. */
+a.dlg-close,
+a.dlg-close:link,
+a.dlg-close:visited {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: var(--qb-radius);
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+a.dlg-close::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	transition: background-color 0.15s ease;
+}
+
+a.dlg-close:hover,
+a.dlg-close:active {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	background-position-x: 0;
+}
+
+a.dlg-close:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+a.dlg-close:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* ============================================================
+ * Content scroll region
+ * ============================================================ */
+div.dlg-window > .cont {
+	padding: 16px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	flex: 1 1 auto;
+}
+
+/* ============================================================
+ * Fieldsets as cards + legends
+ * ============================================================ */
+.dlg-window fieldset {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background-color: var(--qb-surface);
+	margin: 0 0 12px 0;
+	padding: 14px 14px 10px;
+}
+
+.dlg-window fieldset:last-child {
+	margin-bottom: 0;
+}
+
+/* legend renders as an in-card heading below an unbroken top border: a
+ * floated full-width block takes it out of the fieldset's border line */
+.dlg-window legend {
+	float: left;
+	width: 100%;
+	margin: 0 0 12px 0;
+	padding: 0;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.dlg-window fieldset::after {
+	content: "";
+	display: block;
+	clear: both;
+}
+
+.dlg-window label {
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+/* ============================================================
+ * Form controls (scoped to dialogs)
+ * ============================================================ */
+.dlg-window input[type="text"],
+.dlg-window input[type="password"],
+.dlg-window input[type="number"],
+.dlg-window input[type="file"],
+.dlg-window select {
+	min-height: 36px;
+	padding: 0 10px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dlg-window select {
+	padding-right: 28px;
+}
+
+.dlg-window textarea {
+	padding: 10px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dlg-window input[type="text"]:focus,
+.dlg-window input[type="password"]:focus,
+.dlg-window input[type="number"]:focus,
+.dlg-window input[type="file"]:focus,
+.dlg-window select:focus,
+.dlg-window textarea:focus {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 3px var(--qb-focus);
+}
+
+.dlg-window input::placeholder,
+.dlg-window textarea::placeholder {
+	color: var(--qb-fg-muted);
+	opacity: 1;
+}
+
+.dlg-window input[type="checkbox"],
+.dlg-window input[type="radio"] {
+	width: 16px;
+	height: 16px;
+	margin: 0 6px 0 0;
+	accent-color: var(--qb-primary);
+	cursor: pointer;
+}
+
+/* checkbox / radio option rows read as a label beside the control */
+.dlg-window [id$="_option"].d-flex,
+.dlg-window .d-flex > input[type="checkbox"] + label {
+	align-items: center;
+}
+
+/* ============================================================
+ * Buttons + footer bar
+ * ============================================================ */
+.dlg-window .buttons-list {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 12px 16px;
+	border-top: 1px solid var(--qb-border);
+	background-color: var(--qb-surface);
+}
+
+.dlg-window button,
+.dlg-window input[type="button"],
+.dlg-window input[type="submit"],
+.dlg-window .Button,
+.dlg-window a.Button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: auto;
+	min-width: 84px;
+	min-height: 36px;
+	margin: 0;
+	padding: 0 16px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	text-wrap: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.dlg-window button:not(:disabled):hover,
+.dlg-window input[type="button"]:not(:disabled):hover,
+.dlg-window input[type="submit"]:not(:disabled):hover,
+.dlg-window .Button:not(:disabled):hover {
+	background: var(--qb-surface-3);
+	border-color: var(--qb-fg-muted);
+}
+
+/* Primary action: .OK, submit inputs, and the Add Torrent primary. */
+.dlg-window button.OK,
+.dlg-window input[type="submit"],
+.dlg-window .cqb-primary {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+.dlg-window button.OK:not(:disabled):hover,
+.dlg-window input[type="submit"]:not(:disabled):hover,
+.dlg-window .cqb-primary:not(:disabled):hover {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	filter: brightness(1.08);
+}
+
+.dlg-window button.Cancel,
+.dlg-window .cqb-secondary {
+	background: transparent;
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+.dlg-window button.Cancel:not(:disabled):hover,
+.dlg-window .cqb-secondary:not(:disabled):hover {
+	background: var(--qb-muted, var(--qb-surface-2));
+}
+
+/* Disabled reads as inert, never as a dimmed primary: a muted surface with
+ * muted text, so an enable-on-input action (Bulk loading OK, Add) clearly
+ * states it is waiting. Listed at >= the primary rules' specificity. */
+.dlg-window button:disabled,
+.dlg-window button.OK:disabled,
+.dlg-window button.cqb-primary:disabled,
+.dlg-window input[type="submit"]:disabled,
+.dlg-window input[type="button"]:disabled,
+.dlg-window .Button:disabled,
+.dlg-window .cqb-primary:disabled {
+	background: var(--qb-muted, var(--qb-surface-2));
+	border-color: var(--qb-border);
+	color: var(--qb-fg-muted);
+	opacity: 0.7;
+	cursor: not-allowed;
+	filter: none;
+}
+
+.dlg-window button:focus-visible,
+.dlg-window input:focus-visible,
+.dlg-window select:focus-visible,
+.dlg-window a.Button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* ============================================================
+ * Directory-browse control + popover (core rDirBrowser markup)
+ * The input + button share the global .cqb-input-group chrome; a
+ * dialog-scoped reset lets the group own the border/ring instead of
+ * each child (the .dlg-window input rules above are more specific).
+ * ============================================================ */
+.dlg-window .cqb-input-group > input,
+.dlg-window .cqb-input-group > select,
+.dlg-window .cqb-input-group > .browseEdit {
+	width: auto;
+	min-height: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+}
+
+.dlg-window .cqb-input-group > input:focus,
+.dlg-window .cqb-input-group > select:focus,
+.dlg-window .cqb-input-group > .browseEdit:focus {
+	border: 0;
+	box-shadow: none;
+}
+
+dialog.browseFrame {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow);
+	color: var(--qb-foreground);
+	padding: 6px;
+}
+
+dialog.browseFrame .filter-dir {
+	min-height: 32px;
+	width: 100%;
+	margin-bottom: 4px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-size: 13px;
+}
+
+dialog.browseFrame .rmenuitem {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 8px;
+	border-radius: 6px;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+dialog.browseFrame .rmenuitem:hover,
+dialog.browseFrame .rmenuitem.active {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+}
+
+/* ============================================================
+ * Add Torrent (defect 8): drop-zone card, file chips, label select
+ * ============================================================ */
+
+/* Stack each field: top-aligned muted label above a full-width control. */
+#addtorrent .row,
+#addtorrenturl .row {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	margin: 0 0 12px 0;
+}
+
+#addtorrent .row:last-child,
+#addtorrenturl .row:last-child {
+	margin-bottom: 0;
+}
+
+#addtorrent .row > div,
+#addtorrenturl .row > div {
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
+	justify-content: flex-start;
+}
+
+/* Reveal the label column (Bootstrap hides it on small) and left-align it. */
+#addtorrent .row > .d-none,
+#addtorrenturl .row > .d-none {
+	display: flex !important;
+	justify-content: flex-start !important;
+}
+
+#addtorrent .row label,
+#addtorrenturl .row label {
+	display: block;
+	margin: 0 0 2px 0;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: left;
+}
+
+/* Core forces the URL field to monospace via a two-id rule; use the UI font. */
+.dlg-window #addtorrenturl #url {
+	font-family: var(--qb-font);
+}
+
+/* ============================================================
+ * Add Torrent (#tadd): Source card + Options card (rev30)
+ * ============================================================ */
+.dlg-window#tadd { width: min(740px, 94vw); max-height: 80vh; }
+
+/* A v4 panel card: 20px padding, 16px between cards, 12px field gap. */
+.dlg-window#tadd .cqb-card {
+	container-type: inline-size;
+	padding: 20px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background-color: var(--qb-surface);
+}
+
+.dlg-window#tadd .cqb-card + .cqb-card { margin-top: 16px; }
+
+.dlg-window#tadd .cqb-card-head {
+	margin: 0 0 12px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.dlg-window#tadd .cqb-opt-card .cqb-field-v + .cqb-field-v,
+.dlg-window#tadd .cqb-opt-card .cqb-field-v + .cqb-opts-grid { margin-top: 12px; }
+
+/* File | URL segmented control (two equal halves, v4 SegmentedControl). */
+.dlg-window#tadd .cqb-seg {
+	display: flex;
+	gap: 2px;
+	margin-bottom: 14px;
+	padding: 2px;
+	background: var(--qb-muted);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+}
+
+.dlg-window#tadd .cqb-seg-btn {
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 5px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+/* Hover only lifts an INACTIVE segment; the active one already reads selected. */
+.dlg-window#tadd .cqb-seg-btn:not(.is-active):not(:disabled):hover {
+	background: color-mix(in srgb, var(--qb-foreground) 6%, transparent);
+	color: var(--qb-foreground);
+}
+
+.dlg-window#tadd .cqb-seg-btn.is-active {
+	background: color-mix(in srgb, var(--qb-primary) 12%, var(--qb-surface));
+	border-color: transparent;
+	color: var(--qb-foreground);
+	font-weight: 600;
+	box-shadow: var(--qb-shadow-soft);
+}
+
+.dlg-window#tadd .cqb-seg-btn:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* One panel visible at a time; the hidden one keeps its value. */
+.dlg-window#tadd .cqb-src[data-src="file"] .cqb-src-url { display: none; }
+.dlg-window#tadd .cqb-src[data-src="url"] .cqb-src-file { display: none; }
+
+.dlg-window#tadd .cqb-src-url #url {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 112px;
+	resize: vertical;
+}
+
+/* Label control: the select, or (New label...) an input group in the SAME row. */
+.dlg-window#tadd .cqb-label-ctl {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.dlg-window#tadd .cqb-label-ctl .cqb-select-trigger {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto;
+}
+
+.dlg-window#tadd .cqb-label-ctl .cqb-label-group { flex: 1 1 auto; }
+
+.dlg-window#tadd .cqb-label-ctl[data-mode="list"] .cqb-label-group { display: none; }
+.dlg-window#tadd .cqb-label-ctl[data-mode="new"] .cqb-select-trigger { display: none; }
+
+/* The back-to-list button carries the label glyph, not the folder default. */
+.dlg-window#tadd .cqb-label-back::before {
+	-webkit-mask-image: url(../images/icons/header-label.svg);
+	mask-image: url(../images/icons/header-label.svg);
+}
+
+/* Add options as switch rows, two columns when there is room. Shared by every
+ * add-flow dialog (Add Torrent, Load Torrents, the search add dialog) so one
+ * add boolean reads the same everywhere. */
+.dlg-window .cqb-opts-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px 16px;
+}
+
+/* A container so the grid collapses on the width it actually gets, not the
+ * viewport (the plugin add dialogs are far narrower than #tadd's card). */
+.dlg-window .cqb-opts-wrap {
+	container-type: inline-size;
+}
+
+/* The plugin add dialogs size to content and are narrow; give their option
+ * list the full content width (drop the Bootstrap offset) and keep each label
+ * on one line so the longest option never wraps. */
+:is(#dlgLoadTorrents, #tegLoadTorrents) .cqb-opts-wrap {
+	margin-left: 0;
+	max-width: 100%;
+	flex-basis: 100%;
+}
+
+:is(#dlgLoadTorrents, #tegLoadTorrents) .cqb-opt-text > label {
+	white-space: nowrap;
+}
+
+@container (max-width: 640px) {
+	.dlg-window .cqb-opts-grid { grid-template-columns: 1fr; }
+}
+
+.cqb-dropzone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 120px;
+	margin: 0;
+	padding: 20px;
+	border: 2px dashed var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background-color: var(--qb-input);
+	color: var(--qb-fg-muted);
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.cqb-dropzone:hover,
+.cqb-dropzone:focus-within,
+.cqb-dropzone.cqb-dragover {
+	border-color: var(--qb-primary);
+	color: var(--qb-foreground);
+	background-color: color-mix(in srgb, var(--qb-primary) 8%, var(--qb-input));
+}
+
+.cqb-dropzone .cqb-dropzone-icon {
+	width: 32px;
+	height: 32px;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+	mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+}
+
+.cqb-dropzone .cqb-dropzone-hint {
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-dropzone .cqb-dropzone-browse {
+	color: var(--qb-primary-text, var(--qb-primary));
+	font-weight: 600;
+}
+
+/* native file input stays wired but visually removed (label drives it) */
+.cqb-file-tucked {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.cqb-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 10px;
+}
+
+.cqb-chips:empty {
+	display: none;
+}
+
+.cqb-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	padding: 3px 4px 3px 10px;
+	border: 1px solid var(--qb-border);
+	border-radius: 999px;
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+.cqb-chip .cqb-chip-name {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Circular 20x20 inline cancel. The remove is a <button>, so the dialog
+ * `.dlg-window button{min-width:84px;min-height:36px}` rule would stretch it
+ * into an oblong that covers the name -- reset min-width/height to 0 and hold
+ * a fixed square so the name ellipsizes BEFORE the remove, never under it. */
+.cqb-chip .cqb-chip-remove {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background-color: transparent;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+}
+
+.cqb-chip .cqb-chip-remove::before {
+	content: "";
+	width: 12px;
+	height: 12px;
+	background-color: currentColor;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+}
+
+.cqb-chip .cqb-chip-remove:not(:disabled):hover {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+.cqb-chip .cqb-chip-remove:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* ============================================================
+ * Context menu (ul.CMenu) -- v4 select-panel idiom
+ * ============================================================ */
+ul.CMenu {
+	min-width: 200px;
+	width: auto;
+	padding: 6px;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow);
+	opacity: 1;
+	list-style: none;
+}
+
+ul.CMenu li,
+ul.CMenu li.menuitem {
+	width: auto;
+	background-color: transparent;
+	border-radius: 6px;
+}
+
+ul.CMenu li a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+}
+
+ul.CMenu li a:hover,
+ul.CMenu li:hover > a {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-weight: 500;
+	text-shadow: none;
+}
+
+ul.CMenu li a.dis,
+ul.CMenu li a.dis:hover {
+	background: transparent;
+	color: var(--qb-fg-muted);
+	opacity: 0.5;
+}
+
+ul.CMenu li hr {
+	margin: 4px 2px;
+	padding: 0;
+	height: 1px;
+	border: none;
+	border-bottom: 1px solid var(--qb-border);
+	background-color: transparent;
+}
+
+/* Core ships a 1.35rem ::before AND ::after on EVERY item (a raster check
+ * via --menu-item-active-icon, a raster caret via --menu-item-exp-icon),
+ * reserving icon gutters on plain rows and bleeding the raster under a mask
+ * (hdetect DOUBLE). Drop both by default; re-add a masked glyph only where
+ * the row is selected or expandable, with the raster explicitly killed. */
+ul.CMenu li a::before,
+ul.CMenu li a::after {
+	content: none;
+	background-image: none;
+}
+
+ul.CMenu li a.exp::after {
+	content: "";
+	display: block;
+	width: 1rem;
+	height: 1rem;
+	margin-left: auto;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
+}
+
+ul.CMenu li a.exp:hover::after,
+ul.CMenu li:hover > a.exp::after {
+	background-color: var(--qb-foreground);
+}
+
+ul.CMenu li a.sel {
+	color: var(--qb-primary-text, var(--qb-primary));
+	font-weight: 600;
+}
+
+ul.CMenu li a.sel::before {
+	content: "";
+	display: block;
+	width: 1rem;
+	height: 1rem;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	background-image: none;
+	-webkit-mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+}
+
+ul.CMenu li a.sel:hover::before {
+	background-color: var(--qb-primary-text, var(--qb-primary));
+}
+
+ul.CMenu li ul {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow);
+	padding: 6px;
+}
+
+ul.CMenu li:hover ul li a {
+	background-color: transparent;
+	color: var(--qb-foreground);
+}
+
+ul.CMenu li:hover ul li a:hover {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	text-shadow: none;
+}
+
+ul.CMenu li ul li a.dis,
+ul.CMenu li ul li a.dis:hover {
+	background-color: transparent;
+	color: var(--qb-fg-muted);
+	opacity: 0.5;
+}
+
+/* ============================================================
+ * Task console (#tskConsole): Media Info + Create/Unpack/etc.
+ * ============================================================ */
+/* `.dlg-window#tskConsole` beats core `#tskConsole{width:95vw|unset}`, which
+ * loads after the theme CSS. */
+.dlg-window#tskConsole {
+	display: flex;
+	flex-direction: column;
+	width: min(820px, 94vw);
+	height: auto;
+	max-height: 80vh;
+}
+
+/* Fieldsets carry no card chrome here -- the console surface is the card and
+ * the header names the task, so the "Console" legend is dropped. */
+#tskConsole fieldset {
+	margin: 0 0 12px 0;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+#tskConsole fieldset:last-child { margin-bottom: 0; }
+
+#tskConsole #tskcmdlog_set > legend { display: none; }
+
+#tskConsole #tskcmderrors_set > legend {
+	margin: 0 0 6px 0;
+	color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* Console output: contained to the body width, wrap, never scroll sideways.
+ * Scoped to #tskConsole so it beats core `.tskconsole{width:64rem}` and the
+ * core `white-space:pre`, both of which load after the theme CSS. */
+#tskConsole .tskconsole {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	background: var(--qb-input);
+	color: var(--qb-foreground);
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+	overflow-x: hidden;
+	overflow-y: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	padding: 10px 12px;
+}
+
+#tskConsole #tskcmdlog {
+	height: auto;
+	min-height: 96px;
+	max-height: 52vh;
+}
+
+#tskConsole #tskcmderrors {
+	height: auto;
+	max-height: 20vh;
+}
+
+/* Kill the raster running-loader strip the plugin reserves space for, and
+ * restore the even 12px footer padding every dialog footer uses. */
+#tsk_btns {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 12px 16px !important;
+	border-top: 1px solid var(--qb-border);
+	background-color: var(--qb-surface) !important;
+	background-image: none !important;
+}
+
+/* Thin indeterminate progress, only while the task runs. */
+.cqb-task-bar {
+	display: none;
+	height: 4px;
+	margin: 0;
+	border-radius: 2px;
+	background: linear-gradient(90deg, transparent, var(--qb-primary), transparent);
+	background-size: 40% 100%;
+	background-repeat: no-repeat;
+	animation: cqb-task-slide 1.1s linear infinite;
+}
+
+.cqb-task-running .cqb-task-bar {
+	display: block;
+}
+
+@keyframes cqb-task-slide {
+	0% { background-position: -40% 0; }
+	100% { background-position: 140% 0; }
+}
+
+/* Header status pill + task title/subtitle. */
+.cqb-tsk-title {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.cqb-tsk-sub {
+	margin-left: 8px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	font-weight: 400;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	max-width: 40%;
+}
+
+.cqb-task-status-pill {
+	margin-left: 10px;
+	flex: none;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+.cqb-status-running {
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+}
+
+.cqb-status-done {
+	background: color-mix(in srgb, var(--qb-primary) 16%, transparent);
+	color: var(--qb-primary-text, var(--qb-primary));
+}
+
+.cqb-status-failed {
+	background: color-mix(in srgb, var(--qb-destructive) 16%, transparent);
+	color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* Screenshot nav arrows stay square; the two save buttons share the .scplay
+ * class but carry a text label, so they keep the default text-width sizing. */
+#tsk_btns .scplay:not(#scsave):not(#scsaveall) {
+	min-width: 36px;
+	width: 36px;
+	padding: 0 8px;
+}
+
+/* Footer: Copy and Save Log keep their text with a leading glyph. */
+#tsk_btns #tskCopy::before,
+#tsk_btns #tskSaveLog::before {
+	content: "";
+	display: inline-block;
+	width: 15px;
+	height: 15px;
+	margin-right: 6px;
+	vertical-align: -3px;
+	background-color: currentColor;
+	-webkit-mask: center / 15px no-repeat;
+	mask: center / 15px no-repeat;
+}
+
+#tsk_btns #tskCopy::before {
+	-webkit-mask-image: url(../images/icons/fm-copy.svg);
+	mask-image: url(../images/icons/fm-copy.svg);
+}
+
+#tsk_btns #tskSaveLog::before {
+	-webkit-mask-image: url(../images/icons/tab-log.svg);
+	mask-image: url(../images/icons/tab-log.svg);
+}
+
+/* Console primary dismiss (id beats the .Cancel secondary rule). */
+.dlg-window button#tskCancel.cqb-primary {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+.dlg-window button#tskCancel.cqb-primary:not(:disabled):hover {
+	filter: brightness(1.08);
+}
+
+/* Formatted|Raw segmented control, parked in the dialog header. */
+.cqb-mi-seg {
+	display: none;
+	flex: none;
+	gap: 2px;
+	padding: 2px;
+	background: var(--qb-muted);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+}
+
+.cqb-mi-seg > button {
+	min-height: 0;
+	margin: 0;
+	padding: 3px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.cqb-mi-seg > button:not(:disabled):hover {
+	background: transparent;
+	color: var(--qb-foreground);
+}
+
+.cqb-mi-seg > button.is-active {
+	background: var(--qb-surface);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+	box-shadow: var(--qb-shadow-soft);
+}
+
+.cqb-mi-seg > button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* Media Info: parsed section cards. */
+.cqb-mi {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.cqb-mi-section {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface);
+	padding: 12px 14px;
+}
+
+.cqb-mi-section h4 {
+	margin: 0 0 8px 0;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.cqb-mi-row {
+	display: grid;
+	grid-template-columns: minmax(110px, 32%) 1fr;
+	gap: 10px;
+	padding: 3px 0;
+}
+
+.cqb-mi-label {
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+}
+
+.cqb-mi-value {
+	min-width: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+}
+
+.cqb-mi-value.cqb-mono {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 13px;
+}
+
+/* ============================================================
+ * Create New Torrent (#tcreate): v4 dialog chrome
+ * ============================================================ */
+.dlg-window#tcreate {
+	width: min(720px, 94vw);
+	max-height: 80vh;
+}
+
+/* Switch inputs fill their track; neutralise the dialog checkbox sizing. */
+.dlg-window .cqb-switch input {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+}
+
+/* A field with its label stacked above it (shared by #tcreate and #tadd). */
+.dlg-window .cqb-field-v {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+.dlg-window .cqb-field-v > label {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+}
+
+.dlg-window .cqb-field-v > input,
+.dlg-window .cqb-field-v > textarea {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+/* Piece size is a short control; cap it and let its trigger fill the cap. */
+#tcreate .cqb-field-narrow { max-width: 220px; }
+#tcreate .cqb-field-narrow .cqb-select-trigger,
+#tcreate .cqb-field-narrow > select { width: 100%; }
+
+/* Comment + Source sit side by side, stacking on a narrow dialog. */
+#tcreate .cqb-row-2 {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px 16px;
+}
+
+@media (max-width: 560px) {
+	#tcreate .cqb-row-2 { grid-template-columns: 1fr; }
+}
+
+#tcreate #trackers {
+	box-sizing: border-box;
+	height: 120px;
+	min-height: 96px;
+	resize: vertical;
+}
+
+/* Recent-tracker append chips above the trackers box. */
+#tcreate .cqb-tracker-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0 0 8px;
+}
+
+#tcreate .cqb-tracker-chips:empty { display: none; }
+
+#tcreate .cqb-tchip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	padding: 2px 3px 2px 10px;
+	background: var(--qb-muted);
+	border: 1px solid var(--qb-border);
+	border-radius: 999px;
+	font-size: 12px;
+	color: var(--qb-foreground);
+}
+
+#tcreate .cqb-tchip-label {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+#tcreate .cqb-tchip-x {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 20px;
+	height: 20px;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+}
+
+#tcreate .cqb-tchip-x::before {
+	content: "";
+	width: 12px;
+	height: 12px;
+	background-color: currentColor;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+}
+
+#tcreate .cqb-tchip-x:not(:disabled):hover {
+	color: var(--qb-foreground);
+	background: var(--qb-surface-3);
+}
+
+#tcreate .cqb-tchip-x:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* "Other" options render as switch rows with a one-line helper. */
+#tcreate .cqb-opts {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.dlg-window .cqb-opt {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 4px 0;
+}
+
+.dlg-window .cqb-opt-text {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+
+.dlg-window .cqb-opt-text > label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--qb-foreground);
+	cursor: pointer;
+}
+
+.dlg-window .cqb-help {
+	margin: 4px 0 0;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	line-height: 1.4;
+}
+
+.dlg-window .cqb-opt .cqb-help { margin: 0; }
+
+/* ============================================================
+ * One field layout (defect 1): left-aligned label column, no
+ * trailing colons (trimmed in JS), consistent row gap. Scoped
+ * to the dialogs that still ship the legacy right-aligned form.
+ * ============================================================ */
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlg_unpack, #tracklabels-dialog, #dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup,
+	#dlgEditFilters, #dlgEditRatioRules, #dlgLabel) .cont .row > [class*="col-"] {
+	justify-content: flex-start !important;
+	text-align: left;
+}
+
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlg_unpack, #tracklabels-dialog, #dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup,
+	#dlgEditFilters, #dlgEditRatioRules, #dlgLabel) .cont .ms-md-auto {
+	margin-left: 0 !important;
+}
+
+:is(#dlg_datadir, #tegLoadTorrents, #dlgLoadTorrents, #dlgProps, #tedit,
+	#dlgAddRSS, #dlgEditRSS, #dlgAddRSSGroup, #dlgEditFilters) .cont .row {
+	row-gap: 12px;
+}
+
+/* ============================================================
+ * Shared empty state: a centered glyph + muted line, shown only
+ * while the preceding list is :empty (CSS sibling toggle).
+ * ============================================================ */
+.cqb-empty {
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 96px;
+	padding: 20px 16px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+#rlsul.cqb-list-empty + .cqb-empty,
+#fltlist.cqb-list-empty + .cqb-empty,
+#rssGroupSet.cqb-list-empty + .cqb-empty {
+	display: flex;
+}
+
+.cqb-empty .cqb-empty-icon {
+	width: 26px;
+	height: 26px;
+	opacity: 0.6;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/header-ratio-rules.svg) center / contain no-repeat;
+	mask: url(../images/icons/header-ratio-rules.svg) center / contain no-repeat;
+}
+
+#fltlist.cqb-list-empty + .cqb-empty .cqb-empty-icon,
+#rssGroupSet.cqb-list-empty + .cqb-empty .cqb-empty-icon {
+	-webkit-mask-image: url(../images/icons/toolbar-rss.svg);
+	mask-image: url(../images/icons/toolbar-rss.svg);
+}
+
+/* ============================================================
+ * Ratio Rules Manager (defect 2): contain the Add/Delete/Up/Down
+ * group (a 2x2 grid never overflows the column), token the rule
+ * box + row inputs, host the empty state inside the list box.
+ * ============================================================ */
+.dlg-window#dlgEditRatioRules #exratio_buttons1 {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	width: 100%;
+	margin: 10px 0 0;
+}
+
+.dlg-window#dlgEditRatioRules #exratio_buttons1 button {
+	min-width: 0;
+	width: 100%;
+	padding: 0 10px;
+}
+
+#dlgEditRatioRules #ratioRuleList {
+	border-color: var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-input);
+}
+
+#dlgEditRatioRules #rlsul { white-space: normal; }
+
+#dlgEditRatioRules #rlsul > li input[type="text"],
+#dlgEditRatioRules #rlsul > li input.TextboxFocus,
+#dlgEditRatioRules #rlsul > li input.TextboxNormal {
+	border: 1px solid var(--qb-border);
+	border-radius: 6px;
+	background: var(--qb-input);
+	color: var(--qb-foreground);
+}
+
+/* The right column's THEN rows: keep the label beside its select, not
+ * pushed to the far edge, so "Set ratio to" reads with its control. */
+#dlgEditRatioRules fieldset .row.align-items-center > .justify-content-md-end {
+	justify-content: flex-start !important;
+}
+
+/* ============================================================
+ * RSS Manager (defects 2 + 3): the filter list gets an empty
+ * state; RatioGroup / Channel each take a full-width row so the
+ * value is never truncated to "No R..." / "No C...".
+ * ============================================================ */
+#dlgEditFilters .col-md-3:has(> #FLT_ratio),
+#dlgEditFilters .col-md-3:has(> #FLT_throttle),
+#dlgEditFilters .col-md-3:has(> label[for="FLT_ratio"]),
+#dlgEditFilters .col-md-3:has(> label[for="FLT_throttle"]) {
+	flex: 1 1 100%;
+	max-width: 100%;
+}
+
+#dlgEditFilters #FLT_ratio,
+#dlgEditFilters #FLT_throttle {
+	width: 100%;
+	min-width: 0;
+}
+
+/* The filter list box carries a token border + hosts its empty state. */
+#dlgEditFilters #filterList {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-input);
+}
+
+/* ============================================================
+ * Add RSS Group (defect 2): the empty CONTENT box reserves room
+ * so its empty state is visible, not a zero-height sliver.
+ * ============================================================ */
+#dlgAddRSSGroup #rssGroupSet { min-height: 64px; }
+
+/* ============================================================
+ * Tracker/label icon upload (defect 5): the drop-zone spans the
+ * full width where the native grey "Choose File" row used to sit.
+ * ============================================================ */
+#tracklabels-dialog .cqb-tl-filecol {
+	flex: 1 1 100%;
+	max-width: 100%;
+}
+
+#tracklabels-dialog .cqb-dropzone { min-height: 96px; }
+
+/* ============================================================
+ * Edit torrent (defect 6): size the trackers box to content
+ * (core forces 12rem / 24rem); 6-row floor, user-growable. The
+ * enable checkbox + its label read as one control at the top.
+ * ============================================================ */
+#tedit #etrackers {
+	box-sizing: border-box;
+	width: 100%;
+	height: auto;
+	min-height: 8.4rem;
+	resize: vertical;
+}
+
+#tedit .cont .row > [class*="col-"]:has(> input[type="checkbox"]) {
+	gap: 6px;
+}
+
+/* ============================================================
+ * Help (defect 7): a compact shortcuts card -- an explicit
+ * content-sized width (NOT a bare max-width: the full-width
+ * .container-fluid would otherwise expand to 95vw), with the
+ * shortcut keys as kbd chips in a two-column kbd | action grid.
+ * ============================================================ */
+/* Override core `#dlgHelp{max-width:300px}` (style.css): set both so the card
+ * is a comfortable content width, never the viewport. */
+.dlg-window#dlgHelp { width: min(380px, 94vw); max-width: min(380px, 94vw); }
+
+#dlgHelp .container-fluid { padding: 8px 16px 12px; }
+
+#dlgHelp .container-fluid .row {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0 22px;
+	align-items: center;
+	margin: 0;
+}
+
+#dlgHelp .container-fluid .row > [class*="col-"] {
+	display: flex;
+	align-items: center;
+	flex: none;
+	width: auto;
+	max-width: none;
+	min-height: 30px;
+	padding: 0;
+}
+
+#dlgHelp .col-4 .fw-bold {
+	display: inline-block;
+	padding: 2px 8px;
+	border: 1px solid var(--qb-border);
+	border-radius: 6px;
+	background: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.5;
+	white-space: nowrap;
+}
+
+#dlgHelp .col-8 a {
+	color: var(--qb-primary-text, var(--qb-primary));
+	text-decoration: none;
+}
+
+#dlgHelp .col-8 a:hover { text-decoration: underline; }
+
+/* ============================================================
+ * About (defect 7): a clean left-aligned card, dropping the
+ * ragged offset-N centered indentation the core markup uses.
+ * ============================================================ */
+#dlgAbout .container-fluid { padding: 4px 2px 8px; }
+
+#dlgAbout .container-fluid .row {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0;
+}
+
+#dlgAbout [class*="offset-"] { margin-left: 0 !important; }
+
+#dlgAbout [class*="col-"] {
+	flex: none;
+	width: 100%;
+	max-width: 100%;
+	padding: 0;
+	text-align: left;
+}
+
+#dlgAbout .col-10 { padding-left: 12px; }
+
+#dlgAbout .col-11 span {
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+}
+
+#dlgAbout strong { color: var(--qb-foreground); font-weight: 600; }
+
+#dlgAbout .pt-3 { margin-top: 8px; }
+
+#dlgAbout a { color: var(--qb-primary-text, var(--qb-primary)); }
+
+/* ============================================================
+ * Ratio Rules THEN rows (rev23): the label shrinks to its text
+ * and the select trigger grows, so each select has room for its
+ * longest option. The select panel itself belongs to select.css.
+ * ============================================================ */
+#dlgEditRatioRules fieldset .row.align-items-center > [class*="col-"]:first-child {
+	flex: 0 0 auto;
+	width: auto;
+	max-width: 55%;
+}
+
+#dlgEditRatioRules fieldset .row.align-items-center > [class*="col-"]:last-child {
+	flex: 1 1 auto;
+	width: auto;
+	min-width: 0;
+}
+
+/* ============================================================
+ * File Manager dialogs (console + the shared modal window):
+ * header glyph tile, lane field layout, one console scroll
+ * region, a flush footer bar. The plugin prepends a raster
+ * sprite <icon> and zeroes the title padding -- both undone.
+ * ============================================================ */
+
+/* Restore the 44px glyph gutter the plugin zeroes, and drop its
+ * raster sprite (the spritesheet would double under my glyph). */
+[id^="flm_popup_"][id^="flm_popup_"] > div.dlg-header > div:first-child {
+	padding-left: 44px;
+}
+
+[id^="flm_popup_"] .flm-sprite-diag {
+	display: none;
+}
+
+/* Per-task header glyph, keyed off the sprite class the plugin
+ * prepends (the modal window is shared across operations). */
+#flm_popup_console-header::after,
+div.dlg-header > div:first-child:has(.sprite-console)::after {
+	-webkit-mask-image: url(../images/icons/fm-console.svg);
+	mask-image: url(../images/icons/fm-console.svg);
+}
+.dlg-header > div:first-child:has(.sprite-mkdir)::after {
+	-webkit-mask-image: url(../images/icons/fm-mkdir.svg);
+	mask-image: url(../images/icons/fm-mkdir.svg);
+}
+.dlg-header > div:first-child:has(.sprite-rename)::after {
+	-webkit-mask-image: url(../images/icons/fm-rename.svg);
+	mask-image: url(../images/icons/fm-rename.svg);
+}
+.dlg-header > div:first-child:has(.sprite-delete)::after {
+	-webkit-mask-image: url(../images/icons/fm-delete.svg);
+	mask-image: url(../images/icons/fm-delete.svg);
+}
+.dlg-header > div:first-child:has(.sprite-copy)::after {
+	-webkit-mask-image: url(../images/icons/fm-copy.svg);
+	mask-image: url(../images/icons/fm-copy.svg);
+}
+.dlg-header > div:first-child:has(.sprite-move)::after {
+	-webkit-mask-image: url(../images/icons/fm-move.svg);
+	mask-image: url(../images/icons/fm-move.svg);
+}
+.dlg-header > div:first-child:has(.sprite-permissions)::after {
+	-webkit-mask-image: url(../images/icons/search-private.svg);
+	mask-image: url(../images/icons/search-private.svg);
+}
+.dlg-header > div:first-child:has(.sprite-archive_create)::after {
+	-webkit-mask-image: url(../images/icons/fm-archive-create.svg);
+	mask-image: url(../images/icons/fm-archive-create.svg);
+}
+.dlg-header > div:first-child:has(.sprite-archive_extract)::after {
+	-webkit-mask-image: url(../images/icons/fm-extract.svg);
+	mask-image: url(../images/icons/fm-extract.svg);
+}
+.dlg-header > div:first-child:has(.sprite-checksum_create)::after,
+.dlg-header > div:first-child:has(.sprite-checksum_check)::after {
+	-webkit-mask-image: url(../images/icons/fm-checksum-create.svg);
+	mask-image: url(../images/icons/fm-checksum-create.svg);
+}
+.dlg-header > div:first-child:has(.sprite-nfo_view)::after {
+	-webkit-mask-image: url(../images/icons/file-nfo.svg);
+	mask-image: url(../images/icons/file-nfo.svg);
+}
+
+/* Field layout: un-fuse the Bootstrap input-group chip into the lane
+ * pattern -- a left muted label above a full-width input. */
+[id^="flm_popup_"] .cont .input-group {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+[id^="flm_popup_"] .cont .input-group > .input-group-text {
+	justify-content: flex-start;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: left;
+}
+
+[id^="flm_popup_"] .cont .input-group > .form-control {
+	width: 100%;
+	border-radius: var(--qb-radius);
+}
+
+[id^="flm_popup_"] .cont .row { margin: 0; }
+
+/* Console: one scroll region. Core forces 380/420px + an inline 500x310
+ * box with a scrolling <pre> inside (box-in-box, double scroll). The
+ * container is the single scroller; the <pre> just flows. */
+/* The console loads into the shared flm_popup_window, so its log box is keyed
+ * by its own id (not a #flm_popup_console ancestor, which does not exist). */
+#flm_popup_console-log-container {
+	width: auto !important;
+	max-width: 100%;
+	height: auto !important;
+	min-height: 200px !important;
+	max-height: 46vh;
+	box-sizing: border-box;
+	overflow: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-input);
+	padding: 10px 12px;
+}
+
+#flm_popup_console-log-container > pre {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	overflow: visible;
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--qb-foreground);
+}
+
+/* The console surface is the card; its fieldset carries no inner box. */
+fieldset:has(> legend + #flm_popup_console-log-container),
+fieldset:has(#flm_popup_console-log-container) {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+/* NFO view: token the scroll box, drop the fixed raster-era dimensions. */
+#flm_popup_nfo_view-content {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	min-height: 200px;
+	max-height: 48vh;
+	overflow: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: var(--qb-input);
+	padding: 10px 12px;
+}
+
+#flm_popup_nfo_view-content pre {
+	margin: 0;
+	overflow: visible;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 13px;
+	color: var(--qb-foreground);
+}
+
+/* The FM footer lives INSIDE .cont; pull it flush to the dialog edges
+ * with a hairline + normal padding (no oversized band, no float). */
+[id^="flm_popup_"] .cont > .buttons-list,
+[id^="flm_popup_"] .cont > form + .buttons-list {
+	float: none;
+	width: auto;
+	margin: 12px -16px -16px;
+	padding: 12px 16px;
+	border-top: 1px solid var(--qb-border);
+	background: var(--qb-surface);
+}
+
+/* The start action is the primary confirm (JS adds .cqb-primary too). */
+[id^="flm_popup_"] .flm-diag-start {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+/* ============================================================
+ * Rounded-corner integrity (rev26): every dialog window clips to
+ * its own radius so no edge surface (footer, header, body) can
+ * notch a corner. The File Manager plugin forces overflow:visible
+ * on its windows; its dir-browser popover lives in #dir-container
+ * (not a descendant), so restoring the clip is safe. Window-bottom
+ * footers also carry the matching bottom radius as a backstop.
+ * ============================================================ */
+div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
+	overflow: hidden;
+}
+
+.dlg-window > .buttons-list,
+[id^="flm_popup_"] .cont > .buttons-list,
+[id^="flm_popup_"] .cont > form + .buttons-list {
+	border-bottom-left-radius: 14px;
+	border-bottom-right-radius: 14px;
+}
+
+/* ============================================================
+ * File Manager permissions grid (rev-): a proper aligned table
+ * -- a left Who column, three centered Write/Read/Execute
+ * columns, generous gaps, no colons (trimmed in JS).
+ * ============================================================ */
+[id^="flm_popup_"] table {
+	border-collapse: separate;
+	border-spacing: 16px 8px;
+	margin: 2px 0 0 -16px;
+}
+
+[id^="flm_popup_"] table td {
+	padding: 0;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+[id^="flm_popup_"] table tr > td:first-child {
+	text-align: left;
+	color: var(--qb-foreground);
+	font-size: 13px;
+}
+
+[id^="flm_popup_"] table tr > td:first-child strong {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+[id^="flm_popup_"] table tr:first-child td:not(:first-child) {
+	text-align: center;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+/* Header row shares one baseline: the Who cell keeps the 13px first-column
+ * scale on data rows, but in the header it drops to the 11px of its siblings
+ * so Who / Write / Read / Execute sit on the same line. */
+[id^="flm_popup_"] table tr:first-child td:first-child {
+	font-size: 11px;
+}
+
+[id^="flm_popup_"] table td:not(:first-child) {
+	text-align: center;
+}
+
+[id^="flm_popup_"] table input[type="checkbox"] {
+	margin: 0;
+}
+
+/* ============================================================
+ * File Manager delete/remove confirm: the start action takes the
+ * destructive tone (not the teal primary). The marked-for-removal
+ * checklist is one scroll region (tracks only on overflow) with an
+ * empty-state line when nothing is listed.
+ * ============================================================ */
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start,
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start.cqb-primary {
+	background: var(--qb-destructive);
+	border-color: var(--qb-destructive);
+	color: var(--qb-destructive-fg);
+}
+
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start:not(:disabled):hover {
+	background: var(--qb-destructive);
+	border-color: var(--qb-destructive);
+	filter: brightness(1.08);
+}
+
+.dlg-window .checklist {
+	min-width: 0;
+	min-height: 0;
+	max-height: 16rem;
+	overflow: auto;
+	padding: 2px 0;
+	border: 0;
+}
+
+.dlg-window .checklist.cqb-list-empty + .cqb-empty {
+	display: flex;
+}
+
+.dlg-window .checklist.cqb-list-empty + .cqb-empty .cqb-empty-icon {
+	-webkit-mask-image: url(../images/icons/fm-delete.svg);
+	mask-image: url(../images/icons/fm-delete.svg);
+}
+
+/* ============================================================
+ * RSS filter / rule "check" buttons: a single "?" glyph forced
+ * to the 84px dialog-button min-width reads as an oblong. Make
+ * them compact 36px squares that size to the glyph, matching the
+ * list-action button scale.
+ * ============================================================ */
+.dlg-window #chkFilterBtn,
+.dlg-window #chkRuleBtn {
+	min-width: 36px;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+}
+
+/* ============================================================
+ * Edit Torrent (Torrent Properties): each field pairs a "change
+ * this field" switch with its value control. The head column
+ * stacks the field label over a compact Change switch; the value
+ * control dims and goes inert while the switch is off, so an
+ * off row never reads as a live value.
+ * ============================================================ */
+#tedit .cqb-edit-head {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+}
+
+#tedit .cqb-edit-head > label {
+	margin: 0;
+	font-size: 13px;
+	color: var(--qb-foreground);
+}
+
+#tedit .cqb-edit-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+#tedit .cqb-edit-change {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+#tedit .cqb-edit-off {
+	opacity: 0.45;
+}
+
+#tedit .cqb-edit-off .cqb-select-trigger {
+	cursor: not-allowed;
+}

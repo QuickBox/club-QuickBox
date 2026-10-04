@@ -1,268 +1,292 @@
-/* Console Background */
+/*
+ *  club-QuickBox skin for ruTorrent -- plugin surfaces.
+ *  Every color reads from a --qb-* token; masked glyphs carry no raster
+ *  background so the core sprite sheets never bleed through the mask.
+ */
+
+/* ============================================================
+ * Masked glyphs: solid token fill clipped to the SVG, no raster.
+ * background-image is forced off so the plugins' own base64 GIF /
+ * spritesheet backgrounds cannot show through the mask window.
+ * ============================================================ */
+#autodl-tb,
+div#logoff,
+.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip, .sprite-console,
+.sprite-copy, .sprite-curdir, .sprite-delete, .flm-sprite-dir_up, .sprite-extract,
+.sprite-image, .sprite-move, .sprite-mp3, .sprite-mkdir, .sprite-nfo,
+.sprite-nfo_view, .sprite-refresh, .sprite-rename, .sprite-sfv, .sprite-sfv_create,
+.sprite-sfv_check, .sprite-torrent, .sprite-video, .sprite-vplay {
+	background-color: var(--qb-icon);
+	background-image: none !important;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	transition: background-color 0.15s ease;
+}
+
+#autodl-tb:hover,
+div#logoff:hover {
+	background-color: var(--qb-icon-hover);
+	background-image: none !important;
+}
+
+/* ============================================================
+ * Status-bar mini meters (disk / band quota are bars; cpu is a sparkline).
+ * The pane glyph is owned by statusbar.css; this owns the track, fill and
+ * the label beside the bar. The plugin sets the fill WIDTH inline (%); the
+ * fill COLOR is forced to the brand gradient so the old primary->destructive
+ * interpolation can no longer render a muddy mid-usage bar. Usage-threshold
+ * tinting is an init.js concern (see return note).
+ * ============================================================ */
+
+/* Neutralize the cpuload/diskspace base64 GIF on the pane glyph so it cannot
+ * bleed through the mask. statusbar.css owns the mask glyph and its tint; its
+ * `#StatusBar .icon { background-image: none }` ties the plugin rule on
+ * specificity and loses on order, so the override has to live here. */
+#meter-disk-pane .icon,
+#meter-cpu-pane .icon {
+	background-color: var(--qb-icon);
+	background-image: none !important;
+	flex: none;
+}
+
+/* One shared meter layout for disk and cpu: a single flex row holding the
+ * glyph, then a 56x4 track with its fill, then the percent label -- all on
+ * one vertical centre line, no absolute positioning. extras.js moves the
+ * label out of the track and converts the cpu sparkline into the same bar. */
+#meter-disk-pane,
+#meter-cpu-pane {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 100%;
+}
+
+/* The track: holder becomes the 56px rounded rail the fill sits inside. The
+ * plugin CSS sets an inset border + width 50/100px via a media query, so the
+ * dimensions and border are forced. The rail colour is mixed from the muted
+ * foreground so it stays visible on every variant (plain --qb-muted vanishes
+ * into the surface on the dark themes). */
+#meter-disk-holder,
+#meter-cpu-holder {
+	position: relative;
+	flex: none;
+	width: 56px !important;
+	height: 4px !important;
+	min-width: 56px;
+	margin: 0;
+	padding: 0;
+	border: 0 !important;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--qb-fg-muted) 26%, transparent);
+	overflow: hidden;
+	line-height: normal;
+}
+
+/* The fill: disk uses the plugin-driven #meter-disk-value (init.js paints its
+ * usage-threshold colour inline per update), cpu uses the .cqb-meter-fill
+ * extras.js adds and tints with the same threshold. The primary here is only
+ * the pre-paint fallback, so no !important -- the inline tint must win. */
+#meter-disk-value,
+#meter-cpu-holder .cqb-meter-fill {
+	display: block;
+	position: static;
+	height: 100%;
+	min-width: 2px;
+	max-width: 100%;
+	margin: 0;
+	border: 0;
+	border-radius: 999px;
+	float: none;
+	background-color: var(--qb-primary);
+	background-image: none;
+}
+
+/* The label: a flex sibling beside the bar. The plugin CSS makes it
+ * position:absolute with width/height 100% (it overlays the bar in stock
+ * ruTorrent), so both are reset to a static, content-sized flex item. */
+#meter-disk-text,
+#meter-cpu-text {
+	flex: none;
+	position: static !important;
+	top: auto;
+	width: auto !important;
+	height: auto !important;
+	margin: 0;
+	transform: none;
+	text-align: left;
+	overflow: visible;
+	white-space: nowrap;
+	color: var(--qb-fg-muted);
+	text-shadow: none;
+	font-size: 12px;
+	line-height: 1;
+	font-family: var(--qb-font);
+	font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+ * Consoles + listboxes (plugin terminal surfaces)
+ * ============================================================ */
 .console,
 .exconsole,
 .starterConsole,
-.tskconsole {
-	background-color: #333;
+.tskconsole,
+.listbox {
+	background-color: var(--qb-input);
+	color: var(--qb-foreground);
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
-/* Cell Styling */
+.listbox {
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	overflow: auto;
+	white-space: nowrap;
+}
+
+.listboxItem {
+	color: var(--qb-fg-muted);
+	padding: 1px 4px;
+}
+
+.listboxItem:hover {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+}
+
+.listboxItemSelected {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+/* ============================================================
+ * Cell styling (status / chunk map)
+ * ============================================================ */
 .cCell {
-	color: #ccc;
+	color: var(--qb-foreground);
 }
 
 .status-cell {
-	padding: 0 3px 0 3px;
-	border-right: solid 2px #222;
+	padding: 0 3px;
+	border-right: solid 2px var(--qb-border);
 }
 
-/* Meters */
-#meter-disk-value,
-#qmeter-band-value,
-#qmeter-disk-value {
-	background-color: #6c7a89;
-	border: 1px solid transparent;
-	border-radius: 12px;
-	float: left;
-}
-
-#meter-band-text,
-#meter-disk-text,
-#qmeter-disk-text {
-	color: #fff;
-	text-shadow: 0 0 2px #000;
-	/*position: relative;
-	text-align: left;
-	float: left;
-	left: 40%;*/
-	font-size: 11px;
-	font-family: inherit;
-	z-index: 1;
-}
-
-/* Meter Holders */
-#meter-band-holder,
-#meter-disk-holder,
-#qmeter-disk-holder {
-	/* background: url(images/status_icons.png) no-repeat 3px -336px; */
-	height: 16px;
-	line-height: 16px;
-	/*width: 100px;*/
-	border: 0;
-	/*display: flex;*/
-	padding-right: 12px;
-}
-
-#meter-disk-pane .icon {
-	background: url('images/status_icons.png') no-repeat 0px -336px;
-}
-
-#meter-cpu-text {
-	/*position: absolute;*/
-	/*left: 45px;*/
-	top: 0;
-	color: #fff;
-	text-shadow: 0 0 2px #000;
-	font-size: 11px;
-	font-family: inherit;
-}
-
-#meter-cpu-holder {
-	height: 16px;
-	line-height: 16px;
-	padding-left: 25px;
-	/*width: 100px;*/
-}
-
-#meter-cpu-pane .icon {
-	background: url('images/status_icons.png') no-repeat 0px -320px !important;
-}
-
-#meter-cpu-td {
-	background: url('images/status_icons.png') no-repeat 0px -320px !important;
-	height: 16px;
-	line-height: 18px;
-}
-
-.meter-value {
-    background-color: #1e824c !important;
-    border: #1e824c;
-    border-radius: 12px;
-    width: 96% !important;
-}
-
-/* Graph Tab Styling */
-div.graph_tab {
-	color: #282828;
-	border-color: #000;
-}
-
-/* Textbox Focus */
-.lf li input.TextboxFocus {
-	background-color: transparent;
-	color: #009ddd;
-}
-
-/* Custom Cell Colors */
-.cCell {
-	color: #333;
-}
-
-/* Cell Background Colors */
+/* Chunk / allocation map: a token-driven intensity ladder.
+ * Downloaded chunks climb a primary ramp; reserved/empty chunks use a
+ * muted ramp. No fixed green ladder -- each step follows the variant. */
 .Cell0 {
-	background-color: #fffdf0;
-	border: 1px dotted #888;
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
 }
 
-.Cell1 {
-	background-color: #7eb400;
-}
+.Cell1 { background-color: color-mix(in srgb, var(--qb-primary) 32%, var(--qb-surface)); }
+.Cell2 { background-color: color-mix(in srgb, var(--qb-primary) 42%, var(--qb-surface)); }
+.Cell3 { background-color: color-mix(in srgb, var(--qb-primary) 52%, var(--qb-surface)); }
+.Cell4 { background-color: color-mix(in srgb, var(--qb-primary) 62%, var(--qb-surface)); }
+.Cell5 { background-color: color-mix(in srgb, var(--qb-primary) 70%, var(--qb-surface)); }
+.Cell6 { background-color: color-mix(in srgb, var(--qb-primary) 78%, var(--qb-surface)); }
+.Cell7 { background-color: color-mix(in srgb, var(--qb-primary) 86%, var(--qb-surface)); }
+.Cell8 { background-color: color-mix(in srgb, var(--qb-primary) 93%, var(--qb-surface)); }
+.Cell9 { background-color: var(--qb-primary); }
 
-.Cell2 {
-	background-color: #75a602;
-}
-
-.Cell3 {
-	background-color: #6d9a02;
-}
-
-.Cell4 {
-	background-color: #628c02;
-}
-
-.Cell5 {
-	background-color: #5b8101;
-}
-
-.Cell6 {
-	background-color: #527501;
-}
-
-.Cell7 {
-	background-color: #4a6801;
-}
-
-.Cell8 {
-	background-color: #435f01;
-}
-
-.Cell9 {
-	background-color: #3b5401;
-}
-
-.CellA {
-	background-color: #c1c3c3;
-}
-
-.CellB {
-	background-color: #999a9a;
-}
-
-.CellC {
-	background-color: #767776;
-}
-
-.CellD {
-	background-color: #6b6c6b;
-}
-
-.CellE {
-	background-color: #60605e;
-}
-
+.CellA { background-color: color-mix(in srgb, var(--qb-fg-muted) 30%, var(--qb-surface)); }
+.CellB { background-color: color-mix(in srgb, var(--qb-fg-muted) 44%, var(--qb-surface)); }
+.CellC { background-color: color-mix(in srgb, var(--qb-fg-muted) 58%, var(--qb-surface)); }
+.CellD { background-color: color-mix(in srgb, var(--qb-fg-muted) 72%, var(--qb-surface)); }
+.CellE { background-color: color-mix(in srgb, var(--qb-fg-muted) 86%, var(--qb-surface)); }
 .CellF {
-	background-color: #000;
-	color: #fff;
+	background-color: var(--qb-foreground);
+	color: var(--qb-background);
 }
 
-/* Support Text */
 #tCellNotSupported {
 	text-align: center;
 }
 
 #tRowNotSupported {
 	vertical-align: middle;
-	color: red;
+	color: var(--qb-destructive-text);
 }
 
-/* AutoDL Toolbar */
+/* ============================================================
+ * Graph tab + legend + focus text
+ * ============================================================ */
+div.graph_tab {
+	color: var(--qb-foreground);
+	border-color: var(--qb-border);
+}
+
+.legendLabel {
+	color: var(--qb-fg-muted) !important;
+}
+
+#traf_graph_ctrl {
+	margin-top: -5px;
+}
+
+.lf li input.TextboxFocus,
+.lf_rur input.TextboxFocus {
+	background-color: transparent;
+	color: var(--qb-accent-text);
+}
+
+#PluginList {
+	margin-top: 0;
+}
+
+#maincont {
+	margin: 0;
+}
+
+li.cat.tracker {
+	padding: 3px 4px !important;
+}
+
+/* ============================================================
+ * AutoDL IRC
+ * ============================================================ */
 #autodl-tb {
-	background: transparent url('/images/autodll-irc1.png') no-repeat center;
-}
-
-#autodl-tb:hover {
-	background: transparent url('/images/autodll-irc2.png') no-repeat center;
+	-webkit-mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
+	mask: url(images/icons/toolbar-autodl.svg) center / 20px no-repeat;
 }
 
 #autodl-multiselect-header {
-	background-image: url('/images/dlg-autodl-irc.gif');
+	background-image: none;
 }
 
-/* Go Button */
-#go {
-	background: transparent url('images/toolbar.png') no-repeat -456px 0;
-}
-
+/* Go button: legacy sprite is suppressed by the `#go` rule in style.css */
+#go,
 #go:hover {
-	background: transparent url('images/toolbar.png') no-repeat -456px -24px;
+	background: none;
 }
 
-/* Listbox Styling */
-.listbox {
-	background-color: #000;
-	border: 1px solid #333;
-	color: green;
-	font-family: Courier;
-	overflow: auto;
-	white-space: nowrap;
-}
-
-.listboxItem {
-	color: #ccc;
-	padding: 1px 2px;
-}
-
-.listboxItem:hover {
-	background-color: #222;
-}
-
-.listboxItemSelected {
-	background-color: #333;
-	color: #ccc;
-}
-
-/* RSS URL Rewrite */
 .lf_rur {
-	background-color: #222;
-	border: 1px solid #333;
-	border-radius: 3px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
 	flex: 1 0 160px;
 	overflow-y: auto;
 }
 
-.lf_rur input.TextboxFocus {
-	background-color: #222;
-}
-
 .lf_rur input.TextboxNormal {
-	background-color: #212121;
+	background-color: var(--qb-input);
 }
-
-/* _getdir */
 
 .browseFrame {
-	border: 1px solid #2a2a2a;
-	background-color: #222;
+	border: 1px solid var(--qb-border);
+	background-color: var(--qb-input);
 }
 
-/*AutoDL Filters*/
 div#autodl-filters {
 	width: auto;
 	height: auto;
 }
 
 #autodl-filters-left {
-	/* margin: 0 5px 10px 5px; */
 	float: left;
 	min-height: max-content;
 	padding: 0 0 65px 0;
@@ -287,19 +311,18 @@ div#autodl-filters-contents {
 }
 
 .aright.buttons-list.dialog-buttons {
-	/* position: relative; */
 	padding: 5px 30px;
 	display: inline-flex;
-	background: #222;
+	background: var(--qb-surface-2);
 	width: 100%;
 	margin-bottom: 0;
 	margin-right: 0;
 	height: auto;
 	clear: both;
 	float: left;
-	border: 1px solid #333;
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
+	border: 1px solid var(--qb-border);
+	border-bottom-left-radius: var(--qb-radius-lg);
+	border-bottom-right-radius: var(--qb-radius-lg);
 }
 
 div#autodl-filters-contents-wol {
@@ -308,15 +331,14 @@ div#autodl-filters-contents-wol {
 	max-width: 400px;
 }
 
-/* AutoDL IRC Servers */
 div#autodl-ircsrvs {
 	height: fit-content;
 	width: fit-content;
 }
 
 fieldset#autodl-ircsrvs-servers-fieldset {
-	border: 1px solid #333;
-	border-radius: 6px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
 	margin: 3px 12px;
 	padding: 3px 9px;
 }
@@ -326,7 +348,6 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	padding: 3px 9px;
 }
 
-/* AutoDL Prefs */
 #autodl-prefs {
 	width: fit-content;
 	height: auto;
@@ -344,8 +365,6 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	display: inline-flex;
 }
 
-/* AutoDL Help */
-
 #autodl-help {
 	height: auto;
 }
@@ -356,171 +375,58 @@ fieldset#autodl-ircsrvs-channels-fieldset {
 	padding: 15px 15px 15px 0;
 }
 
-/* File Manager */
-input#flm-nav-refresh {
-    border: 1px solid #333;
-}
-
-.sprite-archive {
-	width: 16px;
-	height: 16px;
-	background-position: -5px -5px;
-}
-
+/* ============================================================
+ * File manager chrome (colors only; details lane owns the layout)
+ * ============================================================ */
+.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip,
+.sprite-copy, .sprite-curdir, .sprite-delete, .flm-sprite-dir_up, .sprite-extract,
+.sprite-image, .sprite-move, .sprite-mp3, .sprite-mkdir, .sprite-nfo,
+.sprite-nfo_view, .sprite-refresh, .sprite-rename, .sprite-sfv, .sprite-sfv_create,
+.sprite-sfv_check, .sprite-torrent, .sprite-video, .sprite-vplay,
 .sprite-console {
 	width: 16px;
 	height: 16px;
-	background-position: -31px -5px;
 }
 
-.sprite-copy {
-	width: 16px;
-	height: 16px;
-	background-position: -57px -5px;
-}
+.sprite-archive, .sprite-rar, .sprite-rarpart, .sprite-zip { -webkit-mask-image: url(images/icons/file-archive.svg); mask-image: url(images/icons/file-archive.svg); }
+.sprite-console { -webkit-mask-image: url(images/icons/fm-console.svg); mask-image: url(images/icons/fm-console.svg); }
+.sprite-copy { -webkit-mask-image: url(images/icons/fm-copy.svg); mask-image: url(images/icons/fm-copy.svg); }
+.sprite-curdir { -webkit-mask-image: url(images/icons/fm-curdir.svg); mask-image: url(images/icons/fm-curdir.svg); }
+.sprite-delete { -webkit-mask-image: url(images/icons/fm-delete.svg); mask-image: url(images/icons/fm-delete.svg); }
+.flm-sprite-dir_up { -webkit-mask-image: url(images/icons/fm-dir-up.svg); mask-image: url(images/icons/fm-dir-up.svg); }
+.sprite-extract { -webkit-mask-image: url(images/icons/fm-extract.svg); mask-image: url(images/icons/fm-extract.svg); }
+.sprite-image { -webkit-mask-image: url(images/icons/file-image.svg); mask-image: url(images/icons/file-image.svg); }
+.sprite-move { -webkit-mask-image: url(images/icons/fm-move.svg); mask-image: url(images/icons/fm-move.svg); }
+.sprite-mp3 { -webkit-mask-image: url(images/icons/file-audio.svg); mask-image: url(images/icons/file-audio.svg); }
+.sprite-mkdir { -webkit-mask-image: url(images/icons/fm-mkdir.svg); mask-image: url(images/icons/fm-mkdir.svg); }
+.sprite-nfo, .sprite-nfo_view { -webkit-mask-image: url(images/icons/file-nfo.svg); mask-image: url(images/icons/file-nfo.svg); }
+.sprite-refresh { -webkit-mask-image: url(images/icons/fm-refresh.svg); mask-image: url(images/icons/fm-refresh.svg); }
+.sprite-rename { -webkit-mask-image: url(images/icons/fm-rename.svg); mask-image: url(images/icons/fm-rename.svg); }
+.sprite-sfv, .sprite-sfv_create, .sprite-sfv_check { -webkit-mask-image: url(images/icons/file-sfv.svg); mask-image: url(images/icons/file-sfv.svg); }
+.sprite-torrent { -webkit-mask-image: url(images/icons/file-torrent.svg); mask-image: url(images/icons/file-torrent.svg); }
+.sprite-video { -webkit-mask-image: url(images/icons/file-video.svg); mask-image: url(images/icons/file-video.svg); }
+.sprite-vplay { -webkit-mask-image: url(images/icons/fm-vplay.svg); mask-image: url(images/icons/fm-vplay.svg); }
 
-.sprite-curdir {
-	width: 16px;
-	height: 16px;
-	background-position: -83px -5px !important;
-}
-
-.sprite-delete {
-	width: 16px;
-	height: 16px;
-	background-position: -5px -31px;
-}
-
-.flm-sprite-dir_up {
-	width: 16px;
-	height: 16px;
-	background-position: -31px -31px;
-}
-
-.sprite-extract {
-	width: 16px;
-	height: 16px;
-	background-position: -57px -31px;
-}
-
-.sprite-image {
-	width: 16px;
-	height: 16px;
-	background-position: -83px -31px;
-}
-
-.sprite-move {
-	width: 16px;
-	height: 16px;
-	background-position: -5px -57px;
-}
-
-.sprite-mp3 {
-	width: 16px;
-	height: 16px;
-	background-position: -31px -57px;
-}
-
-.sprite-mkdir {
-	width: 16px;
-	height: 16px;
-	background-attachment: scroll;
-	background-position: -57px -57px !important;
-}
-
-.sprite-nfo,
-.sprite-nfo_view {
-	width: 16px;
-	height: 16px;
-	background-position: -83px -57px;
-}
-
-.sprite-rar {
-	width: 16px;
-	height: 16px;
-	background-position: -5px -83px;
-}
-
-.sprite-rarpart {
-	width: 16px;
-	height: 16px;
-	background-position: -31px -83px;
-}
-
-.sprite-refresh {
-	width: 16px;
-	height: 16px;
-	background-position: -57px -83px;
-}
-
-.sprite-rename {
-	width: 16px;
-	height: 16px;
-	background-position: -83px -83px;
-}
-
-.sprite-sfv,
-.sprite-sfv_create,
-.sprite-sfv_check {
-	width: 16px;
-	height: 16px;
-	background-position: -109px -5px;
-}
-
-.sprite-torrent {
-	width: 16px;
-	height: 16px;
-	background-position: -109px -31px;
-}
-
-.sprite-video {
-	width: 16px;
-	height: 16px;
-	background-position: -109px -57px;
-}
-
-.sprite-vplay {
-	width: 16px;
-	height: 16px;
-	background-position: -109px -83px;
-}
-
-.sprite-zip {
-	width: 16px;
-	height: 16px;
-	background-position: -5px -109px;
-}
-
-/* Filemanager */
+input#flm-nav-refresh,
 #flm-nav-refresh {
-	background: #333;
-    border-color: #2a2a2a;
-    box-shadow: none;
-    padding: .25rem !important;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	box-shadow: none;
+	padding: .25rem !important;
 }
 
-#flm-navigation-head .input-group-text {
-	background: #333;
-	border-color: #2a2a2a;
-	color: #fff;
-}
-
+#flm-navigation-head .input-group-text,
 #flm-navpath {
-	background: #333;
-	border-color: #2a2a2a;
-	color: #fff;
+	background: var(--qb-surface-2);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
 }
-
-/*Logoff */
 
 div#logoff {
-	background-image: url(images/logoff.png)
-}
-
-div#logoff:hover {
-	background-image: url(images/logoff3.png);
+	-webkit-mask: url(images/icons/logoff.svg) center / 20px no-repeat;
+	mask: url(images/icons/logoff.svg) center / 20px no-repeat;
 }
 
 div#logoffDlg div.dlg-header {
-	background-image: url(images/logoff2.png)
+	background-image: none;
 }

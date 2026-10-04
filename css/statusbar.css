@@ -1,0 +1,276 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- statusbar surface.
+ *  The footer status bar: 32px token chips separated by hairlines, SVG mask
+ *  glyphs tinted per state, tabular numerals, a clear primary/secondary value
+ *  hierarchy. Every masked element clears its background-image so no core
+ *  raster bleeds through the glyph.
+ */
+
+/* The footer is 32px; the core sizes #StatusBar and the main-area height calc
+ * from this var, so keep it in step or the footer is pushed off-screen. */
+:root {
+	--footer-height: 32px;
+}
+
+/* The core height calc subtracts two 5px margins but only one renders (below
+ * the app bar), leaving 5px of dead space under the footer. Reclaim it so the
+ * footer sits flush at the viewport bottom. */
+#maincont {
+	height: calc(100dvh - var(--navbar-height) - var(--footer-height) - 5px) !important;
+}
+
+/* ============================================================
+ * Bar shell -- 32px flex strip of chips on the surface.
+ * ============================================================ */
+#StatusBar {
+	display: flex;
+	align-items: stretch;
+	min-height: 32px;
+	padding: 0 4px;
+	margin-top: 0;
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	line-height: normal;
+	white-space: nowrap;
+}
+
+/* Each cell is a chip, full height and vertically centered; hairlines divide them. */
+#StatusBar .status-cell {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	height: 100%;
+	gap: 5px;
+	margin: 0;
+	padding: 0 12px;
+	border-right: 1px solid var(--qb-border);
+}
+
+#StatusBar .status-cell:first-child {
+	padding-left: 8px;
+}
+
+/* The clock is pushed to the far right; give it a leading rule, not a trailing one. */
+#StatusBar .status-cell.ms-auto {
+	border-right: 0;
+	border-left: 1px solid var(--qb-border);
+}
+
+#StatusBar .status-cell:last-child {
+	border-right: 0;
+}
+
+/* Labels muted and light; values take the foreground. */
+#StatusBar .sthdr {
+	padding-right: 0;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+	text-align: left;
+}
+
+#StatusBar .stval {
+	padding-right: 0;
+	min-width: 0;
+	overflow: visible;
+	color: var(--qb-foreground);
+}
+
+/* ============================================================
+ * Mask glyphs -- one SVG per cell, tinted by token. background-image:none
+ * is mandatory: the core sets a base64 raster on #st_up/.icon et al and a
+ * mask reveals whatever background-color sits under it, so the raster must go.
+ * ============================================================ */
+#StatusBar .icon {
+	width: 16px;
+	height: 16px;
+	margin: 0;
+	flex: none;
+	background-image: none;
+	background-color: var(--qb-icon);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: 14px;
+	mask-size: 14px;
+}
+
+#st_up .icon {
+	-webkit-mask-image: url(../images/icons/statusbar-upload.svg);
+	mask-image: url(../images/icons/statusbar-upload.svg);
+	background-color: var(--qb-speed-up);
+}
+
+#st_down .icon {
+	-webkit-mask-image: url(../images/icons/statusbar-download.svg);
+	mask-image: url(../images/icons/statusbar-download.svg);
+	background-color: var(--qb-speed-down);
+}
+
+/* ============================================================
+ * Speed cells -- glyph, then the live rate as the primary value, then limit
+ * and total as muted secondary text. The redundant leading "Speed:" label is
+ * dropped (the glyph is the label).
+ * ============================================================ */
+#st_up,
+#st_down {
+	gap: 6px;
+}
+
+/* The redundant leading "Speed:" label (the glyph is the label). All cells are
+ * <div>, so target it as the sthdr right after the icon, not by nth-of-type. */
+#st_up .icon + .sthdr,
+#st_down .icon + .sthdr {
+	display: none !important;
+}
+
+#stup_speed,
+#stdown_speed {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+}
+
+/* Reserve a fixed width for every changing value so the footer never shifts as
+ * numbers grow or shrink; tabular-nums keeps digits aligned. The two-id prefix
+ * is required to beat `#StatusBar .stval { min-width: 0 }` on specificity. The
+ * rate reserve fits the widest realistic "999.9 MiB/s". */
+#StatusBar #stup_speed,
+#StatusBar #stdown_speed {
+	display: inline-block;
+	min-width: 12ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#StatusBar #stup_total,
+#StatusBar #stdown_total {
+	display: inline-block;
+	min-width: 10ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#StatusBar #stopen_http_count,
+#StatusBar #stopen_sock_count,
+#StatusBar #stopen_fd_count {
+	display: inline-block;
+	min-width: 7ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#StatusBar #viewrows {
+	display: inline-block;
+	min-width: 7ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* "limit" and "Total" labels (each sits right after a value): muted, offset. */
+#st_up .stval + .sthdr,
+#st_down .stval + .sthdr {
+	margin-left: 6px;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+}
+
+#stup_limit,
+#stdown_limit,
+#stup_total,
+#stdown_total {
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Connections cell -- a leading network glyph before the counts.
+ * ============================================================ */
+#st_fd::before {
+	content: "";
+	width: 14px;
+	height: 14px;
+	flex: none;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
+	mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
+}
+
+#stopen_http_count,
+#stopen_sock_count,
+#stopen_fd_count {
+	color: var(--qb-foreground);
+}
+
+/* ============================================================
+ * rTorrent version + torrent counts -- value foreground, label muted.
+ * ============================================================ */
+#rtorrentv,
+#viewrows {
+	color: var(--qb-foreground);
+}
+
+#viewrows_size {
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Port + connectable status -- the warning-triangle raster becomes one SVG
+ * mask tinted by state: unknown (muted), closed (destructive), open (primary).
+ * ============================================================ */
+#StatusBar #port-pane .icon {
+	width: 14px;
+	height: 14px;
+	background-image: none;
+	-webkit-mask-image: url(../images/icons/statusbar-port.svg);
+	mask-image: url(../images/icons/statusbar-port.svg);
+	-webkit-mask-size: 13px;
+	mask-size: 13px;
+}
+
+#StatusBar #port-pane .icon.pstatus0 { background-color: var(--qb-state-stopped); }
+
+#StatusBar #port-pane .icon.pstatus1 { background-color: var(--qb-destructive); }
+
+#StatusBar #port-pane .icon.pstatus2 { background-color: var(--qb-primary); }
+
+.port-ip-text-segment { color: var(--qb-foreground); }
+
+/* ============================================================
+ * CPU + disk meter panes -- the chip glyph (the meter band fill lives in
+ * plugins.css). Both clear the core raster via the shared .icon rule above.
+ * ============================================================ */
+#StatusBar #meter-cpu-pane .icon {
+	background-image: none;
+	-webkit-mask-image: url(../images/icons/meter-cpu.svg);
+	mask-image: url(../images/icons/meter-cpu.svg);
+}
+
+#StatusBar #meter-disk-pane .icon {
+	background-image: none;
+	-webkit-mask-image: url(../images/icons/meter-disk.svg);
+	mask-image: url(../images/icons/meter-disk.svg);
+}
+
+/* ============================================================
+ * Clock -- a leading clock glyph on the right-aligned time cell.
+ * ============================================================ */
+#StatusBar .status-cell.ms-auto::before {
+	content: "";
+	width: 14px;
+	height: 14px;
+	flex: none;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(../images/icons/statusbar-clock.svg) center / 13px no-repeat;
+	mask: url(../images/icons/statusbar-clock.svg) center / 13px no-repeat;
+}
+
+#servertime {
+	text-align: center;
+	color: var(--qb-foreground);
+}

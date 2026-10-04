@@ -1,0 +1,735 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- settings surface.
+ *  The Settings dialog body (#stg): a two-column layout with a grouped,
+ *  filterable navigation rail and a single-scroll content pane whose
+ *  fieldsets read as cards under a page title, closed by a sticky action bar.
+ *  Every color reads from a --qb-* token. Selectors are scoped under #stg and
+ *  carry the dialog id so they win over the shared dialog chrome.
+ */
+
+/* ============================================================
+ * Shell: window, two-column body, single scroll container
+ * ============================================================ */
+#stg .cqb-icon {
+	display: inline-block;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+#stg.dlg-window {
+	width: min(1040px, 92vw);
+	max-width: 92vw;
+	/* Grow to the taller column (usually the 23-item nav) so it need not
+	 * scroll, capped so a very long page still fits the viewport. */
+	height: auto;
+	max-height: min(940px, 92vh);
+}
+
+#stg #stg_c {
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	flex: 1 1 auto;
+	gap: 0;
+	padding: 0;
+	min-height: 0;
+	overflow: hidden;
+	background-color: var(--qb-surface);
+	border-radius: 0 0 var(--qb-radius-lg) var(--qb-radius-lg);
+}
+
+/* ---- Navigation rail -------------------------------------- */
+#stg #stg_c .lm.list-group {
+	flex: 0 0 220px;
+	width: 220px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	margin: 0;
+	padding: 0 8px 10px;
+	background-color: var(--qb-surface);
+	border: 0;
+	border-right: 1px solid var(--qb-border);
+	border-radius: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	/* All 23 rows fit at 1080; shorter viewports scroll with a thumb that only
+	 * appears on hover, so there is never a permanent second scrollbar. */
+	scrollbar-width: thin;
+	scrollbar-color: transparent transparent;
+}
+
+#stg #stg_c .lm.list-group:hover {
+	scrollbar-color: var(--qb-scrollbar-thumb) transparent;
+}
+
+#stg #stg_c .lm.list-group::-webkit-scrollbar { width: 8px; }
+#stg #stg_c .lm.list-group::-webkit-scrollbar-track { background: transparent; border: 0; }
+#stg #stg_c .lm.list-group::-webkit-scrollbar-thumb { background: transparent; border-radius: var(--qb-radius-lg); }
+#stg #stg_c .lm.list-group:hover::-webkit-scrollbar-thumb { background: var(--qb-scrollbar-thumb); }
+
+/* Filter field pinned above the scrolling nav list */
+#stg .cqb-stg-filter {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: flex;
+	align-items: center;
+	margin: 0 -8px 6px;
+	padding: 8px;
+	background-color: var(--qb-surface);
+	border-bottom: 1px solid var(--qb-border);
+}
+
+#stg .cqb-stg-filter .cqb-icon {
+	position: absolute;
+	left: 17px;
+	width: 14px;
+	height: 14px;
+	pointer-events: none;
+	background-color: var(--qb-fg-muted);
+}
+
+#stg .cqb-stg-filter input {
+	width: 100%;
+	height: 32px;
+	margin: 0;
+	padding: 0 8px 0 28px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#stg .cqb-stg-filter input:focus,
+#stg .cqb-stg-filter input:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Group headers ("ruTorrent" / "Plugins") */
+#stg .cqb-stg-group {
+	padding: 12px 10px 4px;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	user-select: none;
+}
+
+#stg .cqb-stg-group:first-of-type { padding-top: 2px; }
+
+/* Filter-hidden rows/headers: these must out-rank the two-id base row rule. */
+#stg #stg_c .lm.list-group .cqb-stg-group.cqb-hidden,
+#stg #stg_c .lm.list-group .list-group-item.cqb-hidden { display: none; }
+
+/* Nav rows */
+#stg #stg_c .lm.list-group .list-group-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 30px;
+	margin: 0;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--qb-radius-lg);
+	background-color: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1.2;
+	text-decoration: none;
+	flex-grow: 0;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+#stg #stg_c .lm.list-group .list-group-item .cqb-icon {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-icon);
+	transition: background-color 0.15s ease;
+}
+
+#stg #stg_c .lm.list-group .list-group-item .cqb-stg-label {
+	flex: 1 1 auto;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+#stg #stg_c .lm.list-group .list-group-item:hover {
+	background-color: var(--qb-surface-2);
+	color: var(--qb-foreground);
+}
+
+#stg #stg_c .lm.list-group .list-group-item:hover .cqb-icon {
+	background-color: var(--qb-icon-hover);
+}
+
+#stg #stg_c .lm.list-group .list-group-item.active {
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	color: var(--qb-primary-text);
+	font-weight: 500;
+}
+
+#stg #stg_c .lm.list-group .list-group-item.active .cqb-icon {
+	background-color: var(--qb-primary-text);
+}
+
+#stg #stg_c .lm.list-group .list-group-item:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: -2px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* ---- Content pane ----------------------------------------- */
+#stg #stg-pages {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: auto;
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	overflow: hidden;
+	background-color: var(--qb-background);
+	border: 0;
+}
+
+/* The ONE scroll container: the active page */
+#stg .stg_con {
+	display: none;
+	margin: 0;
+	background: none;
+	overflow: visible;
+}
+
+#stg .stg_con.active {
+	display: block;
+	flex: 1 1 auto;
+	min-height: 0;
+	padding: 18px 20px 20px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-gutter: stable;
+}
+
+/* Page title + description */
+#stg .cqb-stg-head {
+	margin: 0 0 16px;
+}
+
+#stg .cqb-stg-head .cqb-stg-title {
+	margin: 0;
+	color: var(--qb-foreground);
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+#stg .cqb-stg-head .cqb-stg-desc {
+	margin: 3px 0 0;
+	color: var(--qb-fg-muted);
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+/* Fieldset sections rendered as cards */
+#stg .stg_con fieldset {
+	margin: 0 0 16px;
+	padding: 16px;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+#stg .stg_con fieldset:last-child { margin-bottom: 0; }
+
+/* Float the legend so it sits INSIDE the card's top padding and the card
+ * border stays unbroken (the standard fieldset-legend trick). */
+#stg .stg_con legend {
+	float: left;
+	width: 100%;
+	margin: 0 0 12px;
+	padding: 0;
+	background: none;
+	border: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+#stg .stg_con fieldset > .row { clear: both; }
+
+/* A legend may wrap its text in a link (the PushBullet heading points at
+ * pushbullet.com). Keep it reading as every other card heading -- the theme
+ * link color must not leak a stray accent into the title. */
+#stg .stg_con legend a {
+	color: var(--qb-foreground);
+	font: inherit;
+	text-decoration: none;
+}
+
+#stg .stg_con legend a:hover,
+#stg .stg_con legend a:focus-visible {
+	color: var(--qb-primary-text);
+	text-decoration: underline;
+}
+
+/* Field rhythm + controls (12px between adjacent rows) */
+#stg .stg_con .row > [class*="col"] {
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+
+#stg .stg_con label {
+	color: var(--qb-foreground);
+	font-size: 12px;
+	white-space: normal;
+}
+
+#stg .stg_con input[type="checkbox"],
+#stg .stg_con input[type="radio"] {
+	accent-color: var(--qb-primary);
+	width: 15px;
+	height: 15px;
+	margin-right: 6px;
+	vertical-align: -2px;
+}
+
+#stg .stg_con input[type="text"],
+#stg .stg_con input[type="number"],
+#stg .stg_con input[type="password"],
+#stg .stg_con select {
+	min-height: 30px;
+	max-width: 100%;
+}
+
+#stg .stg_con textarea { max-width: 100%; }
+
+/* ---- Sticky action bar ------------------------------------ */
+#stg #stg-pages #st_btns.buttons-list {
+	flex: 0 0 auto;
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	padding: 12px 20px;
+	background-color: var(--qb-surface);
+	border-top: 1px solid var(--qb-border);
+}
+
+#stg #stg-pages #st_btns.buttons-list button {
+	width: auto;
+	min-width: 88px;
+	min-height: 34px;
+	margin: 0;
+	padding: 0 16px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Primary (Save) sits right of secondary (Cancel) */
+#stg #stg-pages #st_btns.buttons-list button:not(.Cancel) {
+	order: 2;
+	background-color: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+}
+
+#stg #stg-pages #st_btns.buttons-list button:not(.Cancel):hover {
+	background-color: var(--qb-accent);
+	border-color: var(--qb-accent);
+	color: var(--qb-accent-fg);
+}
+
+#stg #stg-pages #st_btns.buttons-list button.Cancel {
+	order: 1;
+	background-color: var(--qb-surface-2);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+#stg #stg-pages #st_btns.buttons-list button.Cancel:hover {
+	background-color: var(--qb-surface-3);
+}
+
+#stg #stg-pages #st_btns.buttons-list button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Empty filter result hint */
+#stg .cqb-stg-empty {
+	display: none;
+	padding: 12px 10px;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: center;
+}
+
+#stg .cqb-stg-empty.cqb-show { display: block; }
+
+/* ============================================================
+ * Shared layout primitives (reused by the plugin-pages module)
+ * ============================================================ */
+
+/* Field grid: short controls flow as tiles, label above the control. */
+#stg .cqb-field-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 12px 20px;
+	margin: 0;
+	align-items: start;
+}
+
+#stg .cqb-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+}
+
+/* Tiles in a row stretch to equal height; pin the control to the bottom so a
+ * wrapping label never drops its input below its neighbors. */
+#stg .cqb-field > .cqb-control,
+#stg .cqb-field > .cqb-input-group { margin-top: auto; }
+
+#stg .cqb-field > label,
+#stg .cqb-field > .cqb-field-label {
+	margin: 0;
+	padding: 0;
+	font-size: 12px;
+	line-height: 1.3;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	white-space: normal;
+}
+
+/* Control wrapper: holds the input plus an optional right unit adornment. */
+#stg .cqb-control {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+#stg .cqb-control > input,
+#stg .cqb-control > select,
+#stg .cqb-control > textarea {
+	width: 100%;
+	min-height: 32px;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+#stg .cqb-control.cqb-has-unit > input { padding-right: 46px; }
+
+#stg .cqb-unit {
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	bottom: 1px;
+	display: flex;
+	align-items: center;
+	padding: 0 8px;
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+	background-color: var(--qb-surface-2);
+	border-left: 1px solid var(--qb-border);
+	border-radius: 0 var(--qb-radius) var(--qb-radius) 0;
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+/* Wide field: full-width control with the label above it. */
+#stg .cqb-field-wide {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0 0 12px;
+}
+
+#stg .cqb-field-wide:last-child { margin-bottom: 0; }
+
+#stg .cqb-field-wide > label,
+#stg .cqb-field-wide > .cqb-field-label {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.3;
+	color: var(--qb-fg-muted);
+}
+
+#stg .cqb-field-wide input,
+#stg .cqb-field-wide select,
+#stg .cqb-field-wide textarea {
+	width: 100%;
+	box-sizing: border-box;
+	margin: 0;
+}
+
+/* input + trailing icon button (browse, etc.) */
+#stg .cqb-input-row {
+	display: flex;
+	gap: 8px;
+	align-items: stretch;
+}
+
+#stg .cqb-input-row > input,
+#stg .cqb-input-row > select { flex: 1 1 auto; min-width: 0; }
+
+/* Checkbox grid: 2 columns when wide, 1 when narrow; boxes aligned. */
+#stg .cqb-check-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+	gap: 8px 20px;
+	margin: 0;
+}
+
+#stg .cqb-check {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0;
+	min-width: 0;
+}
+
+#stg .cqb-check input[type="checkbox"] {
+	flex: none;
+	margin: 1px 0 0;
+}
+
+#stg .cqb-check label {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.35;
+	color: var(--qb-foreground);
+	white-space: normal;
+}
+
+/* Vertical rhythm between stacked blocks in a reshaped card: a check grid and
+ * an adjacent field block must not hug, or a checkbox caption reads as the
+ * label of the field below it (the XMPP/History/Retrackers crowding). Grids
+ * carry no margin of their own, so add the gap only on these transitions --
+ * the wide field already supplies its own bottom margin, so it is left out to
+ * avoid doubling. */
+#stg .stg_con .cqb-check-grid + .cqb-field-grid,
+#stg .stg_con .cqb-check-grid + .cqb-field-wide,
+#stg .stg_con .cqb-check-grid + .cqb-retrackers,
+#stg .stg_con .cqb-field-grid + .cqb-check-grid { margin-top: 12px; }
+
+/* One muted helper line under a field or card. */
+#stg .cqb-help {
+	margin: 8px 0 0;
+	font-size: 12px;
+	line-height: 1.4;
+	color: var(--qb-fg-muted);
+}
+
+#stg .cqb-field .cqb-help,
+#stg .cqb-field-wide .cqb-help { margin-top: 4px; }
+
+/* Settings table: the torrent-table language, no boxed cells. */
+#stg .cqb-table-wrap { overflow-x: auto; }
+
+#stg .cqb-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+	font-family: var(--qb-font);
+}
+
+#stg .cqb-table th {
+	padding: 6px 10px;
+	text-align: left;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--qb-fg-muted);
+	border-bottom: 1px solid var(--qb-border);
+	white-space: nowrap;
+}
+
+#stg .cqb-table td {
+	padding: 4px 10px;
+	text-align: left;
+	vertical-align: middle;
+	border-bottom: 1px solid var(--qb-border-soft);
+	color: var(--qb-foreground);
+}
+
+#stg .cqb-table tbody tr:hover > td { background-color: var(--qb-surface-2); }
+
+#stg .cqb-table input[type="text"],
+#stg .cqb-table input[type="number"],
+#stg .cqb-table input[type="password"],
+#stg .cqb-table select {
+	width: 100%;
+	min-height: 28px;
+	margin: 0;
+	box-sizing: border-box;
+}
+
+#stg .cqb-table .cqb-num input { width: 58px; text-align: center; }
+
+#stg .cqb-table th.cqb-col-num,
+#stg .cqb-table td.cqb-num { width: 64px; text-align: center; }
+
+/* One non-fieldset heading style (matches the card legend). */
+#stg .cqb-heading {
+	margin: 0 0 10px;
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+	color: var(--qb-foreground);
+	text-transform: none;
+}
+
+/* Monospace key labels (Advanced page) + spacing for grouped subsections. */
+#stg .cqb-field label.cqb-mono {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+	text-transform: none;
+}
+
+#stg .cqb-subhead {
+	margin: 16px 0 8px;
+	padding-top: 12px;
+	border-top: 1px solid var(--qb-border-soft);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--qb-fg-muted);
+}
+
+#stg .cqb-subhead:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* Accounts page: one compact table with a tracker filter. */
+#stg .cqb-acct-filter {
+	position: relative;
+	display: flex;
+	align-items: center;
+	max-width: 320px;
+	margin: 0 0 12px;
+}
+
+#stg .cqb-acct-filter .cqb-icon {
+	position: absolute;
+	left: 9px;
+	width: 14px;
+	height: 14px;
+	pointer-events: none;
+	background-color: var(--qb-fg-muted);
+}
+
+#stg .cqb-acct-filter input {
+	width: 100%;
+	height: 32px;
+	margin: 0;
+	padding: 0 8px 0 28px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#stg .cqb-acct-filter input:focus,
+#stg .cqb-acct-filter input:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+#stg .cqb-accounts td.cqb-acct-name {
+	font-weight: 500;
+	color: var(--qb-foreground);
+	white-space: nowrap;
+}
+
+#stg .cqb-accounts th.cqb-col-en,
+#stg .cqb-accounts td.cqb-acct-en { width: 74px; text-align: center; }
+
+#stg .cqb-accounts td.cqb-acct-en input { width: auto; margin: 0; }
+
+#stg .cqb-accounts th.cqb-col-auto,
+#stg .cqb-accounts td.cqb-col-auto { width: 150px; }
+
+/* Advanced key tiles: human label, raw-key subtext, byte hint. */
+#stg .cqb-ao-field > label {
+	margin-bottom: 1px;
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+#stg .cqb-ao-field > .cqb-ao-key {
+	margin: 0 0 4px;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 11px;
+	line-height: 1.2;
+	color: var(--qb-fg-muted);
+}
+
+/* Header is uniform (label + key), so align controls by top, not bottom. */
+#stg .cqb-ao-field > .cqb-control { margin-top: 0; }
+
+#stg .cqb-ao-hint {
+	margin-top: 3px;
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+}
+
+/* Accounts: 36px rows, toggle switch, status dot, subtle credential inputs. */
+#stg .cqb-accounts tbody tr { height: 36px; }
+
+#stg .cqb-acct-name { white-space: nowrap; }
+
+#stg .cqb-acct-dot {
+	display: inline-block;
+	width: 7px;
+	height: 7px;
+	margin-right: 8px;
+	border-radius: 50%;
+	background-color: var(--qb-fg-muted);
+	vertical-align: middle;
+}
+
+#stg .cqb-acct-dot.cqb-on { background-color: var(--qb-primary); }
+
+#stg .cqb-accounts input[type="text"],
+#stg .cqb-accounts input[type="password"] {
+	background-color: transparent;
+	border: 1px solid transparent;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+#stg .cqb-accounts input[type="text"]:hover,
+#stg .cqb-accounts input[type="password"]:hover { border-color: var(--qb-border); }
+
+#stg .cqb-accounts input[type="text"]:focus,
+#stg .cqb-accounts input[type="password"]:focus {
+	background-color: var(--qb-input);
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}

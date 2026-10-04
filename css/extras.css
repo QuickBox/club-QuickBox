@@ -1,0 +1,335 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- extras surface.
+ *  QuickBox-only touches: v4 toasts (restyled noty), the full-window
+ *  drop zone, and the Ctrl/Cmd+K command palette. Every color is a
+ *  --qb-* token; no raster, no hex.
+ */
+
+/* ============================================================
+ * Toasts -- core noty restyled as v4 toasts (bottom-right, tone bar)
+ * ============================================================ */
+ul.noty_cont.noty_layout_bottomRight {
+	right: 20px;
+	bottom: 20px;
+	width: 340px;
+}
+
+ul.noty_cont.noty_layout_bottomRight li {
+	margin: 10px 0 0 0;
+}
+
+.noty_bar.noty_theme_default {
+	background: var(--qb-surface) !important;
+	background-image: none !important;
+	color: var(--qb-foreground);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	box-shadow: var(--qb-shadow);
+	overflow: hidden;
+}
+
+.noty_bar.noty_theme_default .noty_message {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	padding: 12px 36px 12px 14px;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.45;
+	text-align: left;
+	font-family: var(--qb-font);
+	color: var(--qb-foreground);
+}
+
+/* Tone glyph: a 16px masked icon tinted by tone, in place of a tone stripe. */
+.noty_bar.noty_theme_default .noty_message::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	margin-top: 1px;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/header-about.svg) center / contain no-repeat;
+	mask: url(../images/icons/header-about.svg) center / contain no-repeat;
+}
+
+.noty_bar.noty_theme_default.noty_error .noty_message::before {
+	background-color: var(--qb-destructive);
+	-webkit-mask-image: url(../images/icons/state-error.svg);
+	mask-image: url(../images/icons/state-error.svg);
+}
+
+.noty_bar.noty_theme_default.noty_success .noty_message::before {
+	background-color: var(--qb-primary);
+	-webkit-mask-image: url(../images/icons/state-finished.svg);
+	mask-image: url(../images/icons/state-finished.svg);
+}
+
+.noty_bar.noty_theme_default.noty_information .noty_message::before,
+.noty_bar.noty_theme_default.noty_alert .noty_message::before {
+	background-color: var(--qb-accent-text);
+	-webkit-mask-image: url(../images/icons/header-about.svg);
+	mask-image: url(../images/icons/header-about.svg);
+}
+
+/* Close control: masked glyph, no raster */
+.noty_bar.noty_theme_default .noty_close {
+	top: 10px;
+	right: 10px;
+	width: 18px;
+	height: 18px;
+	background-color: var(--qb-fg-muted);
+	background-image: none !important;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	opacity: 0.8;
+	transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.noty_bar.noty_theme_default .noty_close:hover {
+	background-color: var(--qb-foreground);
+	opacity: 1;
+}
+
+.noty_bar.noty_theme_default .noty_message .noty_buttons {
+	border-top: 1px solid var(--qb-border);
+	margin: 10px 0 0 0;
+	padding-top: 10px;
+	text-align: right;
+}
+
+.noty_modal.noty_theme_default {
+	background-color: var(--qb-overlay);
+	opacity: 0.6;
+}
+
+/* ============================================================
+ * Drop zone -- full-window overlay fed into the core add path
+ * ============================================================ */
+#cqb-drop {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: color-mix(in srgb, var(--qb-background) 78%, transparent);
+	backdrop-filter: blur(3px);
+	-webkit-backdrop-filter: blur(3px);
+}
+
+#cqb-drop.is-active {
+	display: flex;
+}
+
+#cqb-drop .cqb-drop-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	min-width: 320px;
+	max-width: 520px;
+	padding: 48px 56px;
+	text-align: center;
+	color: var(--qb-foreground);
+	background: var(--qb-surface);
+	border: 2px dashed var(--qb-primary);
+	border-radius: 16px;
+	box-shadow: var(--qb-shadow);
+}
+
+#cqb-drop .cqb-drop-icon {
+	width: 56px;
+	height: 56px;
+	background-color: var(--qb-primary);
+	background-image: none;
+	-webkit-mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+	mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+}
+
+#cqb-drop .cqb-drop-title {
+	font-size: 18px;
+	font-weight: 600;
+}
+
+#cqb-drop .cqb-drop-sub {
+	font-size: 13px;
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Command palette (Ctrl/Cmd+K)
+ * ============================================================ */
+#cqb-palette {
+	position: fixed;
+	inset: 0;
+	z-index: 100001;
+	display: none;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 12vh 16px 16px;
+	background: color-mix(in srgb, var(--qb-overlay) 55%, transparent);
+	backdrop-filter: blur(2px);
+	-webkit-backdrop-filter: blur(2px);
+}
+
+#cqb-palette.is-active {
+	display: flex;
+}
+
+#cqb-palette .cqb-pal-panel {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	max-width: 560px;
+	max-height: 70vh;
+	overflow: hidden;
+	background: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: 14px;
+	box-shadow: var(--qb-shadow);
+}
+
+#cqb-palette .cqb-pal-search {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--qb-border);
+}
+
+#cqb-palette .cqb-pal-search-icon {
+	flex: none;
+	width: 18px;
+	height: 18px;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/toolbar-search.svg) center / contain no-repeat;
+	mask: url(../images/icons/toolbar-search.svg) center / contain no-repeat;
+}
+
+#cqb-palette input.cqb-pal-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	border: 0;
+	outline: none;
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 15px;
+	line-height: 1.4;
+}
+
+#cqb-palette input.cqb-pal-input::placeholder {
+	color: var(--qb-fg-muted);
+}
+
+#cqb-palette .cqb-pal-list {
+	flex: 1 1 auto;
+	overflow-y: auto;
+	padding: 6px;
+}
+
+#cqb-palette .cqb-pal-group {
+	padding: 10px 10px 4px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+#cqb-palette .cqb-pal-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 9px 10px;
+	border-radius: 8px;
+	cursor: pointer;
+	color: var(--qb-foreground);
+}
+
+#cqb-palette .cqb-pal-row .cqb-pal-row-icon {
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+#cqb-palette .cqb-pal-row .cqb-pal-row-label {
+	flex: 1 1 auto;
+	font-size: 13px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#cqb-palette .cqb-pal-row .cqb-pal-row-hint {
+	flex: none;
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+#cqb-palette .cqb-pal-row.is-active {
+	background: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	color: var(--qb-primary-text);
+}
+
+#cqb-palette .cqb-pal-row.is-active .cqb-pal-row-icon {
+	background-color: var(--qb-primary);
+}
+
+#cqb-palette .cqb-pal-empty {
+	padding: 24px 12px;
+	text-align: center;
+	font-size: 13px;
+	color: var(--qb-fg-muted);
+}
+
+#cqb-palette .cqb-pal-foot {
+	display: flex;
+	gap: 14px;
+	padding: 8px 14px;
+	border-top: 1px solid var(--qb-border);
+	font-size: 11px;
+	color: var(--qb-fg-muted);
+}
+
+#cqb-palette .cqb-pal-foot .cqb-key {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+#cqb-palette .cqb-pal-foot kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border: 1px solid var(--qb-border);
+	border-radius: 5px;
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#cqb-drop .cqb-drop-icon,
+	.noty_bar.noty_theme_default .noty_close {
+		transition: none;
+	}
+}

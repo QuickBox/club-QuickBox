@@ -1,54 +1,44 @@
-:root {
-	--border-color-dark: #333;
-	--border-color-light: #181818;
-	--background-dark: #2a2a2a;
-	--background-darker: #222;
-	--background-light: #343434;
-	--text-color: #ccc;
-	--text-color-light: #999;
-	--highlight-color: #009ddd;
-	--font-family: 'Open Sans', sans-serif;
-	--text-shadow-color: #000;
-	--meter-bg-color: #1e824c;
-	--selected-text-shadow: 0 0 4px var(--text-shadow-color);
-	--selected-background: #343434;
-	--selected-text-color: var(--highlight-color);
-}
+/*
+ *  club-QuickBox skin for ruTorrent -- scrollable-table (.stable) engine.
+ *  Torrent list, file list, peer and tracker lists all share this engine.
+ *  Every color reads from a --qb-* token; the only rasters are the kept
+ *  column-drag ghost and resize grip, both replaced here with token chrome.
+ */
 
-/* Stable Table Styling */
+/* ============================================================
+ * Table shell + engine color contract
+ * ============================================================ */
 .stable {
-	border: 1px solid;
-	border-color: var(--border-color-dark) var(--border-color-light) var(--border-color-light) var(--border-color-dark);
-	--header-bg-color: transparent;
-    --header-bg-image: linear-gradient(0deg, #3a3a3a 0%, #2a2a2a 100%);
-    --header-border-color: #3a3a3a;
-	--col-resize-sep-bg-color: #222;
-    --row-border-color: #333;
-    --row-odd-bg-color: #3a3a3a;
-    --row-even-bg-color: #2a2a2a;
-	--row-active-bg-color: #3a3a3a;
+	border: none;
+	background: var(--qb-surface);
+	--header-bg-color: var(--qb-surface);
+	--header-bg-image: none;
+	--header-border-color: var(--qb-border);
+	--col-resize-sep-bg-color: var(--qb-border);
+	--row-border-color: var(--qb-border-soft);
+	/* Zebra tint for the odd row when the user turns on "alternate list
+	 * background colors". Taken from the surface->surface-2 ramp (not a
+	 * foreground wash, which lands on top of surface-2 on the dark variants),
+	 * so the odd row sits strictly between the even row (surface) and the hover
+	 * (surface-2): subtle on every variant, yet hover and selection still read. */
+	--cqb-row-stripe: color-mix(in srgb, var(--qb-surface-2) 45%, var(--qb-surface));
+	--row-odd-bg-color: var(--cqb-row-stripe);
+	--row-even-bg-color: var(--qb-surface);
+	--row-active-bg-color: var(--qb-surface-3);
+	font-variant-numeric: tabular-nums;
 }
 
-.stable td {
-	padding: 2px;
-}
-
-/* Table Head Styling */
+/* ============================================================
+ * Header -- 36px, 11px uppercase muted, one bottom hairline,
+ * no per-cell boxes, SVG sort chevron on the active column.
+ * ============================================================ */
 .stable thead {
-	background: var(--background-dark);
+	background: var(--qb-surface);
 	border: none;
-	color: var(--text-color-light);
-	font-family: inherit;
+	border-bottom: 1px solid var(--qb-border);
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
 	text-shadow: none;
-}
-
-.stable thead td div {
-	padding: 4px 16px 4px 6px !important;
-}
-
-div#tdcont .stable thead,
-div#tdcont .stable {
-	border: none;
 }
 
 .stable thead table tr {
@@ -57,194 +47,181 @@ div#tdcont .stable {
 }
 
 .stable thead table tr td {
-	border-color: #222;
-	border-style: none solid solid none;
-	border-width: 0 1px 1px 0;
-	font-family: var(--font-family);
-	font-size: 12px;
+	position: relative;
+	border: none;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
 	font-weight: 600;
+	letter-spacing: 0.06em;
 	line-height: 16px;
 	text-transform: uppercase;
 	white-space: nowrap;
+	cursor: pointer;
+	transition: color 0.15s ease, background-color 0.15s ease;
 }
 
+.stable thead table tr td:hover {
+	color: var(--qb-foreground);
+	background: var(--qb-surface-2);
+}
+
+.stable thead td div {
+	height: 36px;
+	display: flex;
+	align-items: center;
+	padding: 0 20px 0 10px !important;
+}
+
+/* Sort chevron: the engine toggles .asc / .desc on the active header cell. */
+.stable thead table tr td.asc::after,
+.stable thead table tr td.desc::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 6px;
+	width: 14px;
+	height: 14px;
+	transform: translateY(-50%);
+	background-color: var(--qb-primary);
+	-webkit-mask: center / 12px no-repeat;
+	mask: center / 12px no-repeat;
+}
+
+.stable thead table tr td.asc::after {
+	-webkit-mask-image: url(images/icons/sort-asc.svg);
+	mask-image: url(images/icons/sort-asc.svg);
+}
+
+.stable thead table tr td.desc::after {
+	-webkit-mask-image: url(images/icons/sort-desc.svg);
+	mask-image: url(images/icons/sort-desc.svg);
+}
+
+.stable thead table tr td.asc,
+.stable thead table tr td.desc {
+	color: var(--qb-foreground);
+}
+
+/* Column resize grip -- a hairline, never a raster. */
 .stable thead div.resz {
-	border: 1px solid red;
-	background: transparent url(images/s.gif) no-repeat scroll left center;
+	border: none;
+	border-right: 1px solid var(--qb-border);
+	background: none;
+	width: 1px;
 }
 
-/* Table Body Styling */
-.stable-body {
-	background: var(--background-darker);
-	text-shadow: none;
-	color: var(--text-color);
+.stable thead div.resz:hover {
+	border-right-color: var(--qb-primary);
 }
 
+/* ============================================================
+ * Body -- 32px rows, hover wash, accented selection,
+ * soft hairline separators, tabular numerics.
+ * ============================================================ */
+.stable-body,
 .stable tbody {
-	background: var(--background-darker);
+	background: var(--qb-surface);
+	color: var(--qb-foreground);
 	text-shadow: none;
-	color: var(--text-color);
 }
 
-.stable tbody tr {
-    cursor: pointer;
-    border-top: 1px solid #3a3a3a;
-    border-bottom: 1px solid #3a3a3a;
+.stable tbody tr,
+.stable-body tr {
+	cursor: pointer;
+	border: none;
 }
 
-.stable tbody tr td {
-	border-bottom: 1px solid var(--background-darker);
-	background: var(--background-dark);
-	vertical-align: middle;
-}
-
-.stable tbody tr td div {
-	font-family: var(--font-family) !important;
-	font-size: 11px;
-	height: 18px !important;
-}
-
+.stable tbody tr td,
 .stable-body td {
-	border-bottom: 1px solid var(--background-darker);
+	border: none;
+	border-bottom: 1px solid var(--qb-border-soft);
+	background-color: var(--qb-surface);
 	vertical-align: middle;
+	transition: background-color 0.12s ease;
 }
 
-.stable-body td div {
-	font-family: var(--font-family) !important;
+.stable tbody tr td div:not(.meter-value),
+.stable-body td div:not(.meter-value) {
+	font-family: var(--qb-font) !important;
 	font-size: 11px;
-	height: 21px !important;
-	line-height: 11px;
+	line-height: 16px;
+	height: 20px !important;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .stable-body tr {
-	height: 22px;
+	height: 32px;
 }
 
-.stable tbody tr.selected td {
-    background: #3a3a3a !important;
+/* Zebra: the odd-row stripe is painted by the engine (it adds .alternate to
+ * every table) from --row-odd-bg-color, so it appears only when the user
+ * enables "alternate list background colors" and the rows stay flat when it is
+ * off. The engine floors its virtual-scroll window to an even row index, so the
+ * stripe holds steady while scrolling, sorting or filtering a long list. */
+
+/* Hover wins over the stripe on every row, striped or flat. The .alternate-
+ * scoped selector outranks the engine's striped-odd rule so hover always shows. */
+.stable-body tr:hover td,
+.stable tbody tr:hover td,
+.stable.alternate .stable-body tr:hover td {
+	background-color: var(--qb-surface-2);
 }
 
-.stable tbody tr.odd td {
-	background: var(--background-darker);
+/* Selection -- primary tint, winning over both the stripe and hover. Tint only;
+ * no left-edge accent bar (an AI-UI tell). */
+.stable tbody tr.selected td,
+.stable-body tr.selected td,
+.stable.alternate .stable-body tr.selected td {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+	text-shadow: none;
 }
 
-.stable tbody tr.even td {
-	background: var(--background-dark);
-}
-
-.stable-body tr.odd td {
-	background: var(--background-darker);
-}
-
-.stable-body tr.odd:hover td,
-.stable-body tr.even:hover td {
-	background: #333;
-}
-
-.stable-body tr.even td {
-	background: var(--background-dark);
-}
-
-.stable-body tr.selected td {
-	background: var(--selected-background);
-	color: var(--selected-text-color);
-	text-shadow: var(--selected-text-shadow);
-}
-
-/* Table Body Rows with nth-child */
-div.stable-body table tbody tr.even td,
-div.stable-body table tbody tr.even:nth-child(2n+1) td {
-	background: var(--background-dark);
-}
-
-div.stable-body table tbody tr.even:hover td,
-div.stable-body table tbody tr.even:hover:nth-child(2n+1) td {
-	background: #333;
-}
-
-div.stable-body table tbody tr.even td:nth-child(2n+1) {
-	color: #aaa;
-}
-
-/* Header Move Styling */
-.stable-move-header {
-	background: transparent url(images/header_move.gif) repeat-x scroll center top rgba(128, 128, 128, 0.7);
-	border: 1px solid #09f;
-	opacity: 0.7;
-}
-
-/* Gecko, IE, WebKit-Specific Styling */
+/* ============================================================
+ * Column drag ghost + separator (token chrome, no raster)
+ * ============================================================ */
+.stable-move-header,
 .gecko .stable-move-header,
 .ie .stable-move-header,
 .webkit .stable-move-header {
-	background: rgba(128, 128, 128, 0.7);
+	background: var(--qb-surface-3);
+	border: 1px solid var(--qb-primary);
+	border-radius: var(--qb-radius);
+	opacity: 0.85;
 }
 
 .stable-active-header {
-	border-color: threedface !important;
+	border-color: var(--qb-primary) !important;
 }
 
 .stable-separator-header {
-	background: var(--border-color-light);
+	background: var(--qb-primary);
+	width: 2px;
 }
 
-/* Scroll Position Styling */
-.stable-scrollpos {
-	background: var(--border-color-light) url(images/headers.png) repeat-x 0 -37px;
-	height: 17px;
-	line-height: 17px;
-	border-bottom: 1px solid var(--border-color-dark);
-}
-
+/* Scroll-position strip -- token surface, no headers.png. */
+.stable-scrollpos,
 .stable-scrollpos:nth-child(2n+1) {
-	background: var(--border-color-light) url(images/headers.png) repeat-x 0 -64px;
+	background: var(--qb-surface-2);
+	height: 16px;
+	line-height: 16px;
+	border-bottom: 1px solid var(--qb-border);
+	color: var(--qb-fg-muted);
 }
 
-/* Meter Value and Text Styling */
-.meter-value {
-	float: left;
-	border: 0 inset #1b1b1b;
-	background: var(--meter-bg-color);
-	border-radius: 12px;
-	height: 14px;
-}
+/* Progress cells are styled in css/table.css (single-track recipe). */
 
-.stable-body tr.selected span.meter-value {
-	color: var(--text-color);
-}
-
-.meter-text {
-	color: var(--text-color);
-	float: left;
-	font-family: var(--font-family);
-	font-size: 11px;
-	font-weight: 400;
-	left: 40%;
-	line-height: 21px;
-	overflow: visible;
-	position: relative;
-	text-align: left;
-	text-shadow: var(--selected-text-shadow);
-	z-index: 1;
-}
-
-/* Icon Styling */
+/* ============================================================
+ * Status / type icon cell
+ * ============================================================ */
 .stable-icon {
 	float: left;
 	height: 16px;
-	margin: 3px 5px 0 5px;
-	padding: 0 !important;
 	width: 18px;
-}
-
-/* Column Styling */
-.stable-List-col-3 div {
-	height: 18px !important;
-	text-align: left;
-}
-
-.stable-List-col-6 div {
-	font-weight: 400;
-	text-align: center;
-	text-shadow: var(--selected-text-shadow);
+	margin: 8px 6px 0 6px;
+	padding: 0 !important;
 }

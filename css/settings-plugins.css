@@ -1,0 +1,287 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- settings plugin pages.
+ *  Page-specific chrome for the fifteen plugin Settings pages (Autotools,
+ *  XMPP, Cookies, Find at, Retrackers, Feeds, Scheduler, Search, Unpack,
+ *  Channels, Ratio Groups, Screenshots, Upload ETA, History, File Manager).
+ *  The shared field/grid/table primitives live in css/settings.css; this file
+ *  holds only what those primitives do not cover -- the Scheduler heatmap, the
+ *  Autotools feature sub-cards, the Retrackers side-by-side lists and the File
+ *  Manager format legend. Every color reads from a --qb-* token and every rule
+ *  is scoped under the page id so it never leaks to a core Settings page.
+ */
+
+/* ============================================================
+ * Textareas: a sensible height instead of filling the page
+ * ============================================================ */
+#stg #st_cookies textarea,
+#stg #st_lookat textarea,
+#stg #st_retrackers textarea {
+	width: 100%;
+	min-height: 150px;
+	box-sizing: border-box;
+	resize: vertical;
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#stg #st_retrackers textarea { min-height: 170px; }
+
+/* Retrackers: the two announce lists sit side by side at wide widths. */
+#stg #st_retrackers .cqb-retrackers {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 12px 20px;
+}
+
+@media (min-width: 720px) {
+	#stg #st_retrackers .cqb-retrackers { grid-template-columns: 1fr 1fr; }
+}
+
+/* ============================================================
+ * Autotools: three feature sub-cards (AutoLabel / AutoMove / AutoWatch)
+ * ============================================================ */
+/* Drop the outer card chrome -- the sub-cards are the cards here. */
+#stg #st_autotools fieldset {
+	margin: 0;
+	padding: 0;
+	background: none;
+	border: 0;
+}
+
+#stg #st_autotools fieldset > legend { display: none; }
+
+#stg .cqb-subcards {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+
+#stg .cqb-subcard {
+	padding: 0;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+	overflow: hidden;
+}
+
+#stg .cqb-subcard-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	background-color: var(--qb-surface-2);
+	border-bottom: 1px solid var(--qb-border);
+}
+
+#stg .cqb-subcard-head input[type="checkbox"] {
+	flex: none;
+	margin: 0;
+}
+
+#stg .cqb-subcard-head .cqb-subcard-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+/* The sub-card body collapses to zero when its feature is off (the enable
+ * toggle greys the fields via the core .disabled class on every label). */
+#stg .cqb-subcard-body {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 14px;
+}
+
+#stg .cqb-subcard-body:empty { display: none; }
+
+/* ============================================================
+ * Scheduler: a token heatmap in the Chunks pane idiom
+ * ============================================================ */
+#stg #st_scheduler #sch_graph {
+	gap: 4px 0;
+	margin-top: 4px;
+}
+
+#stg #st_scheduler .sch-week {
+	display: flex;
+	align-items: center;
+	height: 20px;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+#stg #st_scheduler .sch-week.disabled { color: var(--qb-fg-muted); }
+
+/* Each half-day column lays its 12 cells in an even flex row. */
+#stg #st_scheduler #sch_graph .align-items-stretch {
+	display: flex;
+	gap: 2px;
+	padding: 0 1px;
+}
+
+#stg #st_scheduler #sch_graph .align-items-stretch > div {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 20px;
+	border-radius: 3px;
+	cursor: pointer;
+	transition: background-color 0.12s ease, transform 0.08s ease, box-shadow 0.12s ease;
+}
+
+#stg #st_scheduler #sch_graph .align-items-stretch > div:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+/* Per-mode fills. The "...dis" variants render when the scheduler is off and
+ * read as a dimmer wash of the same hue so the pattern stays legible. */
+#stg #st_scheduler .sch_fast { background-color: var(--qb-state-downloading); }
+#stg #st_scheduler .sch_seed { background-color: var(--qb-state-seeding); }
+#stg #st_scheduler .sch_res1 { background-color: var(--qb-state-paused); }
+#stg #st_scheduler .sch_res2 { background-color: color-mix(in srgb, var(--qb-state-paused) 72%, var(--qb-background)); }
+#stg #st_scheduler .sch_res3 { background-color: color-mix(in srgb, var(--qb-state-paused) 48%, var(--qb-background)); }
+#stg #st_scheduler .sch_stop { background-color: var(--qb-surface-3); }
+
+#stg #st_scheduler .sch_fastdis { background-color: color-mix(in srgb, var(--qb-state-downloading) 32%, var(--qb-surface)); }
+#stg #st_scheduler .sch_seeddis { background-color: color-mix(in srgb, var(--qb-state-seeding) 32%, var(--qb-surface)); }
+#stg #st_scheduler .sch_res1dis { background-color: color-mix(in srgb, var(--qb-state-paused) 34%, var(--qb-surface)); }
+#stg #st_scheduler .sch_res2dis { background-color: color-mix(in srgb, var(--qb-state-paused) 24%, var(--qb-surface)); }
+#stg #st_scheduler .sch_res3dis { background-color: color-mix(in srgb, var(--qb-state-paused) 16%, var(--qb-surface)); }
+#stg #st_scheduler .sch_stopdis { background-color: var(--qb-surface-2); }
+
+/* Hover read-out line under the grid. */
+#stg #st_scheduler #sch_desc {
+	min-height: 20px;
+	margin-top: 6px;
+	padding: 0;
+	color: var(--qb-foreground);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+}
+
+#stg #st_scheduler #sch_desc.disabled { color: var(--qb-fg-muted); }
+
+/* Legend as color chips with labels. */
+#stg #st_scheduler #sch_legend {
+	width: auto;
+	margin: 10px 0 0;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+#stg #st_scheduler #sch_legend tr { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+#stg #st_scheduler #sch_legend td { padding: 0; border: 0; vertical-align: middle; }
+
+#stg #st_scheduler #sch_legend td[clr] {
+	width: 16px;
+	height: 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	align-self: center;
+}
+
+/* The legend is a key: its swatches always show the vivid mode color even
+ * while the schedule itself is off (the cells there read as a dim wash). */
+#stg #st_scheduler #sch_legend td[clr="0"] { background-color: var(--qb-state-downloading); }
+#stg #st_scheduler #sch_legend td[clr="1"] { background-color: var(--qb-surface-3); }
+#stg #st_scheduler #sch_legend td[clr="2"] { background-color: var(--qb-state-seeding); }
+#stg #st_scheduler #sch_legend td[clr="3"] { background-color: var(--qb-state-paused); }
+#stg #st_scheduler #sch_legend td[clr="4"] { background-color: color-mix(in srgb, var(--qb-state-paused) 72%, var(--qb-background)); }
+#stg #st_scheduler #sch_legend td[clr="5"] { background-color: color-mix(in srgb, var(--qb-state-paused) 48%, var(--qb-background)); }
+
+/* The three restricted-rate cards sit side by side instead of stacking. */
+#stg #st_scheduler .cqb-limited-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+}
+
+@media (min-width: 760px) {
+	#stg #st_scheduler .cqb-limited-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+#stg #st_scheduler .cqb-limited-grid fieldset { margin: 0; }
+
+#stg #st_scheduler #sch_legend td.disabled {
+	margin-right: 10px;
+	color: var(--qb-foreground);
+	font-size: 12px;
+	display: flex;
+	align-items: center;
+}
+
+/* ============================================================
+ * File Manager: the strftime token legend + a preview line
+ * ============================================================ */
+#stg #flm-settings-pane .cqb-fmt-legend {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	gap: 6px 16px;
+	margin: 4px 0 0;
+}
+
+#stg #flm-settings-pane .cqb-fmt-item {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+}
+
+#stg #flm-settings-pane .cqb-fmt-code {
+	flex: none;
+	min-width: 28px;
+	padding: 1px 6px;
+	background-color: var(--qb-surface-3);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 11px;
+	text-align: center;
+}
+
+#stg #flm-settings-pane .cqb-fmt-preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	margin: 10px 0 0;
+	padding: 8px 12px;
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	font-size: 12px;
+	color: var(--qb-foreground);
+}
+
+#stg #flm-settings-pane .cqb-fmt-preview code {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	color: var(--qb-primary-text);
+}
+
+#stg #flm-settings-pane .cqb-fmt-preview .cqb-fmt-sep { color: var(--qb-fg-muted); }
+
+/* ============================================================
+ * Search (extsearch): per-engine block reads as one settings card
+ * ============================================================ */
+#stg #st_extsearch .seng_public,
+#stg #st_extsearch .seng_private {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid var(--qb-border-soft);
+}
+
+#stg #st_extsearch .cqb-login-hint {
+	margin-top: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#stg #st_scheduler #sch_graph .align-items-stretch > div { transition: none; }
+}
