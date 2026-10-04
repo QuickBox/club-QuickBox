@@ -100,10 +100,12 @@
 	}
 
 	/* The core ships some columns too narrow for their formatted value: Size
-	 * for "756.00 MiB", Status for the state pill, Created On for the full
-	 * "DD.MM.YYYY HH:MM:SS" stamp. Lift each to a fit floor (by stable column
-	 * id, only when narrower, so a user who widened it keeps their width). */
-	var WIDTH_FLOOR = { size: 84, status: 156, created: 180 };
+	 * for "756.00 MiB", Status for the state pill, the DL/UL transfer rate for
+	 * "1023.9 KiB/s", ETA for "100d 23h", and the Created On / Added On date for
+	 * the full "DD.MM.YYYY HH:MM:SS" stamp. Lift each to a fit floor (by stable
+	 * column id, only when narrower, so a user who widened it keeps their
+	 * width). */
+	var WIDTH_FLOOR = { size: 84, status: 156, created: 180, dl: 88, ul: 88, eta: 72, addtime: 132 };
 	/* The History table (hst) shares those same formatted date/size values but
 	 * kept the plugin's narrower defaults (date 110, size 70). Once the body
 	 * font moved to the wider Inter face, "DD.MM.YYYY HH:MM:SS" and "388.00 MiB"
