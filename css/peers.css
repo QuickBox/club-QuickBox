@@ -20,6 +20,15 @@
 	letter-spacing: 0;
 }
 
+/* Header labels ellipsize (never hard-clip) if the user narrows a column by hand;
+ * js/peers.js grows a clipped header while auto-fitting and adds a tooltip once the
+ * widths are user-locked. The peer header shares the torrent-list header metrics
+ * (flex-centered, line-height 16px in the 20px box) via `.stable thead td div`, so
+ * only text-overflow is asserted here -- the line box is never touched. */
+#PeerList thead td div {
+	text-overflow: ellipsis;
+}
+
 #PeerList td[data-cqb-col="name"] .stable-icon {
 	display: none;
 }
@@ -81,7 +90,9 @@
 
 #PeerList .cqb-flag-chip[data-flag="incoming"] { --cqb-chip: var(--qb-fg-muted); }
 #PeerList .cqb-flag-chip[data-flag="encrypted"] { --cqb-chip: var(--qb-primary); }
-#PeerList .cqb-flag-chip[data-flag="snubbed"] { --cqb-chip: var(--qb-state-paused); }
+/* snubbed uses the destructive token: it differs from the primary (encrypted) hue
+ * in every variant, including reel where primary is amber. */
+#PeerList .cqb-flag-chip[data-flag="snubbed"] { --cqb-chip: var(--qb-destructive); }
 
 /* ============================================================
  * Numbers + rates -- right-aligned tabular-nums. Byte totals mute

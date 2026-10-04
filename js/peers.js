@@ -33,9 +33,10 @@
 		{ ch: "S", kind: "snubbed",   svg: "flag-snubbed",   label: "cqb_peerFlagSnubbed" }
 	];
 
-	/* geoip2 serves its flag gifs from plugins/geoip2/flags/<cc>.gif; css/table.css
-	 * blanks every .stable-icon, so the Address flag is re-pointed inline from this
-	 * base (derived off the theme plugin path, which ends in the skin dir). */
+	/* geoip2 serves its flag gifs from plugins/geoip2/flags/<cc>.gif. The flag is
+	 * relocated out of Address into the Flags column, so it is drawn as a fresh
+	 * element pointed at this base (derived off the theme plugin path, which ends
+	 * in the skin dir) rather than reusing the geoip .stable-icon node. */
 	function flagsBase() {
 		var p = (cqb && cqb.path) || "";
 		var root = p.replace(/plugins\/theme\/.*$/, "");
@@ -253,11 +254,14 @@
 
 	/* Auto-fit is OFF the moment the user resizes any peer column: then the core
 	 * colsdata widths (persisted by theWebUI.save on resize-end) are authoritative
-	 * and kept across updates, pane resizes and reloads. The lock is stored so it
-	 * survives a reload. installLock wraps the prs table's own resize-end. */
-	var LOCK_KEY = "cqb-peers-userwidth";
+	 * and kept across updates, pane resizes and reloads. The lock lives in the
+	 * server-persisted settings (like the column widths themselves), so it follows
+	 * the user across devices, not just this browser. installLock wraps the prs
+	 * table's own resize-end. */
+	var LOCK_KEY = "webui.cqb.prs_fitlock";
 	function userLocked() {
-		try { return window.localStorage.getItem(LOCK_KEY) === "1"; } catch (e) { return false; }
+		try { return !!(window.theWebUI && theWebUI.settings && theWebUI.settings[LOCK_KEY]); }
+		catch (e) { return false; }
 	}
 	function installLock(obj) {
 		if (!obj || obj._cqbLock) return;
@@ -265,7 +269,10 @@
 		var origEnd = obj.colDragResizeEnd;
 		if (typeof origEnd === "function") {
 			obj.colDragResizeEnd = function () {
-				try { window.localStorage.setItem(LOCK_KEY, "1"); } catch (e) { /* noop */ }
+				try {
+					theWebUI.settings[LOCK_KEY] = 1;
+					if (typeof theWebUI.save === "function") theWebUI.save();
+				} catch (e) { /* noop */ }
 				return origEnd.apply(this, arguments);
 			};
 		}
@@ -281,30 +288,62 @@
 	 * clips; floor it to fit the full cluster (never below, so a wider user width
 	 * is kept). */
 	var NAME_MIN = 150, VER_MIN = 140, FLAGS_MIN = 112, lastW = -1, lastN = -1;
+
+	/* Floor every enabled column so its header text is never clipped: Flags to the
+	 * flag+chips cluster, and each column to its header's intrinsic width. While
+	 * auto-fitting, a clipped header GROWS to fit; once the user has locked widths
+	 * by hand, a too-narrow header is left to ellipsize and carries a tooltip with
+	 * the full label instead. Returns true if any colsdata width changed. */
+	function applyMinimums(obj, cont, locked) {
+		var heads = cont.querySelectorAll("thead td");
+		var order = obj.colOrder || [];
+		var changed = false;
+		for (var di = 0; di < heads.length; di++) {
+			var oi = order.length ? order[di] : di;
+			if (oi == null) oi = di;
+			var c = obj.colsdata[oi];
+			if (!c || !c.enabled) continue;
+			if (c.id === "flags" && (parseInt(c.width, 10) || 0) < FLAGS_MIN) { c.width = FLAGS_MIN; changed = true; }
+			var d = heads[di].querySelector("div");
+			if (!d) continue;
+			var clip = d.scrollWidth > d.clientWidth + 1;
+			if (clip && !locked) {
+				c.width = (parseInt(c.width, 10) || 0) + (d.scrollWidth - d.clientWidth) + 4;
+				changed = true;
+			} else if (clip && cqb.tooltip) {
+				cqb.tooltip(d, (c.text || d.textContent || "").trim());
+			} else if (d.getAttribute("data-cqb-tip")) {
+				d.removeAttribute("data-cqb-tip");
+			}
+		}
+		return changed;
+	}
+
 	function fitColumns(cont) {
-		if (userLocked()) return;
 		var obj = tableObj();
 		if (!obj || !obj.colsdata) return;
 		var body = cont.querySelector(".stable-body");
 		var avail = body ? body.clientWidth : 0;
 		if (!avail) return;
-		var nameCol = null, verCol = null, other = 0, n = 0, flagsFloored = false;
+		var locked = userLocked();
+		var changed = applyMinimums(obj, cont, locked);
+		if (locked) { if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn(); return; }
+		var nameCol = null, verCol = null, other = 0, n = 0;
 		for (var i = 0; i < obj.colsdata.length; i++) {
 			var c = obj.colsdata[i];
 			if (!c.enabled) continue;
-			if (c.id === "flags" && (parseInt(c.width, 10) || 0) < FLAGS_MIN) { c.width = FLAGS_MIN; flagsFloored = true; }
 			n++;
 			if (c.id === "name") nameCol = c;
 			else if (c.id === "version") verCol = c;
 			else other += (parseInt(c.width, 10) || 0);
 		}
-		if (!nameCol || !verCol) return;
-		if (avail === lastW && n === lastN && !flagsFloored) return;
+		if (!nameCol || !verCol) { if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn(); return; }
+		if (avail === lastW && n === lastN && !changed) return;
 		lastW = avail; lastN = n;
 		var pool = avail - other - 2;
 		var nameW = Math.max(NAME_MIN, Math.round(pool * 0.6));
 		var verW = Math.max(VER_MIN, pool - nameW);
-		if (nameCol.width !== nameW || verCol.width !== verW) {
+		if (nameCol.width !== nameW || verCol.width !== verW || changed) {
 			nameCol.width = nameW;
 			verCol.width = verW;
 			if (typeof obj.resizeColumn === "function") obj.resizeColumn();
