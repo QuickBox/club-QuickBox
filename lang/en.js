@@ -9,4 +9,6 @@
 theUILang.qbAppearance      = "Appearance";
 theUILang.qbVariantAuto     = "Auto (dashboard)";
 theUILang.qbVariantSpectre  = "Spectre";
+theUILang.qbVariantSmoked   = "Smoked";
 theUILang.qbVariantReel     = "Reel";
+theUILang.qbVariantLight    = "Light";

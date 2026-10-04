@@ -255,7 +255,8 @@
 		/* Bootstrap 5 dark mode + native control / scrollbar hints. */
 		root.setAttribute("data-bs-theme", dark ? "dark" : "light");
 		root.style.colorScheme = dark ? "dark" : "light";
-		root.style.accentColor = token("--qb-primary");
+		/* accent-color flips via CSS (`:root { accent-color: var(--qb-primary) }`)
+		 * so it never races the stylesheet load. */
 		/* ruTorrent theme hint: toggles dark-theme/light-theme now and seeds
 		 * the next-load FOUC cover. */
 		if (typeof setThemeHint === "function") setThemeHint(dark);
