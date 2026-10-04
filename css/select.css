@@ -242,6 +242,10 @@ select.cqb-native {
 	text-align: left;
 	background: transparent;
 	border: 0;
+	/* Core ruTorrent ships `button { margin }`; without this reset every option
+	 * is nudged ~3px right (left inset != right inset) and the rows gain uneven
+	 * vertical gaps. Keep options flush so text starts at the standard inset. */
+	margin: 0;
 	border-radius: 6px;
 	cursor: pointer;
 }
