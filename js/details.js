@@ -781,6 +781,11 @@
 		down: ["trafic_downloaded", "trafic_downloaded_old"],
 		up: ["trafic_uploaded", "trafic_uploaded_old"]
 	};
+	/* The Speed graph is an rGraph too, with its own two series labels. */
+	var SPEED_SERIES = {
+		down: ["speedgraph_dl"],
+		up: ["speedgraph_ul"]
+	};
 
 	function sumSeries(g, keys) {
 		var total = 0;
@@ -796,9 +801,10 @@
 		return total;
 	}
 
-	function toggleSeries(dir, on) {
+	/* Drive the same checked-series mechanism the stock flot legend used, for
+	 * any rGraph (Traffic or Speed); labels is the series-label list to flip. */
+	function toggleSeries(labels, on) {
 		try {
-			var labels = TRAF_SERIES[dir];
 			/* rGraph is a global class binding (not a window property), so it
 			 * is referenced directly; typeof guards against it being absent. */
 			if (!labels || typeof rGraph === "undefined" || !rGraph.legendCheckboxChanged) return;
@@ -808,7 +814,9 @@
 		} catch (e) {}
 	}
 
-	function trafChip(dir, dirClass, labelText) {
+	/* A pill toggle for one graph series group: a colored dot + label that
+	 * flips the series on/off. Shared by the Traffic and Speed toolbars. */
+	function seriesChip(labels, dirClass, labelText) {
 		var btn = document.createElement("button");
 		btn.type = "button";
 		btn.className = "cqb-traf-toggle " + dirClass;
@@ -823,7 +831,7 @@
 		btn.addEventListener("click", function () {
 			var on = btn.getAttribute("aria-pressed") !== "true";
 			btn.setAttribute("aria-pressed", on ? "true" : "false");
-			toggleSeries(dir, on);
+			toggleSeries(labels, on);
 		});
 		if (cqb && cqb.tooltip) cqb.tooltip(btn, "Toggle " + labelText);
 		return btn;
@@ -856,8 +864,8 @@
 		}
 		var toggles = document.createElement("div");
 		toggles.className = "cqb-traf-toggles";
-		var tgDown = trafChip("down", "cqb-dir-down", "Downloaded");
-		var tgUp = trafChip("up", "cqb-dir-up", "Uploaded");
+		var tgDown = seriesChip(TRAF_SERIES.down, "cqb-dir-down", "Downloaded");
+		var tgUp = seriesChip(TRAF_SERIES.up, "cqb-dir-up", "Uploaded");
 		toggles.appendChild(tgDown);
 		toggles.appendChild(tgUp);
 
@@ -942,6 +950,71 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
+	/* ------------------------------------------------------------
+	 * 5b. Speed pane toolbar -- inline series toggles above the live plot,
+	 *     the stock flot legend hidden by CSS. The plot stays bound to #Speed;
+	 *     a sibling toolbar scoped to the Speed tab is added and the plot is
+	 *     shrunk by the toolbar height so the x-axis labels stay visible.
+	 * ---------------------------------------------------------- */
+	function syncSpeedToolbar() {
+		try {
+			var bar = document.getElementById("cqb-speed-toolbar");
+			if (!bar) return;
+			bar.style.display = (resolveActiveTab() === "Speed") ? "flex" : "none";
+		} catch (e) {}
+	}
+
+	/* Wrap the graph's own resize (driven by the core from #tdcont size) so the
+	 * plot height excludes the toolbar box plus a small inset for the labels. */
+	function wrapSpeedResize() {
+		try {
+			var sg = window.theWebUI && theWebUI.speedGraph;
+			if (!sg || !sg.resize || sg.__cqbResize) return;
+			sg.__cqbResize = true;
+			var orig = sg.resize.bind(sg);
+			sg.resize = function (w, h) {
+				try {
+					var bar = document.getElementById("cqb-speed-toolbar");
+					if (h && bar && bar.offsetParent !== null) {
+						var mb = parseFloat(getComputedStyle(bar).marginBottom) || 0;
+						h = Math.max(1, h - bar.offsetHeight - mb - 10);
+					}
+				} catch (e) {}
+				return orig(w, h);
+			};
+		} catch (e) {}
+	}
+
+	function resizeSpeed() {
+		try {
+			if (window.theWebUI && typeof theWebUI.resizeGraph === "function") theWebUI.resizeGraph();
+			var sg = window.theWebUI && theWebUI.speedGraph;
+			if (sg && sg.draw) sg.draw(true);
+		} catch (e) {}
+	}
+
+	function enhanceSpeedToolbar() {
+		try {
+			var speed = document.getElementById("Speed");
+			if (!speed || speed.getAttribute("data-cqb-tb")) return;
+			var host = speed.parentNode;
+			if (!host) return;
+			var bar = document.createElement("div");
+			bar.id = "cqb-speed-toolbar";
+			bar.className = "cqb-speed-toolbar";
+			var toggles = document.createElement("div");
+			toggles.className = "cqb-traf-toggles";
+			toggles.appendChild(seriesChip(SPEED_SERIES.down, "cqb-dir-down", "Download"));
+			toggles.appendChild(seriesChip(SPEED_SERIES.up, "cqb-dir-up", "Upload"));
+			bar.appendChild(toggles);
+			host.insertBefore(bar, speed);
+			speed.setAttribute("data-cqb-tb", "1");
+			wrapSpeedResize();
+			syncSpeedToolbar();
+			resizeSpeed();
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	function watchForFileManager() {
 		try {
 			var existing = document.getElementById("flm-navpath");
@@ -966,7 +1039,8 @@
 				refreshEmpty();
 				if (id === "gcont") renderGeneral();
 				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }
-				if (id === "Speed") styleCharts();
+				if (id === "Speed") { enhanceSpeedToolbar(); styleCharts(); resizeSpeed(); }
+				syncSpeedToolbar();
 				return r;
 			};
 			theTabs.__cqbWrapped = true;
@@ -977,10 +1051,11 @@
 	installEmptyState();
 	watchForFileManager();
 	enhanceTrafToolbar();
+	enhanceSpeedToolbar();
 	styleCharts();
 	hookTabShow();
 	if (cqb && cqb.onVariant) cqb.onVariant(styleCharts);
-	/* One delayed pass -- the traffic plugin builds its page and graph
-	 * during lang-load, which may land just after this module runs. */
-	setTimeout(function () { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }, 1500);
+	/* One delayed pass -- the traffic and speed graphs are built during
+	 * lang-load, which may land just after this module runs. */
+	setTimeout(function () { enhanceTrafToolbar(); enhanceSpeedToolbar(); styleCharts(); updateTrafKpi(); }, 1500);
 })(window.cqb);

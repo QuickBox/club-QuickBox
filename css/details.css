@@ -896,9 +896,25 @@ button#flm-nav-refresh .sprite-refresh {
 	border-radius: 3px !important;
 }
 
-/* Traffic drives its own inline series toggles in the toolbar, so the
- * stock flot legend never floats over the plot. Speed keeps its legend. */
-#traf .legend { display: none !important; }
+/* Traffic and Speed both drive inline series toggles in a toolbar row, so the
+ * stock flot legend never floats over either plot. */
+#traf .legend,
+#Speed .legend { display: none !important; }
+
+/* Speed pane toolbar -- a 40px surface row above the live plot holding the
+ * Download/Upload series toggles (the chips reuse the Traffic chip styles). */
+.cqb-speed-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 8px 10px;
+	box-sizing: border-box;
+	height: 40px;
+	padding: 0 12px;
+	margin-bottom: 10px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
 
 /* ============================================================
  * Traffic pane -- even 16px pane (from #tdcont), a surface toolbar carrying
