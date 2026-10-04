@@ -127,10 +127,21 @@
 		}
 		return libPromise;
 	}
+	function sanitizeIconPath(p) {
+		/* Only allow plain SVG shape markup: reject scripts, event handlers,
+		 * foreignObject/use/style and any external/javascript references. */
+		if (typeof p !== "string") return null;
+		if (/<\s*(script|foreignObject|style|iframe|use|image)\b/i.test(p)) return null;
+		if (/\bon[a-z]+\s*=/i.test(p)) return null;
+		if (/(javascript|data|vbscript)\s*:/i.test(p)) return null;
+		return p;
+	}
 	function maskUrl(name) {
 		var rec = libMap && libMap[name];
 		if (!rec) return null;
-		var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>" + rec.p + "</svg>";
+		var safeP = sanitizeIconPath(rec.p);
+		if (safeP === null) return null;
+		var svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>" + safeP + "</svg>";
 		return "url(\"data:image/svg+xml," + encodeURIComponent(svg) + "\")";
 	}
 
