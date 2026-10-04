@@ -437,3 +437,93 @@ button#flm-nav-refresh .sprite-refresh {
 	font-size: 12px;
 	padding: 0 1px;
 }
+
+/* ============================================================
+ * Flot charts (Speed + Traffic tabs) -- token series colors are set
+ * from details.js; grid, axis labels and the legend are styled here.
+ * The core reads grid/legend colors off these two carrier elements.
+ * ============================================================ */
+.graph_tab_grid {
+	color: var(--qb-fg-muted);
+	background-color: transparent;
+	border: 1px solid var(--qb-border);
+}
+
+.graph_tab_legend {
+	color: var(--qb-foreground);
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+}
+
+/* Axis tick labels -- 11px muted. */
+.tickLabel,
+.flot-tick-label {
+	color: var(--qb-fg-muted) !important;
+	font-size: 11px !important;
+	font-family: var(--qb-font) !important;
+}
+
+/* Legend as a token surface card, top-right inside the plot. */
+.legend table {
+	border: 1px solid var(--qb-border) !important;
+	border-radius: var(--qb-radius-lg);
+	background: var(--qb-surface) !important;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	box-shadow: var(--qb-shadow-soft);
+	padding: 3px 5px;
+}
+
+.legend > div {
+	border-radius: var(--qb-radius-lg) !important;
+	background-color: var(--qb-surface) !important;
+}
+
+.legend .legendLabel {
+	color: var(--qb-foreground);
+	font-size: 11px;
+	padding: 1px 8px 1px 4px;
+}
+
+.legend .legendColorBox > div {
+	border: none !important;
+	border-radius: 3px;
+	overflow: hidden;
+}
+
+.legend .legendColorBox > div > div {
+	border-radius: 3px !important;
+}
+
+/* ============================================================
+ * Traffic pane toolbar -- same treatment as the File Manager bar:
+ * a 40px surface row, Clear as an icon-button (details.js), 32px selects.
+ * ============================================================ */
+#traf_graph_ctrl,
+.cqb-pane-toolbar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 40px;
+	padding: 0 8px;
+	margin-bottom: 8px;
+	background: var(--qb-surface-2);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius-lg);
+}
+
+#traf_graph_ctrl select,
+.cqb-pane-toolbar select {
+	height: 32px;
+	padding: 0 8px;
+	width: auto;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+}
+
+#traf_graph { margin-top: 2px; }

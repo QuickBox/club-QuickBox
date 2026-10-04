@@ -209,6 +209,71 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
+	/* ------------------------------------------------------------
+	 * 4. Flot charts (Speed + Traffic) on variant chart tokens.
+	 * ---------------------------------------------------------- */
+	function cssvar(name) {
+		try { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+		catch (e) { return ""; }
+	}
+
+	function hexToRgba(hex, a) {
+		var m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec((hex || "").trim());
+		if (!m) return hex;
+		return "rgba(" + parseInt(m[1], 16) + "," + parseInt(m[2], 16) + "," + parseInt(m[3], 16) + "," + a + ")";
+	}
+
+	function styleCharts() {
+		try {
+			if (!window.theWebUI) return;
+			var rx = cssvar("--qb-chart-rx") || cssvar("--qb-speed-down");
+			var tx = cssvar("--qb-chart-tx") || cssvar("--qb-speed-up");
+			if (!rx && !tx) return;
+
+			/* Speed tab -- filled areas (~30%) with a solid 2px edge. */
+			var sg = theWebUI.speedGraph;
+			if (sg && sg.down && sg.up) {
+				sg.down.color = rx;
+				sg.up.color = tx;
+				sg.down.lines = { show: true, fill: 0.3, lineWidth: 2 };
+				sg.up.lines = { show: true, fill: 0.3, lineWidth: 2 };
+				if (sg.plot) try { sg.draw(true); } catch (e) {}
+			}
+
+			/* Traffic tab -- filled bars (~35%) with a solid 1px edge;
+			 * the prior-period series run dimmer in the same hue. */
+			var tg = theWebUI.trafGraph;
+			if (tg && tg.down && tg.up) {
+				tg.down.color = rx;
+				tg.up.color = tx;
+				if (tg.oldDown) tg.oldDown.color = hexToRgba(rx, 0.4);
+				if (tg.oldUp) tg.oldUp.color = hexToRgba(tx, 0.4);
+				[tg.down, tg.up, tg.oldDown, tg.oldUp].forEach(function (d) {
+					if (d) d.bars = { show: true, fill: 0.35, lineWidth: 1 };
+				});
+				if (tg.plot) try { tg.draw(true); } catch (e) {}
+			}
+		} catch (e) { /* never break the bundle */ }
+	}
+
+	/* ------------------------------------------------------------
+	 * 5. Traffic pane toolbar -- Clear becomes an icon-button.
+	 * ---------------------------------------------------------- */
+	function enhanceTrafToolbar() {
+		try {
+			var ctrl = document.getElementById("traf_graph_ctrl");
+			if (!ctrl || ctrl.getAttribute("data-cqb-tb")) return;
+			var btn = ctrl.querySelector("button");
+			if (btn) {
+				btn.textContent = "";
+				btn.className = "cqb-flm-btn";
+				btn.appendChild(maskSpan("log-clear"));
+				if (cqb && cqb.tooltip) cqb.tooltip(btn, "Clear statistics");
+			}
+			ctrl.setAttribute("data-cqb-tb", "1");
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	function watchForFileManager() {
 		try {
 			var existing = document.getElementById("flm-navpath");
@@ -221,7 +286,30 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
+	/* Re-apply chart/toolbar work when the relevant tab is shown, so a
+	 * lazily-built graph or toolbar is caught the first time it appears. */
+	function hookTabShow() {
+		try {
+			if (!window.theTabs || theTabs.__cqbWrapped) return;
+			var show = theTabs.show;
+			theTabs.show = function (id) {
+				var r = show.apply(this, arguments);
+				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); }
+				if (id === "Speed") styleCharts();
+				return r;
+			};
+			theTabs.__cqbWrapped = true;
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	buildStatCards();
 	installEmptyState();
 	watchForFileManager();
+	enhanceTrafToolbar();
+	styleCharts();
+	hookTabShow();
+	if (cqb && cqb.onVariant) cqb.onVariant(styleCharts);
+	/* One delayed pass -- the traffic plugin builds its page and graph
+	 * during lang-load, which may land just after this module runs. */
+	setTimeout(function () { enhanceTrafToolbar(); styleCharts(); }, 1500);
 })(window.cqb);
