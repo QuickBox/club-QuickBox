@@ -265,10 +265,30 @@ textarea[disabled] {
 	height: 8px;
 }
 
-::-webkit-scrollbar-button {
+/* Kill the end-cap arrow glyphs in every form the engine can draw them:
+ * the bare button, the single/double-button variants, and the start/end
+ * segments on both axes. Any one left unset lets the raster arrow back in. */
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:double-button,
+::-webkit-scrollbar-button:start,
+::-webkit-scrollbar-button:end,
+::-webkit-scrollbar-button:vertical:start,
+::-webkit-scrollbar-button:vertical:end,
+::-webkit-scrollbar-button:horizontal:start,
+::-webkit-scrollbar-button:horizontal:end,
+::-webkit-scrollbar-button:vertical:start:single-button,
+::-webkit-scrollbar-button:vertical:end:single-button,
+::-webkit-scrollbar-button:vertical:start:double-button,
+::-webkit-scrollbar-button:vertical:end:double-button,
+::-webkit-scrollbar-button:horizontal:start:single-button,
+::-webkit-scrollbar-button:horizontal:end:single-button,
+::-webkit-scrollbar-button:horizontal:start:double-button,
+::-webkit-scrollbar-button:horizontal:end:double-button {
 	display: none;
 	width: 0;
 	height: 0;
+	background: none;
 }
 
 ::-webkit-scrollbar-corner {
