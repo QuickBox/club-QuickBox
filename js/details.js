@@ -734,6 +734,10 @@
 				trig.classList.add("cqb-flm-recent");
 				trig.removeAttribute("data-cqb-grow");
 				group.appendChild(trig);
+				/* The value label is display:none, so give the combobox an
+				 * explicit accessible name (cqb.tooltip skips aria-label when
+				 * textContent is non-empty). */
+				trig.setAttribute("aria-label", "Recent folders");
 				if (cqb && cqb.tooltip) cqb.tooltip(trig, "Recent folders");
 				return true;
 			};
