@@ -50,73 +50,67 @@ div#logoff:hover {
 #meter-cpu-pane .icon {
 	background-color: var(--qb-icon);
 	background-image: none !important;
+	flex: none;
 }
 
-/* Track: a 56px rounded rail the fill width maps onto. The right margin
- * reserves in-flow room for the absolutely-placed % label. */
+/* One shared meter layout for disk and cpu: a single flex row holding the
+ * glyph, then a 56x4 track with its fill, then the percent label -- all on
+ * one vertical centre line, no absolute positioning. extras.js moves the
+ * label out of the track and converts the cpu sparkline into the same bar. */
+#meter-disk-pane,
+#meter-cpu-pane {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 100%;
+}
+
+/* The track: holder becomes the 56px rounded rail the fill sits inside. */
 #meter-disk-holder,
-#meter-band-holder,
-#qmeter-disk-holder {
+#meter-cpu-holder {
 	position: relative;
-	display: inline-block;
+	flex: none;
 	width: 56px;
 	height: 4px;
-	margin: 0 40px 0 2px;
+	margin: 0;
 	padding: 0;
 	border: 0;
 	border-radius: 999px;
 	background: var(--qb-muted);
-	vertical-align: middle;
-	overflow: visible;
+	overflow: hidden;
+	line-height: normal;
 }
 
-/* Fill: absolute within the track, width% set inline by the plugin. */
+/* The fill: disk uses the plugin-driven #meter-disk-value, cpu uses the
+ * .cqb-meter-fill extras.js adds. Both run the brand gradient; the !important
+ * beats the plugin's inline primary->destructive paint that went muddy mid-bar. */
 #meter-disk-value,
-#meter-band-value,
-#qmeter-band-value,
-#qmeter-disk-value,
-.meter-value {
-	position: absolute;
-	left: 0;
-	top: 0;
+#meter-cpu-holder .cqb-meter-fill {
+	display: block;
+	position: static;
 	height: 100%;
 	min-width: 2px;
 	max-width: 100%;
+	margin: 0;
 	border: 0;
 	border-radius: 999px;
 	float: none;
 	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
 }
 
-/* % label beside the bar, 12px tabular-nums, never over it. */
+/* The label: a flex sibling beside the bar, 12px tabular-nums, line-height 1. */
 #meter-disk-text,
-#meter-band-text,
-#qmeter-disk-text,
 #meter-cpu-text {
-	position: absolute;
-	left: calc(100% + 8px);
-	top: 50%;
-	transform: translateY(-50%);
-	white-space: nowrap;
+	flex: none;
+	position: static;
+	transform: none;
+	margin: 0;
 	color: var(--qb-fg-muted);
 	text-shadow: none;
 	font-size: 12px;
+	line-height: 1;
 	font-family: var(--qb-font);
 	font-variant-numeric: tabular-nums;
-	z-index: 1;
-}
-
-/* CPU is a flot line graph; size the placeholder so it renders as a clean
- * mini sparkline instead of a sliver. Its line color is a flot canvas color
- * painted by init.js (not reachable from CSS). */
-#meter-cpu-holder {
-	position: relative;
-	display: inline-block;
-	width: 56px;
-	height: 16px;
-	margin: 0 40px 0 2px;
-	padding: 0;
-	vertical-align: middle;
 }
 
 /* ============================================================

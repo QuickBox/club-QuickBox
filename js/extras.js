@@ -175,6 +175,74 @@
 	});
 
 	/* ============================================================
+	 * Status-bar meters -- normalize disk and cpu to one shared bar.
+	 * The cpuload/diskspace panes nest the label inside the track and cpu
+	 * ships a flot sparkline; move the label out to a flex sibling and swap
+	 * the sparkline for a token track+fill so both panes render identically.
+	 * ============================================================ */
+	function fillFromText(fill, textEl) {
+		if (!fill || !textEl) return;
+		var m = /(\d+(?:\.\d+)?)/.exec(textEl.textContent || "");
+		fill.style.width = (m ? Math.min(100, parseFloat(m[1])) : 0) + "%";
+	}
+
+	function normalizeDiskMeter() {
+		var pane = document.getElementById("meter-disk-pane");
+		var holder = document.getElementById("meter-disk-holder");
+		var text = document.getElementById("meter-disk-text");
+		if (!pane || !holder || holder.getAttribute("data-cqb-meter") === "1") return;
+		holder.setAttribute("data-cqb-meter", "1");
+		/* Move the label out of the track so it is a flex sibling of the bar;
+		 * the plugin keeps driving #meter-disk-value (the fill) inside holder. */
+		if (text && text.parentNode !== pane) pane.appendChild(text);
+	}
+
+	function normalizeCpuMeter() {
+		var pane = document.getElementById("meter-cpu-pane");
+		var holder = document.getElementById("meter-cpu-holder");
+		var text = document.getElementById("meter-cpu-text");
+		if (!pane || !holder || holder.getAttribute("data-cqb-meter") === "1") return;
+		holder.setAttribute("data-cqb-meter", "1");
+		if (text && text.parentNode !== pane) pane.appendChild(text);
+		/* Hide the flot sparkline canvases and draw our own bar. holder stays
+		 * 56x4 (non-zero) so flot keeps resizing without error, just hidden. */
+		Array.prototype.slice.call(holder.children).forEach(function (ch) { ch.style.display = "none"; });
+		var fill = document.createElement("div");
+		fill.className = "cqb-meter-fill";
+		holder.appendChild(fill);
+		fillFromText(fill, text);
+		if (text) {
+			try {
+				new MutationObserver(function () { fillFromText(fill, text); })
+					.observe(text, { childList: true, characterData: true, subtree: true });
+			} catch (e) { /* observer unsupported: fill reflects the initial value */ }
+		}
+		/* Re-hide any canvas flot re-inserts on a later resize. */
+		try {
+			new MutationObserver(function (muts) {
+				muts.forEach(function (mu) {
+					Array.prototype.slice.call(mu.addedNodes).forEach(function (n) {
+						if (n.nodeType === 1 && n !== fill) n.style.display = "none";
+					});
+				});
+			}).observe(holder, { childList: true });
+		} catch (e) { /* best-effort */ }
+	}
+
+	function normalizeMeters() {
+		normalizeDiskMeter();
+		normalizeCpuMeter();
+	}
+
+	normalizeMeters();
+	var bar = document.getElementById("StatusBar");
+	if (bar) {
+		try {
+			new MutationObserver(normalizeMeters).observe(bar, { childList: true, subtree: true });
+		} catch (e) { /* panes already present or observer unsupported */ }
+	}
+
+	/* ============================================================
 	 * Command palette (Ctrl/Cmd+K).
 	 * ============================================================ */
 	var palEl = null;
