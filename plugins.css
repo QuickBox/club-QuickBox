@@ -65,18 +65,23 @@ div#logoff:hover {
 	height: 100%;
 }
 
-/* The track: holder becomes the 56px rounded rail the fill sits inside. */
+/* The track: holder becomes the 56px rounded rail the fill sits inside. The
+ * plugin CSS sets an inset border + width 50/100px via a media query, so the
+ * dimensions and border are forced. The rail colour is mixed from the muted
+ * foreground so it stays visible on every variant (plain --qb-muted vanishes
+ * into the surface on the dark themes). */
 #meter-disk-holder,
 #meter-cpu-holder {
 	position: relative;
 	flex: none;
-	width: 56px;
-	height: 4px;
+	width: 56px !important;
+	height: 4px !important;
+	min-width: 56px;
 	margin: 0;
 	padding: 0;
-	border: 0;
+	border: 0 !important;
 	border-radius: 999px;
-	background: var(--qb-muted);
+	background: color-mix(in srgb, var(--qb-fg-muted) 26%, transparent);
 	overflow: hidden;
 	line-height: normal;
 }
@@ -98,13 +103,21 @@ div#logoff:hover {
 	background: linear-gradient(90deg, var(--qb-prg-start), var(--qb-prg-end)) !important;
 }
 
-/* The label: a flex sibling beside the bar, 12px tabular-nums, line-height 1. */
+/* The label: a flex sibling beside the bar. The plugin CSS makes it
+ * position:absolute with width/height 100% (it overlays the bar in stock
+ * ruTorrent), so both are reset to a static, content-sized flex item. */
 #meter-disk-text,
 #meter-cpu-text {
 	flex: none;
-	position: static;
-	transform: none;
+	position: static !important;
+	top: auto;
+	width: auto !important;
+	height: auto !important;
 	margin: 0;
+	transform: none;
+	text-align: left;
+	overflow: visible;
+	white-space: nowrap;
 	color: var(--qb-fg-muted);
 	text-shadow: none;
 	font-size: 12px;
