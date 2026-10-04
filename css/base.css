@@ -16,13 +16,6 @@ html {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Preload Images */
-#preload {
-	display: none;
-	background-image: url('../images/headers.png');
-	background-repeat: no-repeat;
-}
-
 /* Loading Indicator: pure-CSS token-colored ring, no raster */
 #ind {
 	width: 28px;
