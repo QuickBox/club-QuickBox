@@ -807,8 +807,27 @@
 		stripColons(dlg); /* label.input-group-text ("Rename to:") loses its colon */
 		dlg.querySelectorAll("legend").forEach(function (l) {
 			if (l.children.length) return;
-			l.textContent = l.textContent.replace(/\s*:\s*$/, ""); /* "Command log:" */
+			l.textContent = l.textContent.replace(/\s*:\s*$/, ""); /* "Command log:" / "Permissions:" */
 		});
+		/* Permissions grid cells ("User:", "Group:", "Everyone:") lose their colons. */
+		dlg.querySelectorAll("td").forEach(function (td) {
+			if (td.children.length) return;
+			td.textContent = td.textContent.replace(/\s*:\s*$/, "");
+		});
+		/* The marked-for-removal checklist gets an empty-state sibling. */
+		var checklist = dlg.querySelector(".checklist");
+		if (checklist && !(checklist.nextElementSibling && checklist.nextElementSibling.classList.contains("cqb-empty"))) {
+			var ce = document.createElement("div");
+			ce.className = "cqb-empty";
+			var ci = document.createElement("span");
+			ci.className = "cqb-empty-icon";
+			ci.setAttribute("aria-hidden", "true");
+			var ct = document.createElement("span");
+			ct.textContent = t("cqb_empty_checklist", "Nothing selected");
+			ce.appendChild(ci);
+			ce.appendChild(ct);
+			checklist.insertAdjacentElement("afterend", ce);
+		}
 		var start = dlg.querySelector(".flm-diag-start");
 		if (start) start.classList.add("cqb-primary");
 		dlg.querySelectorAll(".buttons-list").forEach(function (f) {

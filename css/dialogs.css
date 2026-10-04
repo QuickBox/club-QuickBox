@@ -1511,13 +1511,11 @@ ul.CMenu li ul li a.dis:hover {
 
 /* Restore the 44px glyph gutter the plugin zeroes, and drop its
  * raster sprite (the spritesheet would double under my glyph). */
-#flm_popup_window > div.dlg-header > div:first-child,
-#flm_popup_console > div.dlg-header > div:first-child {
+[id^="flm_popup_"][id^="flm_popup_"] > div.dlg-header > div:first-child {
 	padding-left: 44px;
 }
 
-#flm_popup_window-header .flm-sprite-diag,
-#flm_popup_console-header .flm-sprite-diag {
+[id^="flm_popup_"] .flm-sprite-diag {
 	display: none;
 }
 
@@ -1528,51 +1526,51 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 	-webkit-mask-image: url(../images/icons/fm-console.svg);
 	mask-image: url(../images/icons/fm-console.svg);
 }
-#flm_popup_window-header:has(.sprite-mkdir)::after {
+.dlg-header > div:first-child:has(.sprite-mkdir)::after {
 	-webkit-mask-image: url(../images/icons/fm-mkdir.svg);
 	mask-image: url(../images/icons/fm-mkdir.svg);
 }
-#flm_popup_window-header:has(.sprite-rename)::after {
+.dlg-header > div:first-child:has(.sprite-rename)::after {
 	-webkit-mask-image: url(../images/icons/fm-rename.svg);
 	mask-image: url(../images/icons/fm-rename.svg);
 }
-#flm_popup_window-header:has(.sprite-delete)::after {
+.dlg-header > div:first-child:has(.sprite-delete)::after {
 	-webkit-mask-image: url(../images/icons/fm-delete.svg);
 	mask-image: url(../images/icons/fm-delete.svg);
 }
-#flm_popup_window-header:has(.sprite-copy)::after {
+.dlg-header > div:first-child:has(.sprite-copy)::after {
 	-webkit-mask-image: url(../images/icons/fm-copy.svg);
 	mask-image: url(../images/icons/fm-copy.svg);
 }
-#flm_popup_window-header:has(.sprite-move)::after {
+.dlg-header > div:first-child:has(.sprite-move)::after {
 	-webkit-mask-image: url(../images/icons/fm-move.svg);
 	mask-image: url(../images/icons/fm-move.svg);
 }
-#flm_popup_window-header:has(.sprite-permissions)::after {
-	-webkit-mask-image: url(../images/icons/header-settings.svg);
-	mask-image: url(../images/icons/header-settings.svg);
+.dlg-header > div:first-child:has(.sprite-permissions)::after {
+	-webkit-mask-image: url(../images/icons/search-private.svg);
+	mask-image: url(../images/icons/search-private.svg);
 }
-#flm_popup_window-header:has(.sprite-archive_create)::after {
+.dlg-header > div:first-child:has(.sprite-archive_create)::after {
 	-webkit-mask-image: url(../images/icons/fm-archive-create.svg);
 	mask-image: url(../images/icons/fm-archive-create.svg);
 }
-#flm_popup_window-header:has(.sprite-archive_extract)::after {
+.dlg-header > div:first-child:has(.sprite-archive_extract)::after {
 	-webkit-mask-image: url(../images/icons/fm-extract.svg);
 	mask-image: url(../images/icons/fm-extract.svg);
 }
-#flm_popup_window-header:has(.sprite-checksum_create)::after,
-#flm_popup_window-header:has(.sprite-checksum_check)::after {
+.dlg-header > div:first-child:has(.sprite-checksum_create)::after,
+.dlg-header > div:first-child:has(.sprite-checksum_check)::after {
 	-webkit-mask-image: url(../images/icons/fm-checksum-create.svg);
 	mask-image: url(../images/icons/fm-checksum-create.svg);
 }
-#flm_popup_window-header:has(.sprite-nfo_view)::after {
+.dlg-header > div:first-child:has(.sprite-nfo_view)::after {
 	-webkit-mask-image: url(../images/icons/file-nfo.svg);
 	mask-image: url(../images/icons/file-nfo.svg);
 }
 
 /* Field layout: un-fuse the Bootstrap input-group chip into the lane
  * pattern -- a left muted label above a full-width input. */
-:is(#flm_popup_window, #flm_popup_console) .cont .input-group {
+[id^="flm_popup_"] .cont .input-group {
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
@@ -1580,7 +1578,7 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 	margin-bottom: 12px;
 }
 
-:is(#flm_popup_window, #flm_popup_console) .cont .input-group > .input-group-text {
+[id^="flm_popup_"] .cont .input-group > .input-group-text {
 	justify-content: flex-start;
 	padding: 0;
 	border: 0;
@@ -1591,12 +1589,12 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 	text-align: left;
 }
 
-:is(#flm_popup_window, #flm_popup_console) .cont .input-group > .form-control {
+[id^="flm_popup_"] .cont .input-group > .form-control {
 	width: 100%;
 	border-radius: 8px;
 }
 
-:is(#flm_popup_window, #flm_popup_console) .cont .row { margin: 0; }
+[id^="flm_popup_"] .cont .row { margin: 0; }
 
 /* Console: one scroll region. Core forces 380/420px + an inline 500x310
  * box with a scrolling <pre> inside (box-in-box, double scroll). The
@@ -1642,7 +1640,7 @@ fieldset:has(#flm_popup_console-log-container) {
 }
 
 /* NFO view: token the scroll box, drop the fixed raster-era dimensions. */
-#flm_popup_window #flm_popup_nfo_view-content {
+#flm_popup_nfo_view-content {
 	width: auto;
 	max-width: 100%;
 	height: auto;
@@ -1655,7 +1653,7 @@ fieldset:has(#flm_popup_console-log-container) {
 	padding: 10px 12px;
 }
 
-#flm_popup_window #flm_popup_nfo_view-content pre {
+#flm_popup_nfo_view-content pre {
 	margin: 0;
 	overflow: visible;
 	white-space: pre-wrap;
@@ -1667,8 +1665,8 @@ fieldset:has(#flm_popup_console-log-container) {
 
 /* The FM footer lives INSIDE .cont; pull it flush to the dialog edges
  * with a hairline + normal padding (no oversized band, no float). */
-:is(#flm_popup_window, #flm_popup_console) .cont > .buttons-list,
-:is(#flm_popup_window, #flm_popup_console) .cont > form + .buttons-list {
+[id^="flm_popup_"] .cont > .buttons-list,
+[id^="flm_popup_"] .cont > form + .buttons-list {
 	float: none;
 	width: auto;
 	margin: 12px -16px -16px;
@@ -1678,7 +1676,7 @@ fieldset:has(#flm_popup_console-log-container) {
 }
 
 /* The start action is the primary confirm (JS adds .cqb-primary too). */
-:is(#flm_popup_window, #flm_popup_console) .flm-diag-start {
+[id^="flm_popup_"] .flm-diag-start {
 	background: var(--qb-primary);
 	border-color: var(--qb-primary);
 	color: var(--qb-primary-fg);
@@ -1693,14 +1691,112 @@ fieldset:has(#flm_popup_console-log-container) {
  * (not a descendant), so restoring the clip is safe. Window-bottom
  * footers also carry the matching bottom radius as a backstop.
  * ============================================================ */
-#flm_popup_window.dlg-window,
-#flm_popup_console.dlg-window {
+div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
 	overflow: hidden;
 }
 
 .dlg-window > .buttons-list,
-:is(#flm_popup_window, #flm_popup_console) .cont > .buttons-list,
-:is(#flm_popup_window, #flm_popup_console) .cont > form + .buttons-list {
+[id^="flm_popup_"] .cont > .buttons-list,
+[id^="flm_popup_"] .cont > form + .buttons-list {
 	border-bottom-left-radius: 14px;
 	border-bottom-right-radius: 14px;
+}
+
+/* ============================================================
+ * File Manager permissions grid (rev-): a proper aligned table
+ * -- a left Who column, three centered Write/Read/Execute
+ * columns, generous gaps, no colons (trimmed in JS).
+ * ============================================================ */
+[id^="flm_popup_"] table {
+	border-collapse: separate;
+	border-spacing: 16px 8px;
+	margin: 2px 0 0 -16px;
+}
+
+[id^="flm_popup_"] table td {
+	padding: 0;
+	vertical-align: middle;
+	white-space: nowrap;
+}
+
+[id^="flm_popup_"] table tr > td:first-child {
+	text-align: left;
+	color: var(--qb-foreground);
+	font-size: 13px;
+}
+
+[id^="flm_popup_"] table tr > td:first-child strong {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+[id^="flm_popup_"] table tr:first-child td:not(:first-child) {
+	text-align: center;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+[id^="flm_popup_"] table td:not(:first-child) {
+	text-align: center;
+}
+
+[id^="flm_popup_"] table input[type="checkbox"] {
+	margin: 0;
+}
+
+/* ============================================================
+ * File Manager delete/remove confirm: the start action takes the
+ * destructive tone (not the teal primary). The marked-for-removal
+ * checklist is one scroll region (tracks only on overflow) with an
+ * empty-state line when nothing is listed.
+ * ============================================================ */
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start,
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start.cqb-primary {
+	background: var(--qb-destructive);
+	border-color: var(--qb-destructive);
+	color: var(--qb-destructive-fg);
+}
+
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start:not(:disabled):hover {
+	background: var(--qb-destructive);
+	border-color: var(--qb-destructive);
+	filter: brightness(1.08);
+}
+
+.dlg-window .checklist {
+	min-width: 0;
+	min-height: 0;
+	max-height: 16rem;
+	overflow: auto;
+	padding: 2px 0;
+	border: 0;
+}
+
+.dlg-window .checklist:empty + .cqb-empty {
+	display: flex;
+}
+
+.dlg-window .checklist:empty + .cqb-empty .cqb-empty-icon {
+	-webkit-mask-image: url(../images/icons/fm-delete.svg);
+	mask-image: url(../images/icons/fm-delete.svg);
+}
+
+/* ============================================================
+ * RSS filter / rule "check" buttons: a single "?" glyph forced
+ * to the 84px dialog-button min-width reads as an oblong. Make
+ * them compact 36px squares that size to the glyph, matching the
+ * list-action button scale.
+ * ============================================================ */
+.dlg-window #chkFilterBtn,
+.dlg-window #chkRuleBtn {
+	min-width: 36px;
+	width: 36px;
+	height: 36px;
+	padding: 0;
 }
