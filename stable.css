@@ -205,7 +205,7 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 	float: left;
 	border: 0 inset #1b1b1b;
 	background: var(--meter-bg-color);
-	border-radius: 12px;
+	border-radius: 3px;
 	height: 14px;
 }
 
@@ -220,7 +220,6 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 	font-size: 11px;
 	font-weight: 400;
 	left: 40%;
-	line-height: 21px;
 	overflow: visible;
 	position: relative;
 	text-align: left;

@@ -22,7 +22,7 @@
 #qmeter-disk-value {
 	background-color: #6c7a89;
 	border: 1px solid transparent;
-	border-radius: 12px;
+	border-radius: 3px;
 	float: left;
 }
 
@@ -87,7 +87,7 @@
 .meter-value {
     background-color: #1e824c !important;
     border: #1e824c;
-    border-radius: 12px;
+    border-radius: 3px;
     width: 96% !important;
 }
 
