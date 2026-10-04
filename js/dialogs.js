@@ -459,6 +459,27 @@
 			return i >= 0 ? s.slice(i + 1) : s;
 		}
 
+		/* Read the console log as newline-separated text from its DOM structure,
+		 * not innerText: the core writes one line per <br>, and innerText is empty
+		 * while the log is display:none (the Formatted view hides it), which would
+		 * collapse the whole dump onto one line. Walking child nodes turns each
+		 * <br> into "\n" and keeps every text node verbatim, so parsing is the
+		 * same whether the log is shown or hidden. Text only -- never re-injected
+		 * as HTML. */
+		function logText(el) {
+			var out = "";
+			(function walk(node) {
+				for (var n = node.firstChild; n; n = n.nextSibling) {
+					if (n.nodeType === 3) out += n.nodeValue;
+					else if (n.nodeType === 1) {
+						if (n.tagName === "BR") out += "\n";
+						else walk(n);
+					}
+				}
+			})(el);
+			return out;
+		}
+
 		function renderMI() {
 			if (ctx.task !== "mediainfo") {
 				seg.style.display = "none";
@@ -466,7 +487,7 @@
 				log.style.display = "";
 				return;
 			}
-			var text = log.innerText || log.textContent || "";
+			var text = logText(log);
 			var sections = parseMediaInfo(text);
 			if (!sections.length) {
 				seg.style.display = "none";
