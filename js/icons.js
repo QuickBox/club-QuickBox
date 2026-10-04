@@ -21,6 +21,8 @@
 	var STORE_KEY = "webui.cqb.icons";
 	var ACTION = "plugins/tracklabels/action.php";
 
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
 	/* Short sha-256 prefixes of the plugin's bundled default PNGs -> the library
 	 * glyph each maps to. A fetched row image whose hash is NOT here (and is not
 	 * unknown.png) is a real user upload or a live favicon, so it is respected. */
@@ -269,7 +271,7 @@
 		editBtn = document.createElement("button");
 		editBtn.type = "button";
 		editBtn.className = "cqb-row-edit";
-		cqb.tooltip ? cqb.tooltip(editBtn, "Choose icon") : editBtn.setAttribute("aria-label", "Choose icon");
+		cqb.tooltip ? cqb.tooltip(editBtn, t("cqb_icons_choose", "Choose icon")) : editBtn.setAttribute("aria-label", t("cqb_icons_choose", "Choose icon"));
 		editBtn.addEventListener("click", function (e) {
 			e.stopPropagation();
 			e.preventDefault();
@@ -351,25 +353,25 @@
 		var panel = el("div", "cqb-picker");
 		panel.setAttribute("role", "dialog");
 		panel.setAttribute("aria-modal", "true");
-		panel.setAttribute("aria-label", "Choose icon");
+		panel.setAttribute("aria-label", t("cqb_icons_choose", "Choose icon"));
 
 		/* head */
 		var head = el("div", "cqb-picker-head");
 		var headIcon = el("div", "cqb-picker-head-icon");
 		headIcon.setAttribute("aria-hidden", "true");
 		var headText = el("div", "cqb-picker-head-text");
-		var title = el("div", "cqb-picker-title"); title.textContent = "Choose icon";
+		var title = el("div", "cqb-picker-title"); title.textContent = t("cqb_icons_choose", "Choose icon");
 		var sub = el("div", "cqb-picker-sub");
 		headText.appendChild(title); headText.appendChild(sub);
-		var close = el("button", "cqb-picker-close", { type: "button", "aria-label": "Close" });
+		var close = el("button", "cqb-picker-close", { type: "button", "aria-label": t("Close", "Close") });
 		head.appendChild(headIcon); head.appendChild(headText); head.appendChild(close);
 
 		/* tabs */
 		var tabs = el("div", "cqb-picker-tabs");
 		var tabIcons = el("button", "cqb-tab", { type: "button", role: "tab", "aria-selected": "true" });
-		tabIcons.textContent = "Icons";
+		tabIcons.textContent = t("cqb_icons_tab_icons", "Icons");
 		var tabUpload = el("button", "cqb-tab", { type: "button", role: "tab", "aria-selected": "false" });
-		tabUpload.textContent = "Upload image";
+		tabUpload.textContent = t("cqb_icons_tab_upload", "Upload image");
 		tabs.appendChild(tabIcons); tabs.appendChild(tabUpload);
 
 		/* --- icons panel --- */
@@ -377,20 +379,20 @@
 		var controls = el("div", "cqb-picker-controls");
 		var search = el("div", "cqb-pk-search cqb-input-group");
 		var searchIco = el("span", "cqb-pk-search-ico"); searchIco.setAttribute("aria-hidden", "true");
-		var searchInput = el("input", null, { type: "text", placeholder: "Search icons", "aria-label": "Search icons" });
+		var searchInput = el("input", null, { type: "text", placeholder: t("cqb_icons_search", "Search icons"), "aria-label": t("cqb_icons_search", "Search icons") });
 		search.appendChild(searchIco); search.appendChild(searchInput);
-		var chips = el("div", "cqb-cat-chips"); chips.setAttribute("role", "group"); chips.setAttribute("aria-label", "Categories");
+		var chips = el("div", "cqb-cat-chips"); chips.setAttribute("role", "group"); chips.setAttribute("aria-label", t("cqb_icons_categories", "Categories"));
 		controls.appendChild(search); controls.appendChild(chips);
 		var gridWrap = el("div", "cqb-grid-wrap");
-		var grid = el("div", "cqb-grid"); grid.setAttribute("role", "listbox"); grid.setAttribute("aria-label", "Icons");
+		var grid = el("div", "cqb-grid"); grid.setAttribute("role", "listbox"); grid.setAttribute("aria-label", t("cqb_icons_tab_icons", "Icons"));
 		var sentinel = el("div"); sentinel.style.height = "1px";
 		gridWrap.appendChild(grid); gridWrap.appendChild(sentinel);
 		iconsPanel.appendChild(controls); iconsPanel.appendChild(gridWrap);
 
 		/* tint bar + preview */
 		var tintbar = el("div", "cqb-tintbar");
-		var tintLabel = el("span", "cqb-tintbar-label"); tintLabel.textContent = "Tint";
-		var swatches = el("div", "cqb-swatches"); swatches.setAttribute("role", "group"); swatches.setAttribute("aria-label", "Tint");
+		var tintLabel = el("span", "cqb-tintbar-label"); tintLabel.textContent = t("cqb_icons_tint", "Tint");
+		var swatches = el("div", "cqb-swatches"); swatches.setAttribute("role", "group"); swatches.setAttribute("aria-label", t("cqb_icons_tint", "Tint"));
 		var preview = el("div", "cqb-preview");
 		var prevIcon = el("span", "cqb-preview-icon"); prevIcon.setAttribute("aria-hidden", "true");
 		var prevText = el("span", "cqb-preview-text");
@@ -401,10 +403,10 @@
 		/* --- upload panel --- */
 		var uploadPanel = el("div", "cqb-panel"); uploadPanel.hidden = true;
 		var upBody = el("div", "cqb-upload-body");
-		var drop = el("div", "cqb-dropzone", { tabindex: "0", role: "button", "aria-label": "Upload a PNG image" });
+		var drop = el("div", "cqb-dropzone", { tabindex: "0", role: "button", "aria-label": t("cqb_icons_upload_aria", "Upload a PNG image") });
 		var dropIcon = el("div", "cqb-dropzone-icon"); dropIcon.setAttribute("aria-hidden", "true");
-		var dropTitle = el("div", "cqb-dropzone-title"); dropTitle.textContent = "Drop a PNG here or click to browse";
-		var dropHint = el("div", "cqb-dropzone-hint"); dropHint.textContent = "PNG only. Shown in plain ruTorrent too.";
+		var dropTitle = el("div", "cqb-dropzone-title"); dropTitle.textContent = t("cqb_icons_drop_title", "Drop a PNG here or click to browse");
+		var dropHint = el("div", "cqb-dropzone-hint"); dropHint.textContent = t("cqb_icons_drop_hint", "PNG only. Shown in plain ruTorrent too.");
 		drop.appendChild(dropIcon); drop.appendChild(dropTitle); drop.appendChild(dropHint);
 		var fileInput = el("input", null, { type: "file", accept: ".png,image/png" });
 		fileInput.style.display = "none";
@@ -413,18 +415,18 @@
 		var upName = el("div", "cqb-upload-preview-name");
 		upPreview.appendChild(upImg); upPreview.appendChild(upName);
 		var upNote = el("div", "cqb-upload-note");
-		upNote.textContent = "An uploaded image is kept as-is and takes priority over a chosen glyph. Remove it to fall back to the smart default.";
+		upNote.textContent = t("cqb_icons_upload_note", "An uploaded image is kept as-is and takes priority over a chosen glyph. Remove it to fall back to the smart default.");
 		upBody.appendChild(drop); upBody.appendChild(fileInput); upBody.appendChild(upPreview); upBody.appendChild(upNote);
 		uploadPanel.appendChild(upBody);
 
 		/* footer (shared) */
 		var foot = el("div", "cqb-picker-foot");
-		var resetBtn = el("button", "cqb-btn cqb-btn-ghost", { type: "button" }); resetBtn.textContent = "Reset to smart default";
+		var resetBtn = el("button", "cqb-btn cqb-btn-ghost", { type: "button" }); resetBtn.textContent = t("cqb_icons_reset", "Reset to smart default");
 		var spacer = el("div", "cqb-foot-spacer");
-		var cancelBtn = el("button", "cqb-btn cqb-btn-secondary", { type: "button" }); cancelBtn.textContent = "Cancel";
-		var useBtn = el("button", "cqb-btn cqb-btn-primary", { type: "button" }); useBtn.textContent = "Use icon";
-		var deleteBtn = el("button", "cqb-btn cqb-btn-ghost", { type: "button" }); deleteBtn.textContent = "Remove image"; deleteBtn.hidden = true;
-		var uploadBtn = el("button", "cqb-btn cqb-btn-primary", { type: "button" }); uploadBtn.textContent = "Upload"; uploadBtn.hidden = true; uploadBtn.disabled = true;
+		var cancelBtn = el("button", "cqb-btn cqb-btn-secondary", { type: "button" }); cancelBtn.textContent = t("Cancel", "Cancel");
+		var useBtn = el("button", "cqb-btn cqb-btn-primary", { type: "button" }); useBtn.textContent = t("cqb_icons_use", "Use icon");
+		var deleteBtn = el("button", "cqb-btn cqb-btn-ghost", { type: "button" }); deleteBtn.textContent = t("cqb_icons_remove", "Remove image"); deleteBtn.hidden = true;
+		var uploadBtn = el("button", "cqb-btn cqb-btn-primary", { type: "button" }); uploadBtn.textContent = t("cqb_icons_upload_btn", "Upload"); uploadBtn.hidden = true; uploadBtn.disabled = true;
 		foot.appendChild(resetBtn); foot.appendChild(deleteBtn); foot.appendChild(spacer);
 		foot.appendChild(cancelBtn); foot.appendChild(useBtn); foot.appendChild(uploadBtn);
 
@@ -470,9 +472,9 @@
 		if (idx > tiles.length - 1) idx = tiles.length - 1;
 		for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", i === idx ? "0" : "-1");
 		picker.state.rovingIndex = idx;
-		var t = tiles[idx];
-		t.focus();
-		if (t.scrollIntoView) t.scrollIntoView({ block: "nearest", inline: "nearest" });
+		var tile = tiles[idx];
+		tile.focus();
+		if (tile.scrollIntoView) tile.scrollIntoView({ block: "nearest", inline: "nearest" });
 	}
 	/* Ensure exactly one rendered tile is the Tab stop (defaults to the first). */
 	function applyRoving() {
@@ -507,7 +509,7 @@
 			if (term) {
 				var hit = ic.n.indexOf(term) !== -1;
 				if (!hit) {
-					for (var t = 0; t < ic.t.length; t++) { if (ic.t[t].indexOf(term) !== -1) { hit = true; break; } }
+					for (var ti = 0; ti < ic.t.length; ti++) { if (ic.t[ti].indexOf(term) !== -1) { hit = true; break; } }
 				}
 				if (!hit) continue;
 			}
@@ -516,7 +518,7 @@
 		st.filtered = filtered;
 		st.rendered = 0;
 		if (!filtered.length) {
-			var empty = el("div", "cqb-grid-empty"); empty.textContent = "No icons match “" + term + "”";
+			var empty = el("div", "cqb-grid-empty"); empty.textContent = t("cqb_icons_no_match", "No icons match “{term}”").replace("{term}", term);
 			g.appendChild(empty);
 			return;
 		}
@@ -548,7 +550,7 @@
 		sw.innerHTML = "";
 		TINT_ORDER.forEach(function (id) {
 			var b = el("button", "cqb-swatch" + (id === "auto" ? " cqb-swatch-auto" : ""), {
-				type: "button", "data-tint": id, "aria-label": id === "auto" ? "Auto (variant)" : id,
+				type: "button", "data-tint": id, "aria-label": id === "auto" ? t("cqb_icons_tint_auto", "Auto (variant)") : id,
 				"aria-pressed": id === (st.tint || "auto") ? "true" : "false"
 			});
 			if (id !== "auto") b.style.setProperty("--cqb-swatch", TINT_VAR[id]);
@@ -568,15 +570,15 @@
 	function renderChips() {
 		var c = picker.chips, st = picker.state;
 		c.innerHTML = "";
-		var cats = [{ id: "all", name: "All" }].concat(libData.cats);
+		var cats = [{ id: "all", name: t("cqb_icons_cat_all", "All") }].concat(libData.cats);
 		cats.forEach(function (cat) {
 			var b = el("button", "cqb-cat-chip", { type: "button", "data-cat": cat.id, "aria-pressed": (st.cat || "all") === cat.id ? "true" : "false" });
 			b.textContent = cat.name;
 			c.appendChild(b);
 		});
 		// "More" overflow trigger at the end of the one-line strip.
-		var more = el("button", "cqb-cat-more", { type: "button", "aria-haspopup": "listbox", "aria-expanded": "false", "aria-label": "More categories" });
-		var moreLbl = el("span", "cqb-cat-more-label"); moreLbl.textContent = "More";
+		var more = el("button", "cqb-cat-more", { type: "button", "aria-haspopup": "listbox", "aria-expanded": "false", "aria-label": t("cqb_icons_more_cats", "More categories") });
+		var moreLbl = el("span", "cqb-cat-more-label"); moreLbl.textContent = t("cqb_icons_more", "More");
 		var chev = el("span", "cqb-select-chevron"); chev.setAttribute("aria-hidden", "true");
 		more.appendChild(moreLbl); more.appendChild(chev);
 		picker.moreChip = more; picker.moreLabel = moreLbl;
@@ -604,7 +606,7 @@
 			parked++;
 		}
 		if (parked === 0) { more.style.display = "none"; return; }
-		picker.moreLabel.textContent = "More (" + parked + ")";
+		picker.moreLabel.textContent = t("cqb_icons_more_count", "More ({n})").replace("{n}", parked);
 	}
 	function scheduleFitChips() {
 		if (picker.fitScheduled) return;
@@ -639,7 +641,7 @@
 			panel = el("div", "cqb-select-panel cqb-cat-more-panel");
 			panel.setAttribute("role", "presentation");
 			panel.addEventListener("mousedown", function (e) { e.preventDefault(); });
-			var list = el("div", "cqb-select-list"); list.setAttribute("role", "listbox"); list.setAttribute("aria-label", "More categories");
+			var list = el("div", "cqb-select-list"); list.setAttribute("role", "listbox"); list.setAttribute("aria-label", t("cqb_icons_more_cats", "More categories"));
 			options = [];
 			var parked = parkedChips();
 			for (var i = 0; i < parked.length; i++) {
@@ -718,7 +720,7 @@
 				closePicker();
 			} else {
 				picker.uploadBtn.disabled = false;
-				if (typeof noty === "function") noty("Upload failed: " + xhr.responseText, "error");
+				if (typeof noty === "function") noty(t("cqb_icons_upload_failed", "Upload failed: {msg}").replace("{msg}", xhr.responseText), "error");
 			}
 		};
 		xhr.open("POST", imageUrl(st.kind, st.name));
@@ -772,15 +774,15 @@
 		if (window.ResizeObserver) new ResizeObserver(scheduleFitChips).observe(p.chips);
 		window.addEventListener("resize", scheduleFitChips);
 		p.grid.addEventListener("click", function (e) {
-			var t = e.target.closest(".cqb-tile"); if (!t) return;
+			var tileEl = e.target.closest(".cqb-tile"); if (!tileEl) return;
 			var prev = p.grid.querySelector('.cqb-tile[aria-pressed="true"]');
 			if (prev) { prev.removeAttribute("aria-pressed"); prev.removeAttribute("aria-selected"); }
-			t.setAttribute("aria-pressed", "true"); t.setAttribute("aria-selected", "true");
-			p.state.glyph = t.getAttribute("data-icon");
+			tileEl.setAttribute("aria-pressed", "true"); tileEl.setAttribute("aria-selected", "true");
+			p.state.glyph = tileEl.getAttribute("data-icon");
 			// Keep the roving Tab stop on the tile the user just acted on.
 			var tiles = p.grid.querySelectorAll(".cqb-tile");
-			for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", tiles[i] === t ? "0" : "-1");
-			p.state.rovingIndex = Array.prototype.indexOf.call(tiles, t);
+			for (var i = 0; i < tiles.length; i++) tiles[i].setAttribute("tabindex", tiles[i] === tileEl ? "0" : "-1");
+			p.state.rovingIndex = Array.prototype.indexOf.call(tiles, tileEl);
 			updatePreview();
 		});
 		p.grid.addEventListener("keydown", function (e) {
@@ -880,7 +882,9 @@
 			p.state.glyph = pick && pick.icon && libMap[pick.icon] ? pick.icon : null;
 			p.state.tint = pick && pick.tint ? pick.tint : "auto";
 			p.state.cat = "all";
-			p.sub.textContent = (kind === "tracker" ? "Tracker: " : "Label: ") + name;
+			p.sub.textContent = (kind === "tracker"
+				? t("cqb_icons_sub_tracker", "Tracker: {name}")
+				: t("cqb_icons_sub_label", "Label: {name}")).replace("{name}", name);
 			p.searchInput.value = "";
 			selectTab("icons");
 			renderChips();

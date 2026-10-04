@@ -102,7 +102,6 @@ theUILang.cqb_det_tracker_ok    = "OK";
 theUILang.cqb_det_due_now       = "due now";
 theUILang.cqb_det_outside_fm    = "Outside your File Manager home";
 theUILang.cqb_det_no_comment    = "No comment";
-theUILang.cqb_det_empty         = "Select a torrent to see its details";
 theUILang.cqb_det_parent_dir    = "Parent directory";
 theUILang.cqb_det_new_folder    = "New folder";
 theUILang.cqb_det_path          = "Path";
@@ -210,3 +209,49 @@ theUILang.cqb_empty_ratio_rules       = "No ratio rules yet";
 theUILang.cqb_empty_rss_filters       = "No filters yet";
 theUILang.cqb_empty_rss_group         = "No feeds in this group yet";
 theUILang.cqb_empty_checklist        = "Nothing selected";
+
+/* Icon picker (js/icons.js). */
+theUILang.cqb_icons_choose        = "Choose icon";
+theUILang.cqb_icons_tab_icons     = "Icons";
+theUILang.cqb_icons_tab_upload    = "Upload image";
+theUILang.cqb_icons_search        = "Search icons";
+theUILang.cqb_icons_categories    = "Categories";
+theUILang.cqb_icons_tint          = "Tint";
+theUILang.cqb_icons_tint_auto     = "Auto (variant)";
+theUILang.cqb_icons_upload_aria   = "Upload a PNG image";
+theUILang.cqb_icons_drop_title    = "Drop a PNG here or click to browse";
+theUILang.cqb_icons_drop_hint     = "PNG only. Shown in plain ruTorrent too.";
+theUILang.cqb_icons_upload_note   = "An uploaded image is kept as-is and takes priority over a chosen glyph. Remove it to fall back to the smart default.";
+theUILang.cqb_icons_reset         = "Reset to smart default";
+theUILang.cqb_icons_use           = "Use icon";
+theUILang.cqb_icons_remove        = "Remove image";
+theUILang.cqb_icons_upload_btn    = "Upload";
+theUILang.cqb_icons_no_match      = "No icons match “{term}”";
+theUILang.cqb_icons_cat_all       = "All";
+theUILang.cqb_icons_more_cats     = "More categories";
+theUILang.cqb_icons_more          = "More";
+theUILang.cqb_icons_more_count    = "More ({n})";
+theUILang.cqb_icons_upload_failed = "Upload failed: {msg}";
+theUILang.cqb_icons_sub_tracker   = "Tracker: {name}";
+theUILang.cqb_icons_sub_label     = "Label: {name}";
+
+/* Details empty states (js/details.js). */
+theUILang.cqb_det_empty_general  = "Select a torrent to see its overview";
+theUILang.cqb_det_empty_files    = "Select a torrent to see its files";
+theUILang.cqb_det_empty_trackers = "Select a torrent to see its trackers";
+theUILang.cqb_det_empty_peers    = "Select a torrent to see its peers";
+theUILang.cqb_det_empty_pieces   = "Select a torrent to see its pieces";
+
+/* Sidebar rail (js/sidebar.js). */
+theUILang.cqb_nav_collapse = "Collapse sidebar";
+theUILang.cqb_nav_expand   = "Expand sidebar";
+
+/* Custom select popover (js/select.js). */
+theUILang.qbNoMatches = "No matches";
+theUILang.qbNoOptions = "No options";
+
+/* Peers pane (js/peers.js). */
+theUILang.cqb_noPeers           = "No peers connected";
+theUILang.cqb_peerFlagIncoming  = "Incoming connection";
+theUILang.cqb_peerFlagEncrypted = "Encrypted";
+theUILang.cqb_peerFlagSnubbed   = "Snubbed";
