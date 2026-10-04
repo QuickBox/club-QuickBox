@@ -245,7 +245,9 @@ input.Button:focus {
 .cqb-input-group {
 	display: flex;
 	align-items: stretch;
-	min-height: 36px;
+	box-sizing: border-box;
+	width: 100%;
+	height: 36px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
@@ -261,8 +263,9 @@ input.Button:focus {
 .cqb-input-group > .browseEdit {
 	flex: 1 1 auto;
 	min-width: 0;
-	height: 34px;
-	min-height: 34px;
+	width: auto;
+	height: auto;
+	min-height: 0;
 	margin: 0;
 	padding: 0 10px;
 	background: transparent;
@@ -289,7 +292,7 @@ input.Button:focus {
 .cqb-input-group > .cqb-browse,
 .cqb-input-group > .browseButton {
 	position: relative;
-	flex: none;
+	flex: 0 0 36px;
 	width: 36px;
 	min-width: 36px;
 	height: auto;

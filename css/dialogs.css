@@ -441,7 +441,8 @@ div.dlg-window > .cont {
 .dlg-window .cqb-input-group > input,
 .dlg-window .cqb-input-group > select,
 .dlg-window .cqb-input-group > .browseEdit {
-	min-height: 34px;
+	width: auto;
+	min-height: 0;
 	border: 0;
 	border-radius: 0;
 	background: transparent;
