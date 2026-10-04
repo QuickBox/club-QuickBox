@@ -1,12 +1,12 @@
-﻿/*
- * PLUGIN THEME
+/*
+ * club-QuickBox skin for ruTorrent -- English strings.
  *
- * English language file.
- *
- * Author: JMSolo - https://plaza.quickbox.io/
+ * The ruTorrent theme plugin loads its OWN catalog (plugins/theme/lang/*.js),
+ * not a skin's, so these strings are also registered inline by the skin's
+ * init.js. This file is the translation reference for the skin's own strings.
  */
 
- theUILang.themeStandard	= "QuickBox";
- theUILang.theme		= "Theme";
-
-thePlugins.get("theme").langLoaded();
+theUILang.qbAppearance      = "Appearance";
+theUILang.qbVariantAuto     = "Auto (follow dashboard)";
+theUILang.qbVariantSpectre  = "Spectre";
+theUILang.qbVariantReel     = "Reel";

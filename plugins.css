@@ -85,8 +85,8 @@
 }
 
 .meter-value {
-    background-color: #1e824c !important;
-    border: #1e824c;
+    background-color: var(--qb-primary) !important;
+    border: var(--qb-primary);
     border-radius: 3px;
     width: 96% !important;
 }

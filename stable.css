@@ -1,32 +1,19 @@
-:root {
-	--border-color-dark: #333;
-	--border-color-light: #181818;
-	--background-dark: #2a2a2a;
-	--background-darker: #222;
-	--background-light: #343434;
-	--text-color: #ccc;
-	--text-color-light: #999;
-	--highlight-color: #009ddd;
-	--font-family: 'Open Sans', sans-serif;
-	--text-shadow-color: #000;
-	--meter-bg-color: #1e824c;
-	--selected-text-shadow: 0 0 4px var(--text-shadow-color);
-	--selected-background: #343434;
-	--selected-text-color: var(--highlight-color);
-}
+/*
+ *  club-QuickBox skin for ruTorrent -- scrollable-table (.stable) styling.
+ *  All colors read from the --qb-* token set defined in style.css.
+ */
 
 /* Stable Table Styling */
 .stable {
-	border: 1px solid;
-	border-color: var(--border-color-dark) var(--border-color-light) var(--border-color-light) var(--border-color-dark);
+	border: 1px solid var(--qb-border);
 	--header-bg-color: transparent;
-    --header-bg-image: linear-gradient(0deg, #3a3a3a 0%, #2a2a2a 100%);
-    --header-border-color: #3a3a3a;
-	--col-resize-sep-bg-color: #222;
-    --row-border-color: #333;
-    --row-odd-bg-color: #3a3a3a;
-    --row-even-bg-color: #2a2a2a;
-	--row-active-bg-color: #3a3a3a;
+	--header-bg-image: linear-gradient(0deg, var(--qb-surface-2) 0%, var(--qb-surface) 100%);
+	--header-border-color: var(--qb-border);
+	--col-resize-sep-bg-color: var(--qb-border);
+	--row-border-color: var(--qb-border-soft);
+	--row-odd-bg-color: var(--qb-surface-2);
+	--row-even-bg-color: var(--qb-surface);
+	--row-active-bg-color: var(--qb-surface-3);
 }
 
 .stable td {
@@ -35,9 +22,9 @@
 
 /* Table Head Styling */
 .stable thead {
-	background: var(--background-dark);
+	background: var(--qb-surface);
 	border: none;
-	color: var(--text-color-light);
+	color: var(--qb-fg-muted);
 	font-family: inherit;
 	text-shadow: none;
 }
@@ -57,10 +44,10 @@ div#tdcont .stable {
 }
 
 .stable thead table tr td {
-	border-color: #222;
+	border-color: var(--qb-border);
 	border-style: none solid solid none;
 	border-width: 0 1px 1px 0;
-	font-family: var(--font-family);
+	font-family: var(--qb-font);
 	font-size: 12px;
 	font-weight: 600;
 	line-height: 16px;
@@ -69,48 +56,43 @@ div#tdcont .stable {
 }
 
 .stable thead div.resz {
-	border: 1px solid red;
+	border: 1px solid var(--qb-border);
 	background: transparent url(images/s.gif) no-repeat scroll left center;
 }
 
 /* Table Body Styling */
-.stable-body {
-	background: var(--background-darker);
-	text-shadow: none;
-	color: var(--text-color);
-}
-
+.stable-body,
 .stable tbody {
-	background: var(--background-darker);
+	background: var(--qb-surface);
 	text-shadow: none;
-	color: var(--text-color);
+	color: var(--qb-foreground);
 }
 
 .stable tbody tr {
-    cursor: pointer;
-    border-top: 1px solid #3a3a3a;
-    border-bottom: 1px solid #3a3a3a;
+	cursor: pointer;
+	border-top: 1px solid var(--qb-border-soft);
+	border-bottom: 1px solid var(--qb-border-soft);
 }
 
 .stable tbody tr td {
-	border-bottom: 1px solid var(--background-darker);
-	background: var(--background-dark);
+	border-bottom: 1px solid var(--qb-surface);
+	background: var(--qb-surface);
 	vertical-align: middle;
 }
 
 .stable tbody tr td div {
-	font-family: var(--font-family) !important;
+	font-family: var(--qb-font) !important;
 	font-size: 11px;
 	height: 18px !important;
 }
 
 .stable-body td {
-	border-bottom: 1px solid var(--background-darker);
+	border-bottom: 1px solid var(--qb-surface);
 	vertical-align: middle;
 }
 
 .stable-body td div {
-	font-family: var(--font-family) !important;
+	font-family: var(--qb-font) !important;
 	font-size: 11px;
 	height: 21px !important;
 	line-height: 11px;
@@ -121,109 +103,102 @@ div#tdcont .stable {
 }
 
 .stable tbody tr.selected td {
-    background: #3a3a3a !important;
+	background: var(--qb-surface-3) !important;
 }
 
-.stable tbody tr.odd td {
-	background: var(--background-darker);
-}
-
-.stable tbody tr.even td {
-	background: var(--background-dark);
-}
-
+.stable tbody tr.odd td,
 .stable-body tr.odd td {
-	background: var(--background-darker);
+	background: var(--qb-surface-2);
+}
+
+.stable tbody tr.even td,
+.stable-body tr.even td {
+	background: var(--qb-surface);
 }
 
 .stable-body tr.odd:hover td,
 .stable-body tr.even:hover td {
-	background: #333;
-}
-
-.stable-body tr.even td {
-	background: var(--background-dark);
+	background: var(--qb-surface-3);
 }
 
 .stable-body tr.selected td {
-	background: var(--selected-background);
-	color: var(--selected-text-color);
-	text-shadow: var(--selected-text-shadow);
+	background: var(--qb-surface-3);
+	color: var(--qb-accent-text);
+	text-shadow: none;
 }
 
 /* Table Body Rows with nth-child */
 div.stable-body table tbody tr.even td,
 div.stable-body table tbody tr.even:nth-child(2n+1) td {
-	background: var(--background-dark);
+	background: var(--qb-surface);
 }
 
 div.stable-body table tbody tr.even:hover td,
 div.stable-body table tbody tr.even:hover:nth-child(2n+1) td {
-	background: #333;
+	background: var(--qb-surface-3);
 }
 
 div.stable-body table tbody tr.even td:nth-child(2n+1) {
-	color: #aaa;
+	color: var(--qb-fg-muted);
 }
 
 /* Header Move Styling */
 .stable-move-header {
-	background: transparent url(images/header_move.gif) repeat-x scroll center top rgba(128, 128, 128, 0.7);
-	border: 1px solid #09f;
+	background: transparent url(images/header_move.gif) repeat-x scroll center top var(--qb-surface-3);
+	border: 1px solid var(--qb-ring);
 	opacity: 0.7;
 }
 
-/* Gecko, IE, WebKit-Specific Styling */
 .gecko .stable-move-header,
 .ie .stable-move-header,
 .webkit .stable-move-header {
-	background: rgba(128, 128, 128, 0.7);
+	background: var(--qb-surface-3);
 }
 
 .stable-active-header {
-	border-color: threedface !important;
+	border-color: var(--qb-ring) !important;
 }
 
 .stable-separator-header {
-	background: var(--border-color-light);
+	background: var(--qb-border);
 }
 
 /* Scroll Position Styling */
 .stable-scrollpos {
-	background: var(--border-color-light) url(images/headers.png) repeat-x 0 -37px;
+	background: var(--qb-surface) url(images/headers.png) repeat-x 0 -37px;
 	height: 17px;
 	line-height: 17px;
-	border-bottom: 1px solid var(--border-color-dark);
+	border-bottom: 1px solid var(--qb-border);
 }
 
 .stable-scrollpos:nth-child(2n+1) {
-	background: var(--border-color-light) url(images/headers.png) repeat-x 0 -64px;
+	background: var(--qb-surface) url(images/headers.png) repeat-x 0 -64px;
 }
 
-/* Meter Value and Text Styling */
+/* Meter Value and Text Styling (completion bars; gradient set by init.js) */
 .meter-value {
 	float: left;
-	border: 0 inset #1b1b1b;
-	background: var(--meter-bg-color);
-	border-radius: 3px;
+	border: 0 inset var(--qb-border);
+	background: var(--qb-primary);
+	border-radius: var(--qb-radius);
 	height: 14px;
 }
 
 .stable-body tr.selected span.meter-value {
-	color: var(--text-color);
+	color: var(--qb-foreground);
 }
 
 .meter-text {
-	color: var(--text-color);
+	color: var(--qb-foreground);
 	float: left;
-	font-family: var(--font-family);
+	font-family: var(--qb-font);
 	font-size: 11px;
 	font-weight: 400;
 	left: 40%;
 	overflow: visible;
 	position: relative;
 	text-align: left;
-	text-shadow: var(--selected-text-shadow);
+	text-shadow: none;
 	z-index: 1;
 }
 
@@ -245,5 +220,5 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 .stable-List-col-6 div {
 	font-weight: 400;
 	text-align: center;
-	text-shadow: var(--selected-text-shadow);
+	text-shadow: none;
 }
