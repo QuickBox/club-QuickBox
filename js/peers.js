@@ -28,9 +28,9 @@
 	var CONTAINER = "PeerList";
 	/* Peer flag letter -> { glyph svg, chip key, label }. Order drives render. */
 	var FLAGS = [
-		{ ch: "I", kind: "incoming",  svg: "toolbar-move-down", label: "cqb_peerFlagIncoming" },
-		{ ch: "E", kind: "encrypted", svg: "search-private",    label: "cqb_peerFlagEncrypted" },
-		{ ch: "S", kind: "snubbed",   svg: "state-error",       label: "cqb_peerFlagSnubbed" }
+		{ ch: "I", kind: "incoming",  svg: "flag-incoming",  label: "cqb_peerFlagIncoming" },
+		{ ch: "E", kind: "encrypted", svg: "flag-encrypted", label: "cqb_peerFlagEncrypted" },
+		{ ch: "S", kind: "snubbed",   svg: "flag-snubbed",   label: "cqb_peerFlagSnubbed" }
 	];
 
 	/* geoip2 serves its flag gifs from plugins/geoip2/flags/<cc>.gif; css/table.css
@@ -69,16 +69,32 @@
 
 	/* ---- per-column decorators ------------------------------------------- */
 
-	function decorateFlag(td) {
-		var icon = td.querySelector(".stable-icon");
-		if (!icon) return;
+	/* The country code the geoip plugin attached to the row's .stable-icon
+	 * (geoip geoip_flag_<cc>), read off the Address cell. The flag itself renders
+	 * in the Flags column, never in Address. */
+	function rowCC(tr) {
+		var icon = tr && tr.querySelector("td[data-cqb-col='name'] .stable-icon");
+		if (!icon) return "";
 		var m = /geoip_flag_([a-z]{2})/i.exec(icon.className || "");
-		if (!m) return;
-		var cc = m[1].toLowerCase();
-		if (icon.getAttribute("data-cqb-cc") === cc) return;
-		icon.setAttribute("data-cqb-cc", cc);
-		icon.style.backgroundImage = 'url("' + FLAGS_BASE + cc + '.gif")';
-		if (!icon.classList.contains("cqb-flag")) icon.classList.add("cqb-flag");
+		return m ? m[1].toLowerCase() : "";
+	}
+
+	function countryName(tr, cc) {
+		var co = tr && tr.querySelector("td[data-cqb-col='country'] div");
+		var txt = co ? (co.textContent || "").replace(/^\|[A-Za-z]{2}\|\s*/, "").trim() : "";
+		if (txt) return txt;
+		var tbl = window.theUILang && theUILang.country;
+		return (tbl && (tbl[cc] || tbl[cc.toUpperCase()])) || cc.toUpperCase();
+	}
+
+	/* The framed country flag -- first item in the Flags column (16x12 raster from
+	 * plugins/geoip2/flags, tooltip = country name). */
+	function makeGeoFlag(cc, name) {
+		var f = document.createElement("span");
+		f.className = "cqb-flag-geo";
+		f.style.backgroundImage = 'url("' + FLAGS_BASE + cc + '.gif")';
+		if (cqb.tooltip && name) cqb.tooltip(f, name);
+		return f;
 	}
 
 	function makeChip(spec) {
@@ -95,18 +111,23 @@
 		return chip;
 	}
 
-	function decorateFlags(td) {
+	/* Flags column: the country flag first (when geoip knows it), then one chip per
+	 * I/E/S peer flag. Never empty while the country is known. */
+	function decorateFlags(td, tr) {
 		var div = firstDiv(td);
 		var letters = div ? (div.textContent || "").trim() : "";
+		var cc = rowCC(tr);
+		var sig = cc + "|" + letters;
 		var box = td.querySelector(".cqb-flags");
-		if (box && box.getAttribute("data-f") === letters) return;
+		if (box && box.getAttribute("data-f") === sig) return;
 		if (!box) {
 			box = document.createElement("span");
 			box.className = "cqb-flags";
 			td.insertBefore(box, td.firstChild);
 		}
-		box.setAttribute("data-f", letters);
+		box.setAttribute("data-f", sig);
 		box.textContent = "";
+		if (cc) box.appendChild(makeGeoFlag(cc, countryName(tr, cc)));
 		for (var i = 0; i < FLAGS.length; i++) {
 			if (letters.indexOf(FLAGS[i].ch) !== -1) box.appendChild(makeChip(FLAGS[i]));
 		}
@@ -161,13 +182,12 @@
 		if (zero !== td.classList.contains("cqb-zero")) td.classList.toggle("cqb-zero", zero);
 	}
 
-	function decorateCell(td, ids) {
+	function decorateCell(td, ids, tr) {
 		var id = cellColId(td, ids);
 		if (!id) return;
 		if (td.getAttribute("data-cqb-col") !== id) td.setAttribute("data-cqb-col", id);
 		switch (id) {
-			case "name": decorateFlag(td); break;
-			case "flags": decorateFlags(td); break;
+			case "flags": decorateFlags(td, tr); break;
 			case "done": decorateDone(td); break;
 			case "country": decorateCountry(td); break;
 			case "version": decorateClient(td); break;
@@ -181,11 +201,17 @@
 		return cont.querySelectorAll(".stable-body tbody:not(.stable-virtpad) tr");
 	}
 
+	/* Tag every cell's data-cqb-col FIRST so the Flags pass can read the Address
+	 * flag + country name by selector, then decorate. */
 	function decorateAll(cont, ids) {
 		var rows = realRows(cont);
 		for (var i = 0; i < rows.length; i++) {
-			var cells = rows[i].cells;
-			for (var c = 0; c < cells.length; c++) decorateCell(cells[c], ids);
+			var cells = rows[i].cells, c, cid;
+			for (c = 0; c < cells.length; c++) {
+				cid = cellColId(cells[c], ids);
+				if (cid && cells[c].getAttribute("data-cqb-col") !== cid) cells[c].setAttribute("data-cqb-col", cid);
+			}
+			for (c = 0; c < cells.length; c++) decorateCell(cells[c], ids, rows[i]);
 		}
 	}
 
@@ -225,34 +251,59 @@
 
 	/* ---- fill the pane --------------------------------------------------- */
 
-	/* Address + Client take the slack so the table fills its pane. Recomputed
-	 * absolutely (never incrementally) and only when the body width or the
-	 * enabled-column count changes, so it neither drifts nor fights a steady
-	 * layout; other columns keep whatever width the user dragged them to. */
-	var lastW = -1, lastN = -1;
+	/* Auto-fit is OFF the moment the user resizes any peer column: then the core
+	 * colsdata widths (persisted by theWebUI.save on resize-end) are authoritative
+	 * and kept across updates, pane resizes and reloads. The lock is stored so it
+	 * survives a reload. installLock wraps the prs table's own resize-end. */
+	var LOCK_KEY = "cqb-peers-userwidth";
+	function userLocked() {
+		try { return window.localStorage.getItem(LOCK_KEY) === "1"; } catch (e) { return false; }
+	}
+	function installLock(obj) {
+		if (!obj || obj._cqbLock) return;
+		obj._cqbLock = true;
+		var origEnd = obj.colDragResizeEnd;
+		if (typeof origEnd === "function") {
+			obj.colDragResizeEnd = function () {
+				try { window.localStorage.setItem(LOCK_KEY, "1"); } catch (e) { /* noop */ }
+				return origEnd.apply(this, arguments);
+			};
+		}
+	}
+
+	/* While no user width exists, Address + Client absorb the pane slack so the
+	 * table fills its width. Widths are recomputed ABSOLUTELY from the available
+	 * width and the other (possibly user-dragged) columns -- never from the
+	 * previous name/version width -- so it is reload-safe and never drifts; each
+	 * is floored at its content so a value is never clipped. Recomputed only when
+	 * the body width or enabled-column count changes. */
+	/* Flags holds the country flag + up to three 18px chips, so its default 60px
+	 * clips; floor it to fit the full cluster (never below, so a wider user width
+	 * is kept). */
+	var NAME_MIN = 150, VER_MIN = 140, FLAGS_MIN = 112, lastW = -1, lastN = -1;
 	function fitColumns(cont) {
+		if (userLocked()) return;
 		var obj = tableObj();
 		if (!obj || !obj.colsdata) return;
 		var body = cont.querySelector(".stable-body");
 		var avail = body ? body.clientWidth : 0;
 		if (!avail) return;
-		var nameCol = null, verCol = null, other = 0, n = 0;
+		var nameCol = null, verCol = null, other = 0, n = 0, flagsFloored = false;
 		for (var i = 0; i < obj.colsdata.length; i++) {
 			var c = obj.colsdata[i];
 			if (!c.enabled) continue;
+			if (c.id === "flags" && (parseInt(c.width, 10) || 0) < FLAGS_MIN) { c.width = FLAGS_MIN; flagsFloored = true; }
 			n++;
 			if (c.id === "name") nameCol = c;
 			else if (c.id === "version") verCol = c;
 			else other += (parseInt(c.width, 10) || 0);
 		}
 		if (!nameCol || !verCol) return;
-		if (nameCol.cqbBase == null) nameCol.cqbBase = parseInt(nameCol.width, 10) || 100;
-		if (verCol.cqbBase == null) verCol.cqbBase = parseInt(verCol.width, 10) || 120;
-		if (avail === lastW && n === lastN) return;
+		if (avail === lastW && n === lastN && !flagsFloored) return;
 		lastW = avail; lastN = n;
-		var slack = avail - other - nameCol.cqbBase - verCol.cqbBase - 2;
-		var nameW = nameCol.cqbBase, verW = verCol.cqbBase;
-		if (slack > 2) { nameW += Math.round(slack * 0.6); verW += (slack - Math.round(slack * 0.6)); }
+		var pool = avail - other - 2;
+		var nameW = Math.max(NAME_MIN, Math.round(pool * 0.6));
+		var verW = Math.max(VER_MIN, pool - nameW);
 		if (nameCol.width !== nameW || verCol.width !== verW) {
 			nameCol.width = nameW;
 			verCol.width = verW;
@@ -263,10 +314,8 @@
 	/* ---- observer + wiring ----------------------------------------------- */
 
 	function run(cont) {
-		var ids = null;
 		var obj = tableObj();
-		if (obj) ids = obj.ids;
-		if (ids) decorateAll(cont, ids);
+		if (obj) { installLock(obj); if (obj.ids) decorateAll(cont, obj.ids); }
 		fitColumns(cont);
 		updateEmpty(cont);
 	}

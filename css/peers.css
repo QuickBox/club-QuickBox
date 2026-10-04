@@ -10,53 +10,52 @@
  */
 
 /* ============================================================
- * Address -- framed 16x12 country flag sharing one baseline with
- * the IP in the mono font. The flag is the core .stable-icon (a
- * geoip raster), re-pointed inline by js/peers.js; css/table.css
- * blanks every .stable-icon, so this restores it as a data image
- * (no mask, no tint) and frames it.
+ * Address -- the IP/host only (as the core gives it, port included),
+ * in the mono font. The geoip plugin drops its flag .stable-icon into
+ * this cell; it is hidden here and rendered in the Flags column instead,
+ * so no space is reserved for it.
  * ============================================================ */
 #PeerList td[data-cqb-col="name"] > div {
-	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace !important;
 	letter-spacing: 0;
 }
 
-#PeerList td[data-cqb-col="name"] .stable-icon.cqb-flag {
-	float: none;
+#PeerList td[data-cqb-col="name"] .stable-icon {
+	display: none;
+}
+
+/* ============================================================
+ * Flags -- the framed country flag first (when geoip knows it), then
+ * one glyph chip per peer flag. js/peers.js hides the core letters and
+ * injects .cqb-flags (right-aligned to match the column). The flag is a
+ * 16x12 raster frame; each chip is an 18px tinted square with a masked
+ * glyph: incoming reads neutral, encrypted primary, snubbed warning.
+ * ============================================================ */
+#PeerList td[data-cqb-col="flags"] > div {
+	display: none;
+}
+
+#PeerList .cqb-flag-geo {
 	display: inline-block;
 	width: 16px;
 	height: 12px;
-	margin: 0 8px 0 0;
-	padding: 0 !important;
-	vertical-align: middle;
+	flex: none;
 	border-radius: 2px;
 	border: 1px solid var(--qb-border);
 	background-color: transparent;
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: cover;
-	-webkit-mask: none;
-	mask: none;
-}
-
-/* ============================================================
- * Flags -- one glyph chip per peer flag. js/peers.js hides the
- * core letters and injects .cqb-flags (right-aligned to match the
- * column). Each chip is an 18px tinted square with a masked glyph;
- * incoming reads neutral, encrypted primary, snubbed warning.
- * ============================================================ */
-#PeerList td[data-cqb-col="flags"] > div {
-	display: none;
 }
 
 #PeerList .cqb-flags {
 	display: inline-flex;
-	gap: 4px;
+	gap: 5px;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: flex-start;
 	width: 100%;
 	height: 20px;
-	padding-right: 10px;
+	padding: 0 10px;
 	box-sizing: border-box;
 }
 
