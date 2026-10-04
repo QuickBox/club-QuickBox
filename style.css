@@ -212,8 +212,8 @@
 	--menu-border-color: var(--qb-border);
 	--menu-disabled-color: var(--qb-fg-muted);
 	--menu-disabled-background-color: var(--qb-surface);
-	--menu-highlight-color: var(--qb-primary-fg);
-	--menu-highlight-background-color: var(--qb-primary);
+	--menu-highlight-color: var(--qb-primary-text);
+	--menu-highlight-background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
 	--menu-active-color: var(--qb-foreground);
 	--menu-connect-line-color: var(--qb-border);
 	--menu-connect-line-style: dotted;
