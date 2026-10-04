@@ -76,18 +76,27 @@
 	border-left: 1px solid var(--qb-border);
 }
 
-/* Downloaded / Seen segmented control (v4 SegmentedControl idiom). */
+/* Downloaded / Seen segmented control (v4 SegmentedControl idiom).
+ * Equal-width segments sized by the longer label, with a 3px inset track so
+ * the active pill never meets the track edge. */
 .qb-seg {
 	display: inline-flex;
+	align-items: stretch;
 	gap: 2px;
 	flex: none;
-	padding: 2px;
+	height: 32px;
+	padding: 3px;
 	background: var(--qb-input);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
 }
 
 .qb-seg-btn {
+	flex: 1 1 0;
+	min-width: 114px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	appearance: none;
 	border: 1px solid transparent;
 	background: transparent;
@@ -96,7 +105,8 @@
 	font-size: 12px;
 	font-weight: 500;
 	line-height: 1;
-	padding: 6px 12px;
+	white-space: nowrap;
+	padding: 0 14px;
 	border-radius: 6px;
 	cursor: pointer;
 	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
