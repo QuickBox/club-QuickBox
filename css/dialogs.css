@@ -782,7 +782,9 @@ ul.CMenu li ul li a.dis:hover {
 /* ============================================================
  * Task console (#tskConsole): Media Info + Create/Unpack/etc.
  * ============================================================ */
-#tskConsole {
+/* `.dlg-window#tskConsole` beats core `#tskConsole{width:95vw|unset}`, which
+ * loads after the theme CSS. */
+.dlg-window#tskConsole {
 	display: flex;
 	flex-direction: column;
 	width: min(820px, 94vw);
@@ -808,8 +810,14 @@ ul.CMenu li ul li a.dis:hover {
 	color: var(--qb-destructive-text, var(--qb-destructive));
 }
 
-/* Console output: wrap, never scroll horizontally; token colors. */
-.tskconsole {
+/* Console output: contained to the body width, wrap, never scroll sideways.
+ * Scoped to #tskConsole so it beats core `.tskconsole{width:64rem}` and the
+ * core `white-space:pre`, both of which load after the theme CSS. */
+#tskConsole .tskconsole {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 	font-size: 12.5px;
 	line-height: 1.5;
@@ -825,21 +833,23 @@ ul.CMenu li ul li a.dis:hover {
 	padding: 10px 12px;
 }
 
-#tskcmdlog {
+#tskConsole #tskcmdlog {
 	height: auto;
 	min-height: 96px;
 	max-height: 52vh;
 }
 
-#tskcmderrors {
+#tskConsole #tskcmderrors {
 	height: auto;
 	max-height: 20vh;
 }
 
-/* Kill the raster running-loader strip the plugin paints on the footer. */
+/* Kill the raster running-loader strip the plugin reserves space for, and
+ * restore the even 12px footer padding every dialog footer uses. */
 #tsk_btns {
-	background: none !important;
-	padding-top: 0 !important;
+	padding: 12px 16px !important;
+	background-color: var(--qb-surface) !important;
+	background-image: none !important;
 }
 
 /* Thin indeterminate progress, only while the task runs. */
@@ -1027,12 +1037,36 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 .cqb-mi-value {
+	min-width: 0;
 	color: var(--qb-foreground);
 	font-size: 13px;
 	word-break: break-word;
+	overflow-wrap: anywhere;
 }
 
 .cqb-mi-value.cqb-mono {
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 	font-size: 12.5px;
 }
+
+/* ============================================================
+ * Create New Torrent (#tcreate): v4 dialog chrome
+ * ============================================================ */
+.dlg-window#tcreate {
+	width: min(720px, 94vw);
+	max-height: 80vh;
+}
+
+/* Label rows top-align; the label column sits level with its field. */
+#tcreate .row { align-items: flex-start; }
+#tcreate .row > [class*="col-md-2"] { padding-top: 7px; }
+
+#tcreate #trackers {
+	min-height: 108px;
+	resize: vertical;
+}
+
+/* The "Other" options read as one even checkbox row. */
+#tcreate #start_seeding,
+#tcreate #private,
+#tcreate #hybrid { margin: 0 6px 0 0; }
