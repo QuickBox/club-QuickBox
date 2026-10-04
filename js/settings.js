@@ -350,6 +350,18 @@
 		return td;
 	}
 
+	/* Render a checkbox as a toggle switch (keeps the live checkbox + its id). */
+	function switchWrap(cb) {
+		if (!cb) return null;
+		var lab = document.createElement("label");
+		lab.className = "cqb-switch";
+		lab.appendChild(cb);
+		var track = document.createElement("span");
+		track.className = "cqb-switch-track";
+		lab.appendChild(track);
+		return lab;
+	}
+
 	function L(key, dflt) { return (window.theUILang && theUILang[key]) || dflt; }
 	function unitKbs() { return L("KB", "KiB") + "/" + L("s", "s"); }
 
@@ -510,9 +522,12 @@
 				if (login) login.setAttribute("aria-label", name + " login");
 				if (pass) pass.setAttribute("aria-label", name + " password");
 				if (auto) auto.setAttribute("aria-label", name + " autologin");
-				rows.push({ name: name, en: en, auto: auto, login: login, pass: pass, on: !!(en && en.checked) });
+				if (login) login.placeholder = "—";
+				if (pass) pass.placeholder = "—";
+				var on = !!(en && en.checked);
+				rows.push({ name: name, en: en, auto: auto, login: login, pass: pass, on: on, cfg: on || !!(login && login.value) });
 			});
-			rows.sort(function (a, b) { return a.on !== b.on ? (a.on ? -1 : 1) : a.name.localeCompare(b.name); });
+			rows.sort(function (a, b) { return a.cfg !== b.cfg ? (a.cfg ? -1 : 1) : a.name.localeCompare(b.name); });
 
 			var wrap = document.createElement("div");
 			wrap.className = "cqb-table-wrap";
@@ -530,9 +545,14 @@
 				tr.dataset.name = r.name.toLowerCase();
 				var tdName = document.createElement("td");
 				tdName.className = "cqb-acct-name";
-				tdName.textContent = r.name;
+				if (r.cfg) {
+					var dot = document.createElement("span");
+					dot.className = "cqb-acct-dot" + (r.on ? " cqb-on" : "");
+					tdName.appendChild(dot);
+				}
+				tdName.appendChild(document.createTextNode(r.name));
 				tr.appendChild(tdName);
-				tr.appendChild(acctCell(r.en, "cqb-acct-en"));
+				tr.appendChild(acctCell(switchWrap(r.en), "cqb-acct-en"));
 				tr.appendChild(acctCell(r.auto, "cqb-col-auto"));
 				tr.appendChild(acctCell(r.login, ""));
 				tr.appendChild(acctCell(r.pass, ""));
