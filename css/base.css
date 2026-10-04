@@ -604,3 +604,23 @@ input[type=submit],
 	opacity: 0.5;
 	cursor: not-allowed;
 }
+
+/* Shared custom tooltip. One element, created and positioned by init.js, which
+ * sets only position/left/top/opacity; the visual box lives here. max-width is
+ * capped and long unbroken values (a spaceless torrent name) wrap inside the
+ * padded body, so text never overflows the box. */
+.cqb-tooltip {
+	max-width: min(480px, calc(100vw - 16px));
+	padding: 4px 8px;
+	border-radius: 6px;
+	font-size: 12px;
+	line-height: 1.4;
+	white-space: normal;
+	overflow-wrap: anywhere;
+	word-break: break-word;
+	background: var(--qb-surface);
+	color: var(--qb-foreground);
+	border: 1px solid var(--qb-border);
+	box-shadow: var(--qb-shadow-soft);
+	transition: opacity .12s ease;
+}

@@ -53,31 +53,64 @@
 		injectCSS(plugin.path + "css/" + name + ".css?cqb=" + CQB_REV, cssDone);
 	});
 
-	/* Re-key the three sheets the theme plugin loaded itself before this file
-	 * ran (style.css, stable.css, plugins.css at the skin root). Each already
-	 * carries ruTorrent's ?v= cache-bust; prepend ?cqb=<rev> and keep the v so a
-	 * changed sheet gets a fresh URL. Done synchronously while the hold is up and
-	 * counted into it (remaining++ / cssDone), so the href swap re-fetches behind
-	 * the cover and never flashes unstyled chrome. The 2500ms timer still clears
-	 * the hold if any onload never fires. */
+	/* Re-key the three sheets the theme plugin loads itself (style.css,
+	 * stable.css, plugins.css at the skin root). Each already carries ruTorrent's
+	 * ?v= cache-bust; prepend ?cqb=<rev> and keep the v so a changed sheet gets a
+	 * fresh URL. The plugin inserts some of them (notably plugins.css, twice)
+	 * AFTER this file runs, so a one-time pass misses them -- hence the <head>
+	 * observer below. A second link for an already-keyed sheet is a duplicate the
+	 * plugin added twice, so it is dropped rather than keyed a second time. */
 	var SELF_SHEETS = ["style.css", "stable.css", "plugins.css"];
-	var links = (document.head || root).getElementsByTagName("link");
-	for (var li = 0; li < links.length; li++) {
-		var lk = links[li];
-		var href = lk.getAttribute("href") || "";
-		if (href.indexOf("cqb=") !== -1) continue;
-		var hit = false;
-		for (var si = 0; si < SELF_SHEETS.length; si++) {
-			if (href.indexOf("themes/club-QuickBox/" + SELF_SHEETS[si]) !== -1) { hit = true; break; }
+	var sheetKeyed = {};
+	function sheetOf(href) {
+		for (var i = 0; i < SELF_SHEETS.length; i++) {
+			if (href.indexOf("themes/club-QuickBox/" + SELF_SHEETS[i]) !== -1) return SELF_SHEETS[i];
 		}
-		if (!hit) continue;
+		return null;
+	}
+	function rekeyLink(lk) {
+		var href = lk.getAttribute("href") || "";
+		var sheet = sheetOf(href);
+		if (!sheet) return false;
+		if (href.indexOf("cqb=") !== -1) { sheetKeyed[sheet] = true; return false; }
+		if (sheetKeyed[sheet]) { if (lk.parentNode) lk.parentNode.removeChild(lk); return false; }
 		var q = href.indexOf("?");
 		var base = q === -1 ? href : href.slice(0, q);
 		var vm = href.match(/[?&]v=([^&]*)/);
-		remaining++;
-		lk.onload = cssDone;
-		lk.onerror = cssDone;
+		sheetKeyed[sheet] = true;
 		lk.setAttribute("href", base + "?cqb=" + CQB_REV + (vm ? "&v=" + vm[1] : ""));
+		return true;
+	}
+	function allSheetsKeyed() {
+		for (var i = 0; i < SELF_SHEETS.length; i++) if (!sheetKeyed[SELF_SHEETS[i]]) return false;
+		return true;
+	}
+	/* Sheets present now: re-key inside the hold, counting each into it so
+	 * clearHold waits for the re-fetch and the swap never flashes unstyled
+	 * chrome. Iterate the live list backwards so a dropped duplicate is safe. */
+	var headLinks = (document.head || root).getElementsByTagName("link");
+	for (var li = headLinks.length - 1; li >= 0; li--) {
+		var lk = headLinks[li];
+		if (rekeyLink(lk)) {
+			remaining++;
+			lk.onload = cssDone;
+			lk.onerror = cssDone;
+		}
+	}
+	/* Catch the sheets the plugin inserts after this file runs; stop once all
+	 * three are keyed, with a safety cap so the observer never lingers. */
+	if (!allSheetsKeyed() && window.MutationObserver) {
+		var headObs = new MutationObserver(function (muts) {
+			for (var mi = 0; mi < muts.length; mi++) {
+				var added = muts[mi].addedNodes;
+				for (var ai = 0; ai < added.length; ai++) {
+					if (added[ai] && added[ai].tagName === "LINK") rekeyLink(added[ai]);
+				}
+			}
+			if (allSheetsKeyed()) headObs.disconnect();
+		});
+		headObs.observe(document.head || root, { childList: true });
+		setTimeout(function () { headObs.disconnect(); }, 10000);
 	}
 	setTimeout(clearHold, 2500);
 
@@ -91,12 +124,10 @@
 		tipEl = document.createElement("div");
 		tipEl.className = "cqb-tooltip";
 		tipEl.setAttribute("role", "tooltip");
-		tipEl.style.cssText =
-			"position:fixed;z-index:99999;pointer-events:none;opacity:0;" +
-			"transition:opacity .12s ease;max-width:240px;padding:4px 8px;" +
-			"border-radius:6px;font-size:12px;line-height:1.4;white-space:normal;" +
-			"background:var(--qb-surface);color:var(--qb-foreground);" +
-			"border:1px solid var(--qb-border);box-shadow:var(--qb-shadow-soft);";
+		/* Only geometry + visibility live inline; the visual box (sizing, wrap,
+		 * colours) is .cqb-tooltip in css/base.css so a long unbroken value wraps
+		 * inside the padded body. JS sets left/top/opacity to position + reveal. */
+		tipEl.style.cssText = "position:fixed;z-index:99999;pointer-events:none;opacity:0;";
 		document.body.appendChild(tipEl);
 		return tipEl;
 	}
@@ -108,7 +139,7 @@
 		var ex = el && el.closest ? el.closest("[aria-expanded]") : null;
 		return !!(ex && ex.getAttribute("aria-expanded") === "true");
 	}
-	function showTip(el) {
+	function showTip(el, pointerX) {
 		if (tipSuppressed(el)) return;
 		var text = el.getAttribute("data-cqb-tip");
 		if (!text) return;
@@ -117,28 +148,39 @@
 		t.style.display = "block";
 		var r = el.getBoundingClientRect();
 		var tw = t.offsetWidth, th = t.offsetHeight;
+		var vw = window.innerWidth, vh = window.innerHeight;
+		var isCell = /^(TD|TH|TR)$/.test(el.tagName || "");
 		var left, top;
 		if (el.getAttribute("data-cqb-tip-side") === "right") {
 			/* Beside the control, flipping to its left when the right edge has no
 			 * room; vertically centred and clamped into the viewport. */
 			left = r.right + 6;
-			if (left + tw > window.innerWidth - 4) left = r.left - tw - 6;
+			if (left + tw > vw - 4) left = r.left - tw - 6;
 			left = Math.max(4, left);
-			top = Math.max(4, Math.min(r.top + r.height / 2 - th / 2, window.innerHeight - th - 4));
-		} else {
-			left = Math.max(4, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 4));
+			top = Math.max(4, Math.min(r.top + r.height / 2 - th / 2, vh - th - 4));
+		} else if (typeof pointerX === "number" && (isCell || r.width > tw * 2)) {
+			/* Centring on a wide target (a table cell/row, or anything over twice
+			 * the tip width) lands the tip far from the cursor. Anchor it at the
+			 * pointer x instead, below the target row, both clamped 8px inside the
+			 * viewport. Keyboard focus passes no pointer, keeping element anchoring. */
+			left = Math.max(8, Math.min(pointerX - tw / 2, vw - tw - 8));
 			top = r.bottom + 6;
-			if (top + th > window.innerHeight - 4) top = r.top - th - 6;
+			if (top + th > vh - 8) top = r.top - th - 6;
+			top = Math.max(8, Math.min(top, vh - th - 8));
+		} else {
+			left = Math.max(4, Math.min(r.left + r.width / 2 - tw / 2, vw - tw - 4));
+			top = r.bottom + 6;
+			if (top + th > vh - 4) top = r.top - th - 6;
 			top = Math.max(4, top);
 		}
 		t.style.left = left + "px";
 		t.style.top = top + "px";
 		t.style.opacity = "1";
 	}
-	function scheduleTip(el) {
+	function scheduleTip(el, pointerX) {
 		clearTimeout(tipTimer);
 		tipTarget = el;
-		tipTimer = setTimeout(function () { showTip(el); }, TIP_DELAY);
+		tipTimer = setTimeout(function () { showTip(el, pointerX); }, TIP_DELAY);
 	}
 	function hideTip() {
 		clearTimeout(tipTimer);
@@ -244,7 +286,7 @@
 	}
 	document.addEventListener("mouseover", function (e) {
 		var el = closestTip(e.target);
-		if (el) scheduleTip(el);
+		if (el) scheduleTip(el, e.clientX);
 	});
 	document.addEventListener("mouseout", function (e) {
 		if (closestTip(e.target) === tipTarget && tipTarget) hideTip();
