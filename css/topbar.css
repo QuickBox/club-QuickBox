@@ -92,7 +92,7 @@
 /* ============================================================
  * Icon buttons -- 36px hit target, 18px glyph, token tint.
  * ============================================================ */
-#t a.nav-link {
+#t a.cqb-btn {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
@@ -111,7 +111,7 @@
 
 /* Hover: a soft primary-tinted surface, the glyph shifts to the primary text
  * tone, and the button lifts 1px. No forced white wash. */
-#t a.nav-link:hover {
+#t a.cqb-btn:hover {
 	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
 	background-image: none;
 	transform: translateY(-1px);
@@ -120,21 +120,21 @@
 }
 
 /* Pressed: a deeper tint and a subtle scale-in (override the core padding shift). */
-#t a.nav-link:active {
+#t a.cqb-btn:active {
 	background-color: color-mix(in srgb, var(--qb-primary) 20%, transparent);
 	background-image: none;
 	transform: scale(0.96);
 	padding: 0;
 }
 
-#t a.nav-link:focus-visible {
+#t a.cqb-btn:focus-visible {
 	background-image: none;
 	outline: 2px solid var(--qb-ring);
 	outline-offset: 1px;
 }
 
-#t a.nav-link.disabled,
-#t a.nav-link[disabled] {
+#t a.cqb-btn.disabled,
+#t a.cqb-btn[disabled] {
 	opacity: 0.4;
 	pointer-events: none;
 }
@@ -146,7 +146,7 @@
 
 /* The mobile-only text labels plugins append next to their glyph (but keep
  * the Add action's own label). */
-#t a.nav-link > span:not(.cqb-add-label) {
+#t a.cqb-btn > span:not(.cqb-add-label) {
 	display: none;
 }
 
@@ -168,19 +168,19 @@
 	transition: background-color 0.15s ease-out;
 }
 
-#t a.nav-link:hover div.nav-icon,
-#t a.nav-link:active div.nav-icon {
+#t a.cqb-btn:hover div.nav-icon,
+#t a.cqb-btn:active div.nav-icon {
 	background-color: var(--qb-primary-text);
 }
 
 /* Toggle / open buttons keep a 2px primary underline and a primary glyph. */
-#t a.nav-link.active div.nav-icon,
-#t .btn-group.show .nav-link div.nav-icon {
+#t a.cqb-btn.active div.nav-icon,
+#t .btn-group.show .cqb-btn div.nav-icon {
 	background-color: var(--qb-primary-text);
 }
 
-#t a.nav-link.active::after,
-#t .btn-group.show .nav-link::after {
+#t a.cqb-btn.active::after,
+#t .btn-group.show .cqb-btn::after {
 	content: "";
 	position: absolute;
 	left: 8px;
@@ -192,12 +192,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	#t a.nav-link {
+	#t a.cqb-btn {
 		transition: background-color 0.15s ease-out;
 	}
 
-	#t a.nav-link:hover,
-	#t a.nav-link:active {
+	#t a.cqb-btn:hover,
+	#t a.cqb-btn:active {
 		transform: none;
 	}
 }

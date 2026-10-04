@@ -41,9 +41,18 @@
 	function mark(e) {
 		if (!e) return;
 		e.setAttribute("data-cqb-placed", "1");
-		/* The core stretches toolbar anchors with flex-grow-1; drop it so icon
-		 * buttons stay 36px and the Add action stays compact. */
-		if (e.classList) e.classList.remove("flex-grow-1");
+		if (e.classList) {
+			/* The core stretches toolbar anchors with flex-grow-1; drop it so
+			 * icon buttons stay 36px and the Add action stays compact. */
+			e.classList.remove("flex-grow-1");
+			/* Take the buttons off the core nav-link hook so the core hover
+			 * raster, brightness filter, border and padding shift never apply;
+			 * cqb-btn carries the full styling instead. */
+			if (e.matches && e.matches("a")) {
+				e.classList.remove("nav-link");
+				e.classList.add("cqb-btn");
+			}
+		}
 	}
 
 	/* ============================================================
