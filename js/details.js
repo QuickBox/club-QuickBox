@@ -2,15 +2,21 @@
  *  club-QuickBox skin for ruTorrent -- details module.
  *
  *  Loaded by init.js once theWebUI is ready. Runs in global scope with
- *  theWebUI, jQuery ($, $$) and window.cqb available. The leading
- *  semicolon keeps the file safe if it is ever concatenated after another.
+ *  theWebUI, theConverter, jQuery ($, $$) and window.cqb available. The
+ *  leading semicolon keeps the file safe if it is ever concatenated after
+ *  another. Every entry point is defensive: a throw here would abort the
+ *  rest of the concatenated plugin bundle.
  *
- *  Three enhancements, each defensive (a throw here would abort the rest
- *  of the concatenated plugin bundle):
- *    1. General pane  -> label/value pairs rebuilt as v4 stat cards.
+ *    1. General pane  -> a "torrent overview": completion ring, live speed
+ *                        sparklines, a ratio gauge, a time block, and three
+ *                        cards (Swarm / Tracker / Storage). The core detail
+ *                        spans stay in a hidden #mainlayout so updateDetails
+ *                        keeps filling them; the widgets read torrent data.
  *    2. Empty state   -> a centered prompt when no single torrent is chosen.
  *    3. File manager  -> a clickable breadcrumb + an icon-button tool group
  *                        in place of the stock path <select> (kept wired).
+ *    4. Speed/Traffic -> charts repainted on the variant chart tokens.
+ *    5. Traffic pane  -> KPI chips, inline series toggles, icon Clear button.
  */
 ;(function (cqb) {
 	"use strict";
@@ -53,57 +59,432 @@
 		return s;
 	}
 
+	/* Small value helpers -------------------------------------------------- */
+	function conv() { return window.theConverter; }
+	function fmtSpeed(b) {
+		try { var s = conv().speed(b); return s || "0 B/s"; } catch (e) { return "0 B/s"; }
+	}
+	function fmtBytes(b) {
+		try { var s = conv().bytes(b, "details"); return s || "0 B"; } catch (e) { return "0 B"; }
+	}
+	function fmtTime(sec) {
+		try { return conv().time(sec); } catch (e) { return ""; }
+	}
+	function dash(el) { el.textContent = "—"; el.classList.add("cqb-muted"); }
+	function setText(el, text) {
+		if (text == null || text === "") { dash(el); return; }
+		el.textContent = text;
+		el.classList.remove("cqb-muted");
+	}
+	function spanText(id) {
+		var el = document.getElementById(id);
+		return el ? (el.textContent || "").trim() : "";
+	}
+
+	/* Responsive middle truncation: a head span that ellipsises when narrow
+	 * and a tail span that is always shown in full, so the useful end of a
+	 * path/hash/url survives at any card width. The full value goes to the
+	 * shared tooltip. */
+	function setMidTrunc(container, full, headRatio) {
+		container.textContent = "";
+		if (full == null || full === "") {
+			container.textContent = "—";
+			container.classList.add("cqb-muted");
+			if (cqb && cqb.tooltip) cqb.tooltip(container, "");
+			container.removeAttribute("data-cqb-tip");
+			return;
+		}
+		container.classList.remove("cqb-muted");
+		var cut = Math.max(0, Math.floor(full.length * (headRatio || 0.6)));
+		var a = document.createElement("span");
+		a.className = "cqb-mid-a";
+		a.textContent = full.slice(0, cut);
+		var b = document.createElement("span");
+		b.className = "cqb-mid-b";
+		b.textContent = full.slice(cut);
+		container.appendChild(a);
+		container.appendChild(b);
+		if (cqb && cqb.tooltip) cqb.tooltip(container, full);
+	}
+
+	/* A compact copy-to-clipboard icon button; reads its value lazily so the
+	 * live-updated source is always what lands on the clipboard. */
+	function copyButton(getValue) {
+		var btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "cqb-copy-btn";
+		btn.appendChild(maskSpan("fm-copy"));
+		if (cqb && cqb.tooltip) cqb.tooltip(btn, "Copy");
+		btn.addEventListener("click", function () {
+			var v = "";
+			try { v = getValue() || ""; } catch (e) { v = ""; }
+			if (!v) return;
+			var flash = function () {
+				btn.classList.add("cqb-copied");
+				setTimeout(function () { btn.classList.remove("cqb-copied"); }, 900);
+			};
+			try {
+				if (navigator.clipboard && navigator.clipboard.writeText) {
+					navigator.clipboard.writeText(v).then(flash, function () {});
+				} else {
+					var ta = document.createElement("textarea");
+					ta.value = v; ta.style.position = "fixed"; ta.style.opacity = "0";
+					document.body.appendChild(ta); ta.select();
+					try { document.execCommand("copy"); flash(); } catch (e) {}
+					document.body.removeChild(ta);
+				}
+			} catch (e) {}
+		});
+		return btn;
+	}
+
 	/* ------------------------------------------------------------
-	 * 1. General pane -> stat cards.
+	 * 1. General pane -> torrent overview.
 	 * ---------------------------------------------------------- */
-	function buildStatCards() {
+	var ov = null;              /* references to the widgets we update live */
+	var lastDID = null;
+	var SPARK_MAX = 30;         /* ~60s of samples at the 2.5s refresh */
+	var sparkDown = [];
+	var sparkUp = [];
+	var RING_R = 30;            /* ring radius; circumference below */
+	var RING_C = 2 * Math.PI * RING_R;
+
+	function el(tag, cls, parent) {
+		var e = document.createElement(tag);
+		if (cls) e.className = cls;
+		if (parent) parent.appendChild(e);
+		return e;
+	}
+
+	function buildRing(parent) {
+		var NS = "http://www.w3.org/2000/svg";
+		var svg = document.createElementNS(NS, "svg");
+		svg.setAttribute("class", "cqb-ring");
+		svg.setAttribute("viewBox", "0 0 72 72");
+		svg.setAttribute("width", "72");
+		svg.setAttribute("height", "72");
+		var defs = document.createElementNS(NS, "defs");
+		var grad = document.createElementNS(NS, "linearGradient");
+		grad.setAttribute("id", "cqb-ring-grad");
+		grad.setAttribute("x1", "0"); grad.setAttribute("y1", "0");
+		grad.setAttribute("x2", "1"); grad.setAttribute("y2", "1");
+		var s1 = document.createElementNS(NS, "stop");
+		s1.setAttribute("offset", "0%"); s1.setAttribute("class", "cqb-ring-s1");
+		var s2 = document.createElementNS(NS, "stop");
+		s2.setAttribute("offset", "100%"); s2.setAttribute("class", "cqb-ring-s2");
+		grad.appendChild(s1); grad.appendChild(s2); defs.appendChild(grad);
+		svg.appendChild(defs);
+		var track = document.createElementNS(NS, "circle");
+		track.setAttribute("class", "cqb-ring-track");
+		track.setAttribute("cx", "36"); track.setAttribute("cy", "36");
+		track.setAttribute("r", String(RING_R));
+		svg.appendChild(track);
+		var arc = document.createElementNS(NS, "circle");
+		arc.setAttribute("class", "cqb-ring-arc");
+		arc.setAttribute("cx", "36"); arc.setAttribute("cy", "36");
+		arc.setAttribute("r", String(RING_R));
+		arc.setAttribute("stroke-dasharray", RING_C.toFixed(2));
+		arc.setAttribute("stroke-dashoffset", RING_C.toFixed(2));
+		arc.setAttribute("transform", "rotate(-90 36 36)");
+		svg.appendChild(arc);
+		var label = document.createElementNS(NS, "text");
+		label.setAttribute("class", "cqb-ring-label");
+		label.setAttribute("x", "36"); label.setAttribute("y", "36");
+		label.setAttribute("text-anchor", "middle");
+		label.setAttribute("dominant-baseline", "central");
+		label.textContent = "0%";
+		svg.appendChild(label);
+		parent.appendChild(svg);
+		return { arc: arc, label: label };
+	}
+
+	function sparkPoints(buf, w, h) {
+		if (!buf.length) return "";
+		var max = 1;
+		for (var i = 0; i < buf.length; i++) if (buf[i] > max) max = buf[i];
+		var n = buf.length;
+		var step = n > 1 ? w / (n - 1) : w;
+		var pts = [];
+		for (var j = 0; j < n; j++) {
+			var x = (j * step).toFixed(1);
+			var y = (h - (buf[j] / max) * (h - 2) - 1).toFixed(1);
+			pts.push(x + "," + y);
+		}
+		return pts.join(" ");
+	}
+
+	function buildSpark(cell, dirClass, iconName, labelText) {
+		var NS = "http://www.w3.org/2000/svg";
+		var row = el("div", "cqb-spd " + dirClass, cell);
+		var ic = maskSpan(iconName);
+		ic.className = "cqb-icon cqb-spd-icon";
+		row.appendChild(ic);
+		var txt = el("div", "cqb-spd-text", row);
+		var num = el("div", "cqb-spd-num", txt);
+		num.textContent = "0 B/s";
+		var lab = el("div", "cqb-spd-lab", txt);
+		lab.textContent = labelText;
+		var svg = document.createElementNS(NS, "svg");
+		svg.setAttribute("class", "cqb-spark");
+		svg.setAttribute("viewBox", "0 0 84 26");
+		svg.setAttribute("preserveAspectRatio", "none");
+		var area = document.createElementNS(NS, "polyline");
+		area.setAttribute("class", "cqb-spark-area");
+		var line = document.createElementNS(NS, "polyline");
+		line.setAttribute("class", "cqb-spark-line");
+		svg.appendChild(area); svg.appendChild(line);
+		row.appendChild(svg);
+		return { num: num, area: area, line: line };
+	}
+
+	function buildCard(parent, iconName, title) {
+		var card = el("div", "cqb-card", parent);
+		var head = el("div", "cqb-card-head", card);
+		var ic = maskSpan(iconName);
+		ic.className = "cqb-icon cqb-card-icon";
+		head.appendChild(ic);
+		var h = el("div", "cqb-card-title", head);
+		h.textContent = title;
+		var body = el("div", "cqb-card-body", card);
+		return body;
+	}
+
+	function metaRow(parent, label) {
+		var row = el("div", "cqb-meta", parent);
+		var l = el("div", "cqb-meta-label", row);
+		l.textContent = label;
+		var v = el("div", "cqb-meta-value", row);
+		return { row: row, value: v };
+	}
+
+	function buildGeneralOverview() {
 		try {
 			var layout = document.getElementById("mainlayout");
 			var gcont = document.getElementById("gcont");
-			if (!layout || !gcont || gcont.getAttribute("data-cqb-built")) return;
+			if (!gcont || gcont.getAttribute("data-cqb-built")) return;
 
-			var out = document.createElement("div");
-			out.className = "cqb-gcont";
-			var grid = null;
+			/* Keep the core detail spans alive + hidden so updateDetails still
+			 * fills #dl/#ul/#ra/#et/... by id; the widgets read torrent data. */
+			if (layout) layout.style.display = "none";
 
-			Array.prototype.forEach.call(layout.children, function (row) {
-				if (row.classList.contains("Header")) {
-					var h = document.createElement("div");
-					h.className = "cqb-stat-heading";
-					h.textContent = (row.textContent || "").trim();
-					out.appendChild(h);
-					grid = document.createElement("div");
-					grid.className = "cqb-stat-grid";
-					out.appendChild(grid);
-					return;
-				}
-				if (!grid) {
-					grid = document.createElement("div");
-					grid.className = "cqb-stat-grid";
-					out.appendChild(grid);
-				}
-				var pendingLabel = null;
-				Array.prototype.forEach.call(row.children, function (col) {
-					var hdr = col.querySelector(".det-hdr");
-					var val = col.querySelector(".det");
-					if (hdr) pendingLabel = (hdr.textContent || "").trim();
-					if (val) {
-						var card = document.createElement("div");
-						card.className = "cqb-stat";
-						var lab = document.createElement("div");
-						lab.className = "cqb-stat-label";
-						lab.textContent = pendingLabel || "";
-						card.appendChild(lab);
-						card.appendChild(val); /* moved -- id + handlers preserved */
-						grid.appendChild(card);
-						pendingLabel = null;
-					}
+			var root = el("div", "cqb-ov");
+
+			/* ---- Hero row ---- */
+			var hero = el("div", "cqb-ov-hero", root);
+
+			var ringCell = el("div", "cqb-hero-cell cqb-hero-ring", hero);
+			var ring = buildRing(ringCell);
+			var statePill = el("div", "cqb-state-pill", ringCell);
+			statePill.textContent = "—";
+
+			var speedCell = el("div", "cqb-hero-cell cqb-hero-speed", hero);
+			var spDown = buildSpark(speedCell, "cqb-dir-down", "statusbar-download", "Download");
+			var spUp = buildSpark(speedCell, "cqb-dir-up", "statusbar-upload", "Upload");
+
+			var ratioCell = el("div", "cqb-hero-cell cqb-hero-ratio", hero);
+			var rLab = el("div", "cqb-hero-label", ratioCell);
+			rLab.textContent = "Ratio";
+			var rVal = el("div", "cqb-ratio-value", ratioCell);
+			rVal.textContent = "—";
+			var rTrack = el("div", "cqb-ratio-track", ratioCell);
+			var rFill = el("div", "cqb-ratio-fill", rTrack);
+			el("div", "cqb-ratio-tick", rTrack);
+			var rSub = el("div", "cqb-hero-sub", ratioCell);
+			rSub.textContent = "—";
+
+			var timeCell = el("div", "cqb-hero-cell cqb-hero-time", hero);
+			var tEta = metaRow(timeCell, "ETA");
+			var tEl = metaRow(timeCell, "Elapsed");
+			var tRem = metaRow(timeCell, "Remaining");
+
+			/* ---- Cards ---- */
+			var cards = el("div", "cqb-ov-cards", root);
+
+			var swarm = buildCard(cards, "tab-peers", "Swarm");
+			var seedRow = el("div", "cqb-swarm-row", swarm);
+			el("div", "cqb-swarm-key", seedRow).textContent = "Seeds";
+			var seedVal = el("div", "cqb-swarm-val", seedRow);
+			seedVal.textContent = "—";
+			var seedBar = el("div", "cqb-swarm-bar", swarm);
+			var seedFill = el("div", "cqb-swarm-fill cqb-dir-up", seedBar);
+			var peerRow = el("div", "cqb-swarm-row", swarm);
+			el("div", "cqb-swarm-key", peerRow).textContent = "Peers";
+			var peerVal = el("div", "cqb-swarm-val", peerRow);
+			peerVal.textContent = "—";
+			var peerBar = el("div", "cqb-swarm-bar", swarm);
+			var peerFill = el("div", "cqb-swarm-fill cqb-dir-down", peerBar);
+			var wastedMeta = metaRow(swarm, "Wasted");
+
+			var tracker = buildCard(cards, "tab-trackers", "Tracker");
+			var trkUrlRow = el("div", "cqb-meta cqb-meta-wide", tracker);
+			el("div", "cqb-meta-label", trkUrlRow).textContent = "URL";
+			var trkUrlWrap = el("div", "cqb-meta-value cqb-trunc-wrap", trkUrlRow);
+			var trkUrl = el("div", "cqb-trunc", trkUrlWrap);
+			trkUrl.textContent = "—";
+			trkUrlWrap.appendChild(copyButton(function () { return spanText("tu"); }));
+			var trkStatusMeta = metaRow(tracker, "Status");
+			var trkAnnounceMeta = metaRow(tracker, "Next announce");
+
+			var storage = buildCard(cards, "tab-filemanager", "Storage");
+			var pathRow = el("div", "cqb-meta cqb-meta-wide", storage);
+			el("div", "cqb-meta-label", pathRow).textContent = "Save path";
+			var pathWrap = el("div", "cqb-meta-value cqb-trunc-wrap", pathRow);
+			var pathVal = el("div", "cqb-trunc", pathWrap);
+			pathVal.textContent = "—";
+			pathWrap.appendChild(copyButton(function () { return spanText("bf"); }));
+			var fmBtn = null;
+			if (window.flm) {
+				fmBtn = el("button", "cqb-copy-btn cqb-fm-open", pathWrap);
+				fmBtn.type = "button";
+				fmBtn.appendChild(maskSpan("tab-filemanager"));
+				if (cqb && cqb.tooltip) cqb.tooltip(fmBtn, "Open in File Manager");
+				fmBtn.addEventListener("click", function () {
+					try {
+						var p = spanText("bf");
+						if (!p) return;
+						var dir = p.replace(/\/+$/, "").replace(/\/[^/]*$/, "") || "/";
+						if (window.theTabs) theTabs.show("flm-browser");
+						if (window.flm && flm.goToPath) flm.goToPath(dir);
+					} catch (e) {}
 				});
-			});
+			}
+			var diskMeta = metaRow(storage, "Free disk");
+			var createdMeta = metaRow(storage, "Created");
+			var hashRow = el("div", "cqb-meta cqb-meta-wide", storage);
+			el("div", "cqb-meta-label", hashRow).textContent = "Hash";
+			var hashWrap = el("div", "cqb-meta-value cqb-trunc-wrap", hashRow);
+			var hashVal = el("div", "cqb-trunc cqb-mono", hashWrap);
+			hashVal.textContent = "—";
+			hashWrap.appendChild(copyButton(function () { return spanText("hs"); }));
+			var cmtRow = el("div", "cqb-meta cqb-meta-wide", storage);
+			el("div", "cqb-meta-label", cmtRow).textContent = "Comment";
+			var cmtVal = el("div", "cqb-meta-value cqb-comment", cmtRow);
+			cmtVal.textContent = "—";
 
-			layout.style.display = "none";
-			gcont.appendChild(out);
+			gcont.appendChild(root);
 			gcont.setAttribute("data-cqb-built", "1");
+
+			ov = {
+				ringArc: ring.arc, ringLabel: ring.label, statePill: statePill,
+				spDownNum: spDown.num, spDownArea: spDown.area, spDownLine: spDown.line,
+				spUpNum: spUp.num, spUpArea: spUp.area, spUpLine: spUp.line,
+				rVal: rVal, rFill: rFill, rSub: rSub,
+				tEta: tEta.value, tEl: tEl.value, tRem: tRem.value,
+				seedVal: seedVal, seedFill: seedFill, peerVal: peerVal, peerFill: peerFill,
+				wasted: wastedMeta.value,
+				trkUrl: trkUrl, trkStatus: trkStatusMeta.value, trkAnnounce: trkAnnounceMeta.value,
+				pathVal: pathVal, disk: diskMeta.value, created: createdMeta.value,
+				hashVal: hashVal, cmtVal: cmtVal
+			};
+		} catch (e) { /* never break the bundle */ }
+	}
+
+	function stateTone(iconName) {
+		var n = iconName || "";
+		if (n.indexOf("Error") !== -1) return "error";
+		if (n.indexOf("Checking") !== -1 || n.indexOf("Queued") !== -1) return "checking";
+		if (n.indexOf("Paused") !== -1) return "paused";
+		if (n.indexOf("Down") !== -1) return "downloading";
+		if (n.indexOf("Up") !== -1 || n.indexOf("Completed") !== -1) return "seeding";
+		if (n.indexOf("Incompleted") !== -1) return "stopped";
+		return "stopped";
+	}
+
+	function renderGeneral() {
+		try {
+			if (!ov || !window.theWebUI) return;
+			var dID = theWebUI.dID;
+			if (!dID || !theWebUI.torrents || !theWebUI.torrents[dID]) return;
+			var d = theWebUI.torrents[dID];
+
+			if (dID !== lastDID) { sparkDown = []; sparkUp = []; lastDID = dID; }
+
+			/* Completion ring */
+			var pct = Math.max(0, Math.min(100, (d.done || 0) / 10));
+			var off = RING_C * (1 - pct / 100);
+			ov.ringArc.setAttribute("stroke-dashoffset", off.toFixed(2));
+			ov.ringLabel.textContent = (pct >= 99.95 ? 100 : Math.round(pct * 10) / 10) + "%";
+
+			/* State pill via the core status helper (localized + tone) */
+			try {
+				var si = theWebUI.getStatusIcon(d);
+				ov.statePill.textContent = (si && si[1]) ? si[1] : "—";
+				ov.statePill.setAttribute("data-tone", stateTone(si && si[0]));
+			} catch (e) {}
+
+			/* Live speeds + 60s sparklines */
+			ov.spDownNum.textContent = fmtSpeed(d.dl);
+			ov.spUpNum.textContent = fmtSpeed(d.ul);
+			sparkDown.push(Math.max(0, d.dl || 0));
+			sparkUp.push(Math.max(0, d.ul || 0));
+			if (sparkDown.length > SPARK_MAX) sparkDown.shift();
+			if (sparkUp.length > SPARK_MAX) sparkUp.shift();
+			var dPts = sparkPoints(sparkDown, 84, 26);
+			var uPts = sparkPoints(sparkUp, 84, 26);
+			ov.spDownLine.setAttribute("points", dPts);
+			ov.spUpLine.setAttribute("points", uPts);
+			ov.spDownArea.setAttribute("points", dPts ? ("0,26 " + dPts + " 84,26") : "");
+			ov.spUpArea.setAttribute("points", uPts ? ("0,26 " + uPts + " 84,26") : "");
+
+			/* Ratio gauge */
+			var infinite = (d.ratio == -1);
+			var ratio = infinite ? Infinity : (d.ratio || 0) / 1000;
+			ov.rVal.textContent = infinite ? "∞" : (Math.round(ratio * 1000) / 1000).toFixed(3);
+			var met = infinite || ratio >= 1;
+			ov.rFill.style.width = (infinite ? 100 : Math.min(100, ratio * 100)) + "%";
+			ov.rFill.setAttribute("data-met", met ? "1" : "0");
+			ov.rVal.setAttribute("data-met", met ? "1" : "0");
+			ov.rSub.textContent = fmtBytes(d.uploaded) + " up / " + fmtBytes(d.downloaded) + " down";
+
+			/* Time block: ETA + elapsed from core spans, remaining bytes computed */
+			setText(ov.tEta, spanText("rm"));
+			setText(ov.tEl, spanText("et"));
+			var remBytes = (typeof d.size === "number" && typeof d.downloaded === "number")
+				? Math.max(0, d.size - d.downloaded) : null;
+			setText(ov.tRem, (d.done >= 1000) ? "0 B" : (remBytes != null ? fmtBytes(remBytes) : ""));
+
+			/* Swarm */
+			var sa = (d.seeds_actual != null) ? d.seeds_actual : 0;
+			var sall = (d.seeds_all != null) ? d.seeds_all : 0;
+			var pa = (d.peers_actual != null) ? d.peers_actual : 0;
+			var pall = (d.peers_all != null) ? d.peers_all : 0;
+			setText(ov.seedVal, sa + " / " + sall);
+			setText(ov.peerVal, pa + " / " + pall);
+			ov.seedFill.style.width = (sall > 0 ? Math.min(100, (sa / sall) * 100) : 0) + "%";
+			ov.peerFill.style.width = (pall > 0 ? Math.min(100, (pa / pall) * 100) : 0) + "%";
+			setText(ov.wasted, fmtBytes(d.skip_total || 0));
+
+			/* Tracker */
+			setMidTrunc(ov.trkUrl, spanText("tu"), 0.6);
+			setText(ov.trkStatus, spanText("ts") || "OK");
+			var nextAnn = "";
+			try {
+				var trks = theWebUI.trackers && theWebUI.trackers[dID];
+				var t0 = trks && (trks[0] || trks["0"]);
+				if (t0 && typeof t0.interval === "number" && typeof t0.last === "number" && t0.last >= 0) {
+					var nxt = Math.round(t0.interval - t0.last);
+					nextAnn = nxt > 0 ? fmtTime(nxt) : "due now";
+				}
+			} catch (e) {}
+			setText(ov.trkAnnounce, nextAnn);
+
+			/* Storage */
+			setMidTrunc(ov.pathVal, spanText("bf"), 0.7);
+			setText(ov.disk, spanText("dsk"));
+			setText(ov.created, spanText("co"));
+			setMidTrunc(ov.hashVal, (dID || "").substring(0, 40).toUpperCase(), 0.5);
+			var cmtSrc = document.getElementById("cmt");
+			var cmtTxt = cmtSrc ? (cmtSrc.textContent || "").trim() : "";
+			if (cmtTxt) {
+				ov.cmtVal.textContent = "";
+				ov.cmtVal.classList.remove("cqb-muted");
+				var cl = cmtSrc.cloneNode(true);
+				cl.removeAttribute("id");
+				ov.cmtVal.appendChild(cl);
+			} else {
+				ov.cmtVal.textContent = "No comment";
+				ov.cmtVal.classList.add("cqb-muted");
+			}
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -144,10 +525,20 @@
 						return clearDetails.apply(this, arguments);
 					};
 				}
+				/* Drive the overview widgets after every core detail refresh. */
+				var updateDetails = theWebUI.updateDetails;
+				if (typeof updateDetails === "function") {
+					theWebUI.updateDetails = function () {
+						var r = updateDetails.apply(this, arguments);
+						renderGeneral();
+						return r;
+					};
+				}
 				noSelection = !theWebUI.dID;
 			}
 			currentTab = resolveActiveTab();
 			refreshEmpty();
+			renderGeneral();
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -258,8 +649,8 @@
 	function styleCharts() {
 		try {
 			if (!window.theWebUI) return;
-			var rx = cssvar("--qb-chart-rx") || cssvar("--qb-speed-down");
-			var tx = cssvar("--qb-chart-tx") || cssvar("--qb-speed-up");
+			var rx = cssvar("--qb-speed-down");
+			var tx = cssvar("--qb-speed-up");
 			if (!rx && !tx) return;
 
 			/* Speed tab -- filled areas (~30%) with a solid 2px edge. */
@@ -289,8 +680,117 @@
 	}
 
 	/* ------------------------------------------------------------
-	 * 5. Traffic pane toolbar -- Clear becomes an icon-button.
+	 * 5. Traffic pane toolbar -- KPI chips, inline series toggles,
+	 *    Clear as an icon-button. The stock flot legend is hidden by CSS;
+	 *    the toggles drive the same checked-series mechanism it used.
 	 * ---------------------------------------------------------- */
+	var traf = null;
+	var TRAF_SERIES = {
+		down: ["trafic_downloaded", "trafic_downloaded_old"],
+		up: ["trafic_uploaded", "trafic_uploaded_old"]
+	};
+
+	function sumSeries(g, keys) {
+		var total = 0;
+		keys.forEach(function (k) {
+			var ds = g && g[k];
+			if (ds && ds.data) ds.data.forEach(function (pt) {
+				if (pt && pt[1] != null) total += pt[1];
+			});
+		});
+		return total;
+	}
+
+	function toggleSeries(dir, on) {
+		try {
+			var labels = TRAF_SERIES[dir];
+			if (!labels || !window.rGraph) return;
+			labels.forEach(function (lbl) {
+				rGraph.legendCheckboxChanged(lbl, { checked: on });
+			});
+		} catch (e) {}
+	}
+
+	function trafChip(dir, dirClass, labelText) {
+		var btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "cqb-traf-toggle " + dirClass;
+		btn.setAttribute("aria-pressed", "true");
+		var dot = document.createElement("span");
+		dot.className = "cqb-traf-dot";
+		var lab = document.createElement("span");
+		lab.className = "cqb-traf-toggle-lab";
+		lab.textContent = labelText;
+		btn.appendChild(dot);
+		btn.appendChild(lab);
+		btn.addEventListener("click", function () {
+			var on = btn.getAttribute("aria-pressed") !== "true";
+			btn.setAttribute("aria-pressed", on ? "true" : "false");
+			toggleSeries(dir, on);
+		});
+		if (cqb && cqb.tooltip) cqb.tooltip(btn, "Toggle " + labelText);
+		return btn;
+	}
+
+	function buildTrafChrome(ctrl) {
+		/* KPI strip + toggle group inserted into the one toolbar row so the
+		 * plugin's graph-height math (#traf height minus #traf_graph_ctrl
+		 * height) stays valid with no resize wrapping. */
+		var kpi = document.createElement("div");
+		kpi.className = "cqb-traf-kpi";
+		function chip(iconName, label, cls) {
+			var c = document.createElement("div");
+			c.className = "cqb-kpi" + (cls ? " " + cls : "");
+			var ic = maskSpan(iconName);
+			ic.className = "cqb-icon cqb-kpi-icon";
+			c.appendChild(ic);
+			var t = document.createElement("div");
+			t.className = "cqb-kpi-text";
+			var v = document.createElement("div");
+			v.className = "cqb-kpi-val";
+			v.textContent = "—";
+			var l = document.createElement("div");
+			l.className = "cqb-kpi-lab";
+			l.textContent = label;
+			t.appendChild(v); t.appendChild(l);
+			c.appendChild(t);
+			kpi.appendChild(c);
+			return v;
+		}
+		var toggles = document.createElement("div");
+		toggles.className = "cqb-traf-toggles";
+		var tgDown = trafChip("down", "cqb-dir-down", "Downloaded");
+		var tgUp = trafChip("up", "cqb-dir-up", "Uploaded");
+		toggles.appendChild(tgDown);
+		toggles.appendChild(tgUp);
+
+		traf = {
+			kpiDown: chip("statusbar-download", "Downloaded", "cqb-dir-down"),
+			kpiUp: chip("statusbar-upload", "Uploaded", "cqb-dir-up"),
+			kpiRatio: chip("tab-traffic", "Ratio", "")
+		};
+		ctrl.insertBefore(kpi, ctrl.firstChild);
+		/* Toggles sit just before the selects (which carry ms-auto). */
+		var firstSelect = ctrl.querySelector("select");
+		if (firstSelect) ctrl.insertBefore(toggles, firstSelect);
+		else ctrl.appendChild(toggles);
+	}
+
+	function updateTrafKpi() {
+		try {
+			if (!traf || !window.theWebUI) return;
+			var g = theWebUI.trafGraph;
+			if (!g) return;
+			var down = sumSeries(g, ["down", "oldDown"]);
+			var up = sumSeries(g, ["up", "oldUp"]);
+			traf.kpiDown.textContent = fmtBytes(down);
+			traf.kpiUp.textContent = fmtBytes(up);
+			traf.kpiRatio.textContent = down > 0 ? (Math.round((up / down) * 1000) / 1000).toFixed(3) : "—";
+			var met = down > 0 && up / down >= 1;
+			traf.kpiRatio.parentNode && traf.kpiRatio.parentNode.setAttribute("data-met", met ? "1" : "0");
+		} catch (e) {}
+	}
+
 	function enhanceTrafToolbar() {
 		try {
 			var ctrl = document.getElementById("traf_graph_ctrl");
@@ -298,11 +798,26 @@
 			var btn = ctrl.querySelector("button");
 			if (btn) {
 				btn.textContent = "";
-				btn.className = "cqb-flm-btn";
+				btn.className = "cqb-flm-btn cqb-traf-clear";
 				btn.appendChild(maskSpan("log-clear"));
 				if (cqb && cqb.tooltip) cqb.tooltip(btn, "Clear statistics");
 			}
+			buildTrafChrome(ctrl);
+			/* Keep Clear in the right-hand group next to the selects. */
+			if (btn) ctrl.appendChild(btn);
 			ctrl.setAttribute("data-cqb-tb", "1");
+
+			/* Recompute the KPI chips after each data load. */
+			if (window.theWebUI && typeof theWebUI.showTrafic === "function" && !theWebUI.showTrafic.__cqbWrapped) {
+				var show = theWebUI.showTrafic;
+				theWebUI.showTrafic = function () {
+					var r = show.apply(this, arguments);
+					updateTrafKpi();
+					return r;
+				};
+				theWebUI.showTrafic.__cqbWrapped = true;
+			}
+			updateTrafKpi();
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -328,7 +843,8 @@
 				var r = show.apply(this, arguments);
 				currentTab = id;
 				refreshEmpty();
-				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); }
+				if (id === "gcont") renderGeneral();
+				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }
 				if (id === "Speed") styleCharts();
 				return r;
 			};
@@ -336,7 +852,7 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
-	buildStatCards();
+	buildGeneralOverview();
 	installEmptyState();
 	watchForFileManager();
 	enhanceTrafToolbar();
@@ -345,5 +861,5 @@
 	if (cqb && cqb.onVariant) cqb.onVariant(styleCharts);
 	/* One delayed pass -- the traffic plugin builds its page and graph
 	 * during lang-load, which may land just after this module runs. */
-	setTimeout(function () { enhanceTrafToolbar(); styleCharts(); }, 1500);
+	setTimeout(function () { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }, 1500);
 })(window.cqb);
