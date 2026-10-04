@@ -16,15 +16,19 @@
 	if (window.cqbStatusBackfill) return;
 	window.cqbStatusBackfill = true;
 
-	/* The core leaves the rate cell blank at zero. A standalone interval keeps
-	 * an explicit "0 B/s" regardless of how the core schedules its refresh
-	 * (the periodic caller may hold the original updateStatus reference). */
-	function backfillZero() {
-		["stup_speed", "stdown_speed"].forEach(function (id) {
-			var el = document.getElementById(id);
-			if (el && !el.textContent.trim()) el.textContent = "0 B/s";
-		});
+	/* The core blanks the rate cell at zero. Watch each cell and refill an
+	 * explicit "0 B/s" the instant it goes empty, so the chip always shows the
+	 * current rate as its primary value. The observer runs before paint, so the
+	 * blank the core writes is never visible; writing a non-empty value does not
+	 * re-trigger (the guard sees it is not empty). */
+	function ensureZero(el) {
+		if (el && !el.textContent.trim()) el.textContent = "0 B/s";
 	}
-	window.setInterval(backfillZero, 1000);
-	backfillZero();
+	["stup_speed", "stdown_speed"].forEach(function (id) {
+		var el = document.getElementById(id);
+		if (!el) return;
+		ensureZero(el);
+		new MutationObserver(function () { ensureZero(el); })
+			.observe(el, { childList: true, characterData: true, subtree: true });
+	});
 })(window.cqb);
