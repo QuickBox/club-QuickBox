@@ -1,8 +1,9 @@
 /*
  *  club-QuickBox skin for ruTorrent -- statusbar surface.
  *  The footer status bar: 32px token chips separated by hairlines, SVG mask
- *  glyphs tinted per state, tabular numerals. Every masked element clears its
- *  background-image so no core raster bleeds through the glyph.
+ *  glyphs tinted per state, tabular numerals, a clear primary/secondary value
+ *  hierarchy. Every masked element clears its background-image so no core
+ *  raster bleeds through the glyph.
  */
 
 /* ============================================================
@@ -20,16 +21,17 @@
 	font-family: var(--qb-font);
 	font-size: 12px;
 	font-variant-numeric: tabular-nums;
-	line-height: 1;
+	line-height: normal;
 	white-space: nowrap;
 }
 
-/* Each cell is a chip; hairlines divide them. */
+/* Each cell is a chip, full height and vertically centered; hairlines divide them. */
 #StatusBar .status-cell {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 4px;
+	height: 100%;
+	gap: 5px;
 	margin: 0;
 	padding: 0 12px;
 	border-right: 1px solid var(--qb-border);
@@ -72,7 +74,7 @@
 #StatusBar .icon {
 	width: 16px;
 	height: 16px;
-	margin: 0 2px 0 0;
+	margin: 0;
 	flex: none;
 	background-image: none;
 	background-color: var(--qb-icon);
@@ -96,13 +98,43 @@
 	background-color: var(--qb-speed-down);
 }
 
-#stup_speed { color: var(--qb-speed-up); }
+/* ============================================================
+ * Speed cells -- glyph, then the live rate as the primary value, then limit
+ * and total as muted secondary text. The redundant leading "Speed:" label is
+ * dropped (the glyph is the label).
+ * ============================================================ */
+#st_up,
+#st_down {
+	gap: 6px;
+}
 
-#stdown_speed { color: var(--qb-speed-down); }
+#st_up .sthdr:nth-of-type(1),
+#st_down .sthdr:nth-of-type(1) {
+	display: none;
+}
 
+#stup_speed,
+#stdown_speed {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+}
+
+/* "limit" and "Total" labels + their values: muted 11px, set off with a gap. */
+#st_up .sthdr:nth-of-type(n + 2),
+#st_down .sthdr:nth-of-type(n + 2) {
+	margin-left: 6px;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+}
+
+#stup_limit,
+#stdown_limit,
 #stup_total,
 #stdown_total {
-	color: var(--qb-speed-total);
+	font-size: 11px;
+	color: var(--qb-fg-muted);
 }
 
 /* ============================================================
@@ -112,17 +144,29 @@
 	content: "";
 	width: 14px;
 	height: 14px;
-	margin-right: 4px;
 	flex: none;
 	background-color: var(--qb-icon);
 	-webkit-mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
 	mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
 }
 
+#stopen_http_count,
+#stopen_sock_count,
+#stopen_fd_count {
+	color: var(--qb-foreground);
+}
+
 /* ============================================================
- * rTorrent version -- muted, secondary.
+ * rTorrent version + torrent counts -- value foreground, label muted.
  * ============================================================ */
-#rtorrentv { color: var(--qb-fg-muted); }
+#rtorrentv,
+#viewrows {
+	color: var(--qb-foreground);
+}
+
+#viewrows_size {
+	color: var(--qb-fg-muted);
+}
 
 /* ============================================================
  * Port + connectable status -- the warning-triangle raster becomes one SVG
@@ -151,11 +195,13 @@
  * plugins.css). Both clear the core raster via the shared .icon rule above.
  * ============================================================ */
 #StatusBar #meter-cpu-pane .icon {
+	background-image: none;
 	-webkit-mask-image: url(../images/icons/meter-cpu.svg);
 	mask-image: url(../images/icons/meter-cpu.svg);
 }
 
 #StatusBar #meter-disk-pane .icon {
+	background-image: none;
 	-webkit-mask-image: url(../images/icons/meter-disk.svg);
 	mask-image: url(../images/icons/meter-disk.svg);
 }
@@ -167,7 +213,6 @@
 	content: "";
 	width: 14px;
 	height: 14px;
-	margin-right: 4px;
 	flex: none;
 	background-color: var(--qb-icon);
 	-webkit-mask: url(../images/icons/statusbar-clock.svg) center / 13px no-repeat;
