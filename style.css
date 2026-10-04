@@ -195,9 +195,9 @@
  * 2. Shared primitives + ruTorrent core var mapping
  * ============================================================ */
 :root {
-	--qb-font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-	--qb-radius: 3px;
-	--qb-radius-lg: 6px;
+	--qb-font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+	--qb-radius: 8px;
+	--qb-radius-lg: 12px;
 	--qb-overlay: #000000;
 	--qb-destructive-fg: #ffffff;
 

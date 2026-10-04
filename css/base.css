@@ -8,10 +8,12 @@ html {
 	background-color: var(--qb-background);
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
+	font-size: 13px;
 	text-shadow: none;
 	margin: 0;
 	padding: 0;
 	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
 }
 
 /* Preload Images */
@@ -176,12 +178,22 @@ input[type="password"],
 input[type=number],
 input[type="text"],
 select {
+	box-sizing: border-box;
+	height: 36px;
+	padding: 0 10px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
-	font-size: 12px;
+	font-size: 13px;
 	border-radius: var(--qb-radius);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+	accent-color: var(--qb-primary);
+	width: 16px;
+	height: 16px;
 }
 
 input[type="file"][disabled],
@@ -201,15 +213,17 @@ textarea::placeholder {
 }
 
 input.Button {
+	box-sizing: border-box;
+	min-height: 36px;
 	background-color: var(--qb-surface-2);
 	border: 1px solid var(--qb-border);
 	color: var(--qb-foreground);
 	cursor: pointer;
-	padding: 6px 12px;
-	font-weight: 400;
+	padding: 0 14px;
+	font-weight: 500;
 	border-radius: var(--qb-radius);
-	font-size: 14px;
-	transition: background-color 0.2s ease;
+	font-size: 13px;
+	transition: background-color 0.15s ease;
 }
 
 input.Button:hover,
@@ -245,25 +259,30 @@ textarea[disabled] {
 	opacity: 0.6;
 }
 
-/* Scrollbars */
+/* Thin themed scrollbars; no legacy arrow buttons, no opaque corner. */
 ::-webkit-scrollbar {
-	width: 12px;
-	height: 12px;
+	width: 8px;
+	height: 8px;
 }
 
 ::-webkit-scrollbar-button {
 	display: none;
+	width: 0;
+	height: 0;
+}
+
+::-webkit-scrollbar-corner {
+	background: transparent;
 }
 
 ::-webkit-scrollbar-track-piece {
 	background-color: var(--qb-scrollbar-track);
-	border: 1px solid var(--qb-scrollbar-track);
-	border-radius: var(--qb-radius-lg);
+	border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb {
 	background-color: var(--qb-scrollbar-thumb);
-	border-radius: var(--qb-radius-lg);
+	border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -271,7 +290,20 @@ textarea[disabled] {
 }
 
 * {
+	scrollbar-width: thin;
 	scrollbar-color: var(--qb-scrollbar-thumb) var(--qb-scrollbar-track);
+}
+
+/* Motion only where it reads as feedback; honour reduced-motion. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
 legend {
@@ -289,13 +321,17 @@ button,
 input[type=button],
 input[type=submit],
 .Button {
+	box-sizing: border-box;
+	min-height: 36px;
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
 	margin: 0.25rem;
-	padding: 1px 10px;
+	padding: 0 14px;
 	background: var(--qb-surface-2);
 	color: var(--qb-foreground);
-	width: 80px;
 	text-wrap: nowrap;
-	font-size: 12px;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
 }
