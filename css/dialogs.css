@@ -1,229 +1,744 @@
 /*
- *  club-QuickBox skin for ruTorrent -- dialogs surface -- modals, the settings window and context menus.
- *  Moved out of style.css; every color reads from a --qb-* token.
+ *  club-QuickBox skin for ruTorrent -- dialogs surface.
+ *  Chrome shared by every .dlg-window: modal backdrop, window frame, header
+ *  glyph tiles, form controls, footer buttons, the directory-browse popover,
+ *  the Add Torrent card layout and the context menu. Every color is a --qb-*
+ *  token; dialog-local radius is fixed in px so the v4 rounding holds whatever
+ *  the global radius tokens resolve to. Form rules are scoped to .dlg-window so
+ *  the table and base surfaces are left untouched.
  */
 
-/* Dialog Close Button */
-a.dlg-close {
-	background: var(--qb-icon);
-	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
-	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
-	border: none;
-	float: right;
-	height: 14px;
-	margin: 5px;
-	width: 14px;
+/* ============================================================
+ * Modal backdrop
+ * ============================================================ */
+#modalbg,
+div#modalbg {
+	background-color: var(--qb-overlay);
+	opacity: 0.6;
+	-webkit-backdrop-filter: blur(4px);
+	backdrop-filter: blur(4px);
 }
 
-a.dlg-close:hover {
-	background: var(--qb-icon-hover);
-	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
-	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
-}
-
-/* Context Menu */
-.CMenu li a::before,
-.CMenu li a::after {
-	content: "";
-	display: block;
-	width: 0;
-	height: 1rem;
-	-webkit-mask-repeat: no-repeat;
-	mask-repeat: no-repeat;
-	-webkit-mask-position: center;
-	mask-position: center;
-	-webkit-mask-size: contain;
-	mask-size: contain;
-}
-
-ul.CMenu {
+/* ============================================================
+ * Dialog window
+ * ============================================================ */
+div.dlg-window {
 	background-color: var(--qb-surface);
 	border: 1px solid var(--qb-border);
-	border-radius: var(--qb-radius);
-	box-shadow: var(--qb-shadow-soft);
-	opacity: 0.99;
-	width: 180px;
-	padding: 0;
-	list-style: none;
-}
-
-ul.CMenu li {
-	background-color: var(--qb-surface);
-	width: 180px;
-}
-
-ul.CMenu li:hover {
-	background-color: var(--qb-surface-2);
-}
-
-ul.CMenu li.menuitem:first-child { border-radius: var(--qb-radius) var(--qb-radius) 0 0; }
-
-ul.CMenu li.menuitem:last-child { border-radius: 0 0 var(--qb-radius) var(--qb-radius); }
-
-ul.CMenu li a {
-	background: transparent;
+	border-radius: 14px;
+	box-shadow: var(--qb-shadow);
 	color: var(--qb-foreground);
-	padding: 3px 14px;
+	padding: 0;
+	overflow: hidden;
+}
+
+/* ============================================================
+ * Header: hairline bar, 32px glyph tile, 15px title, close button
+ * ============================================================ */
+div.dlg-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	position: sticky;
+	top: 0;
+	padding: 12px 14px;
+	background-color: transparent;
+	background-image: none;
+	border-bottom: 1px solid var(--qb-border);
+	border-radius: 14px 14px 0 0;
+	color: var(--qb-foreground);
+}
+
+/* The title div (#<id>-header) holds the glyph tile + the title text. */
+div.dlg-header > div:first-child {
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex: 1 1 auto;
+	min-height: 32px;
+	padding-left: 44px;
+	line-height: 1.3;
+	font-family: var(--qb-font);
+	font-size: 15px;
+	font-weight: 600;
+	background-image: none !important;
+}
+
+/* Tinted rounded tile behind the glyph. */
+div.dlg-header > div:first-child::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 32px;
+	border-radius: 8px;
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+}
+
+/* The glyph, masked over the tile. Default = settings; per-id below. */
+div.dlg-header > div:first-child::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 32px;
+	height: 32px;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: center / 18px no-repeat;
+	mask: center / 18px no-repeat;
+	-webkit-mask-image: url(../images/icons/header-settings.svg);
+	mask-image: url(../images/icons/header-settings.svg);
+}
+
+/* Per-dialog header glyphs (selectors mirror the live dialog ids). */
+#tadd-header::after,
+#dlgLoadTorrents-header::after,
+#tegLoadTorrents-header::after {
+	-webkit-mask-image: url(../images/icons/header-add-torrent.svg);
+	mask-image: url(../images/icons/header-add-torrent.svg);
+}
+#dlgBulkAdd-header::after {
+	-webkit-mask-image: url(../images/icons/header-bulk-add.svg);
+	mask-image: url(../images/icons/header-bulk-add.svg);
+}
+#padd-header::after {
+	-webkit-mask-image: url(../images/icons/header-add-peer.svg);
+	mask-image: url(../images/icons/header-add-peer.svg);
+}
+#dlgProps-header::after {
+	-webkit-mask-image: url(../images/icons/header-properties.svg);
+	mask-image: url(../images/icons/header-properties.svg);
+}
+#dlgHelp-header::after {
+	-webkit-mask-image: url(../images/icons/header-help.svg);
+	mask-image: url(../images/icons/header-help.svg);
+}
+#dlgAbout-header::after {
+	-webkit-mask-image: url(../images/icons/header-about.svg);
+	mask-image: url(../images/icons/header-about.svg);
+}
+#dlgLabel-header::after {
+	-webkit-mask-image: url(../images/icons/header-label.svg);
+	mask-image: url(../images/icons/header-label.svg);
+}
+#yesnoDlg-header::after {
+	-webkit-mask-image: url(../images/icons/header-confirm.svg);
+	mask-image: url(../images/icons/header-confirm.svg);
+}
+#tcreate-header::after {
+	-webkit-mask-image: url(../images/icons/header-create.svg);
+	mask-image: url(../images/icons/header-create.svg);
+}
+#dlg_datadir-header::after {
+	-webkit-mask-image: url(../images/icons/header-datadir.svg);
+	mask-image: url(../images/icons/header-datadir.svg);
+}
+#dlg_unpack-header::after {
+	-webkit-mask-image: url(../images/icons/header-unpack.svg);
+	mask-image: url(../images/icons/header-unpack.svg);
+}
+#dlgEditRatioRules-header::after {
+	-webkit-mask-image: url(../images/icons/header-ratio-rules.svg);
+	mask-image: url(../images/icons/header-ratio-rules.svg);
+}
+#tskConsole-header::after {
+	-webkit-mask-image: url(../images/icons/header-task-console.svg);
+	mask-image: url(../images/icons/header-task-console.svg);
+}
+#dlgRenameView-header::after {
+	-webkit-mask-image: url(../images/icons/header-rename.svg);
+	mask-image: url(../images/icons/header-rename.svg);
+}
+#tracklabels-dialog-header::after {
+	-webkit-mask-image: url(../images/icons/header-tracker-upload.svg);
+	mask-image: url(../images/icons/header-tracker-upload.svg);
+}
+#dlgAddRSS-header::after,
+#dlgAddRSSGroup-header::after,
+#dlgEditRSS-header::after,
+#dlgEditFilters-header::after,
+#dlgEditRules-header::after {
+	-webkit-mask-image: url(../images/icons/toolbar-rss.svg);
+	mask-image: url(../images/icons/toolbar-rss.svg);
+}
+
+/* Two dialogs paint the raster on the whole header, not the title div. */
+div#cadd div.dlg-header,
+div#logoffDlg div.dlg-header {
+	background-image: none !important;
+}
+#cadd-header::after {
+	-webkit-mask-image: url(../images/icons/header-comment.svg);
+	mask-image: url(../images/icons/header-comment.svg);
+}
+#logoffDlg-header::after {
+	-webkit-mask-image: url(../images/icons/logoff.svg);
+	mask-image: url(../images/icons/logoff.svg);
+}
+
+/* Close button: 28px rounded hit area, masked glyph, hover wash, focus ring. */
+a.dlg-close,
+a.dlg-close:link,
+a.dlg-close:visited {
+	flex: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 8px;
+	background: transparent;
+	transition: background-color 0.15s ease;
+}
+
+a.dlg-close::before {
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	transition: background-color 0.15s ease;
+}
+
+a.dlg-close:hover,
+a.dlg-close:active {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	background-position-x: 0;
+}
+
+a.dlg-close:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+a.dlg-close:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* ============================================================
+ * Content scroll region
+ * ============================================================ */
+div.dlg-window > .cont {
+	padding: 16px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	flex: 1 1 auto;
+}
+
+/* ============================================================
+ * Fieldsets as cards + legends
+ * ============================================================ */
+.dlg-window fieldset {
+	border: 1px solid var(--qb-border);
+	border-radius: 10px;
+	background-color: var(--qb-surface);
+	margin: 0 0 12px 0;
+	padding: 14px 14px 10px;
+}
+
+.dlg-window fieldset:last-child {
+	margin-bottom: 0;
+}
+
+.dlg-window legend {
+	float: none;
+	width: auto;
+	margin: 0 0 4px 0;
+	padding: 0;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.dlg-window label {
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+/* ============================================================
+ * Form controls (scoped to dialogs)
+ * ============================================================ */
+.dlg-window input[type="text"],
+.dlg-window input[type="password"],
+.dlg-window input[type="number"],
+.dlg-window input[type="file"],
+.dlg-window select {
+	min-height: 36px;
+	padding: 0 10px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dlg-window select {
+	padding-right: 28px;
+}
+
+.dlg-window textarea {
+	padding: 10px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	color: var(--qb-foreground);
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 13px;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dlg-window input[type="text"]:focus,
+.dlg-window input[type="password"]:focus,
+.dlg-window input[type="number"]:focus,
+.dlg-window input[type="file"]:focus,
+.dlg-window select:focus,
+.dlg-window textarea:focus {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 3px var(--qb-focus);
+}
+
+.dlg-window input::placeholder,
+.dlg-window textarea::placeholder {
+	color: var(--qb-fg-muted);
+	opacity: 1;
+}
+
+.dlg-window input[type="checkbox"],
+.dlg-window input[type="radio"] {
+	width: 16px;
+	height: 16px;
+	margin: 0 6px 0 0;
+	accent-color: var(--qb-primary);
+	cursor: pointer;
+}
+
+/* checkbox / radio option rows read as a label beside the control */
+.dlg-window [id$="_option"].d-flex,
+.dlg-window .d-flex > input[type="checkbox"] + label {
+	align-items: center;
+}
+
+/* ============================================================
+ * Buttons + footer bar
+ * ============================================================ */
+.dlg-window .buttons-list {
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 12px 16px;
+	border-top: 1px solid var(--qb-border);
+	background-color: var(--qb-surface);
+}
+
+.dlg-window button,
+.dlg-window input[type="button"],
+.dlg-window input[type="submit"],
+.dlg-window .Button,
+.dlg-window a.Button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	width: auto;
+	min-width: 84px;
+	min-height: 36px;
+	margin: 0;
+	padding: 0 16px;
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	background: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	text-wrap: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, filter 0.15s ease;
+}
+
+.dlg-window button:not(:disabled):hover,
+.dlg-window input[type="button"]:not(:disabled):hover,
+.dlg-window input[type="submit"]:not(:disabled):hover,
+.dlg-window .Button:not(:disabled):hover {
+	background: var(--qb-surface-3);
+	border-color: var(--qb-fg-muted);
+}
+
+/* Primary action: .OK, submit inputs, and the Add Torrent primary. */
+.dlg-window button.OK,
+.dlg-window input[type="submit"],
+.dlg-window .cqb-primary {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+.dlg-window button.OK:not(:disabled):hover,
+.dlg-window input[type="submit"]:not(:disabled):hover,
+.dlg-window .cqb-primary:not(:disabled):hover {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	filter: brightness(1.08);
+}
+
+.dlg-window button.Cancel,
+.dlg-window .cqb-secondary {
+	background: transparent;
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+.dlg-window button.Cancel:not(:disabled):hover,
+.dlg-window .cqb-secondary:not(:disabled):hover {
+	background: var(--qb-muted, var(--qb-surface-2));
+}
+
+.dlg-window button:disabled,
+.dlg-window input[type="submit"]:disabled,
+.dlg-window input[type="button"]:disabled,
+.dlg-window .Button:disabled,
+.dlg-window .cqb-primary:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+	filter: none;
+}
+
+.dlg-window button:focus-visible,
+.dlg-window input:focus-visible,
+.dlg-window select:focus-visible,
+.dlg-window a.Button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* ============================================================
+ * Directory-browse control + popover (core rDirBrowser markup)
+ * ============================================================ */
+.dlg-window .browseEdit {
+	flex-grow: 1;
+}
+
+.dlg-window button.browseButton {
+	flex: none;
+	min-width: 36px;
+	width: 36px;
+	padding: 0;
+	font-size: 0;
+	color: transparent;
+}
+
+.dlg-window button.browseButton::before {
+	content: "";
+	width: 18px;
+	height: 18px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/file-folder.svg) center / 18px no-repeat;
+	mask: url(../images/icons/file-folder.svg) center / 18px no-repeat;
+}
+
+.dlg-window button.browseButton:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+dialog.browseFrame {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: 10px;
+	box-shadow: var(--qb-shadow);
+	color: var(--qb-foreground);
+	padding: 6px;
+}
+
+dialog.browseFrame .filter-dir {
+	min-height: 32px;
+	width: 100%;
+	margin-bottom: 4px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	color: var(--qb-foreground);
+	font-size: 13px;
+}
+
+dialog.browseFrame .rmenuitem {
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	padding: 5px 8px;
+	border-radius: 6px;
+	color: var(--qb-foreground);
+	font-size: 13px;
+	cursor: pointer;
+}
+
+dialog.browseFrame .rmenuitem:hover,
+dialog.browseFrame .rmenuitem.active {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+}
+
+/* ============================================================
+ * Add Torrent (defect 8): drop-zone card, file chips, label select
+ * ============================================================ */
+.cqb-dropzone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	min-height: 120px;
+	margin: 0;
+	padding: 20px;
+	border: 2px dashed var(--qb-border);
+	border-radius: 10px;
+	background-color: var(--qb-input);
+	color: var(--qb-fg-muted);
+	text-align: center;
+	cursor: pointer;
+	transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.cqb-dropzone:hover,
+.cqb-dropzone:focus-within,
+.cqb-dropzone.cqb-dragover {
+	border-color: var(--qb-primary);
+	color: var(--qb-foreground);
+	background-color: color-mix(in srgb, var(--qb-primary) 8%, var(--qb-input));
+}
+
+.cqb-dropzone .cqb-dropzone-icon {
+	width: 32px;
+	height: 32px;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
+	mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
+}
+
+.cqb-dropzone .cqb-dropzone-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+}
+
+.cqb-dropzone .cqb-dropzone-hint {
+	font-size: 12px;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-dropzone .cqb-dropzone-browse {
+	color: var(--qb-primary-text, var(--qb-primary));
+	font-weight: 600;
+}
+
+/* native file input stays wired but visually removed (label drives it) */
+.cqb-file-tucked {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.cqb-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 10px;
+}
+
+.cqb-chips:empty {
+	display: none;
+}
+
+.cqb-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	max-width: 100%;
+	padding: 3px 4px 3px 10px;
+	border: 1px solid var(--qb-border);
+	border-radius: 999px;
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-size: 12px;
+}
+
+.cqb-chip .cqb-chip-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cqb-chip .cqb-chip-remove {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 999px;
+	background-color: transparent;
+	cursor: pointer;
+}
+
+.cqb-chip .cqb-chip-remove::before {
+	content: "";
+	width: 11px;
+	height: 11px;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / contain no-repeat;
+}
+
+.cqb-chip .cqb-chip-remove:hover {
+	background-color: color-mix(in srgb, var(--qb-destructive) 18%, transparent);
+}
+
+.cqb-chip .cqb-chip-remove:hover::before {
+	background-color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* ============================================================
+ * Context menu (ul.CMenu) -- v4 select-panel idiom
+ * ============================================================ */
+ul.CMenu {
+	min-width: 200px;
+	width: auto;
+	padding: 6px;
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: 10px;
+	box-shadow: var(--qb-shadow);
+	opacity: 1;
+	list-style: none;
+}
+
+ul.CMenu li,
+ul.CMenu li.menuitem {
+	width: auto;
+	background-color: transparent;
+	border-radius: 6px;
+}
+
+ul.CMenu li a {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 10px;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 13px;
+}
+
+ul.CMenu li a:hover,
+ul.CMenu li:hover > a {
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
+	font-weight: 500;
+	text-shadow: none;
 }
 
 ul.CMenu li a.dis,
 ul.CMenu li a.dis:hover {
+	background: transparent;
 	color: var(--qb-fg-muted);
 	opacity: 0.5;
 }
 
 ul.CMenu li hr {
-	background-color: var(--qb-border);
+	margin: 4px 2px;
+	padding: 0;
+	height: 1px;
 	border: none;
 	border-bottom: 1px solid var(--qb-border);
-	height: 1px;
-	margin: 0;
-	padding: 0;
+	background-color: transparent;
 }
 
 ul.CMenu li a.exp::after {
-	width: 0.9rem;
+	content: "";
+	display: block;
+	width: 1rem;
+	height: 1rem;
 	margin-left: auto;
 	background-color: var(--qb-fg-muted);
-	-webkit-mask-image: url(../images/icons/menu-expand.svg);
-	mask-image: url(../images/icons/menu-expand.svg);
+	-webkit-mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-expand.svg) center / contain no-repeat;
 }
 
-ul.CMenu li a.exp:hover::after { background-color: var(--qb-primary-fg); }
-
-ul.CMenu li a.sel::before {
-	width: 0.9rem;
-	background-color: var(--qb-primary);
-	-webkit-mask-image: url(../images/icons/menu-check.svg);
-	mask-image: url(../images/icons/menu-check.svg);
+ul.CMenu li a.exp:hover::after {
+	background-color: var(--qb-foreground);
 }
-
-ul.CMenu li a.sel:hover::before { background-color: var(--qb-primary-fg); }
 
 ul.CMenu li a.sel {
-	color: var(--qb-primary);
-}
-
-ul.CMenu li ul li a.sel {
-	color: var(--qb-primary);
-}
-
-ul.CMenu li a:hover {
-	background-color: var(--qb-primary);
-	color: var(--qb-primary-fg);
-	font-family: var(--qb-font);
+	color: var(--qb-primary-text, var(--qb-primary));
 	font-weight: 600;
-	text-shadow: none;
+}
+
+ul.CMenu li a.sel::before {
+	content: "";
+	display: block;
+	width: 1rem;
+	height: 1rem;
+	background-color: var(--qb-primary-text, var(--qb-primary));
+	-webkit-mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+	mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
+}
+
+ul.CMenu li a.sel:hover::before {
+	background-color: var(--qb-primary-text, var(--qb-primary));
+}
+
+ul.CMenu li ul {
+	background-color: var(--qb-surface);
+	border: 1px solid var(--qb-border);
+	border-radius: 10px;
+	box-shadow: var(--qb-shadow);
+	padding: 6px;
 }
 
 ul.CMenu li:hover ul li a {
-	background-color: var(--qb-surface);
-	color: var(--qb-fg-muted);
+	background-color: transparent;
+	color: var(--qb-foreground);
 }
 
 ul.CMenu li:hover ul li a:hover {
-	background-color: var(--qb-primary);
-	color: var(--qb-primary-fg);
+	background-color: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
 	text-shadow: none;
 }
 
 ul.CMenu li ul li a.dis,
 ul.CMenu li ul li a.dis:hover {
-	background-color: var(--qb-surface);
+	background-color: transparent;
 	color: var(--qb-fg-muted);
 	opacity: 0.5;
 }
 
-/* Modals / dialogs */
-#modalbg {
-	background-color: var(--qb-overlay);
-}
-
-div#modalbg {
-	background-color: var(--qb-overlay);
-	opacity: 0.7;
-}
-
-div.dlg-window {
-	background-color: var(--qb-surface);
-	border: 1px solid var(--qb-border);
-	border-radius: var(--qb-radius-lg);
-	box-shadow: var(--qb-shadow);
-	color: var(--qb-foreground);
-	padding: 0;
-}
-
-div#stg_c {
-	display: flex;
-	flex-direction: row;
-	background-color: var(--qb-surface);
-}
-
-div#stg .lm {
-	flex: 0 0 auto;
-	padding: 0.25rem 0.5rem;
-	background-color: var(--qb-surface-2);
-	border: 1px solid var(--qb-border);
-	border-radius: 0 0 0 var(--qb-radius-lg);
-	overflow: hidden auto;
-}
-
-.lm li a {
-	color: var(--qb-foreground);
-	padding: 1px 2px;
-	flex-grow: 1;
-}
-
-.lm li a.focus {
-	background-color: var(--qb-primary);
-	color: var(--qb-primary-fg);
-	border-radius: var(--qb-radius);
-}
-
-div#stg-pages {
-	padding: 0 0.5rem;
-	height: 550px;
-	flex: 1 1 auto;
-	display: flex;
-	flex-direction: column;
-	overflow-x: auto;
-	background-color: var(--qb-surface);
-	border: 1px solid var(--qb-border);
-}
-
-.stg_con {
-	display: none;
-	margin-bottom: auto;
-	background-color: var(--qb-surface);
-	overflow: hidden auto;
-}
-
-.stg_con legend {
-	position: sticky;
-	top: 0;
-	z-index: 1;
-	display: block;
-	width: 100%;
-	box-sizing: border-box;
-	margin: 0 0 0.4rem 0;
-	padding: 3px 8px;
-	background-color: var(--qb-surface-2);
-	color: var(--qb-foreground);
-	border-radius: var(--qb-radius);
-}
-
-div.dlg-header {
-	background-color: var(--qb-surface-2);
-	border-bottom: 1px solid var(--qb-border);
-	font-family: var(--qb-font);
-	font-size: 14px;
-	padding: 0.75rem 0.75rem 0.75rem 3rem;
-	color: var(--qb-foreground);
-}
-
+/* Task console dialog keeps a workable default size. */
 #tskConsole {
 	width: 620px;
 	height: auto;
