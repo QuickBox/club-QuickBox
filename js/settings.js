@@ -366,6 +366,26 @@
 				{ id: "webui.side_panel_max_width_percent", unit: "%" },
 				{ id: "webui.list_table_min_height", unit: L("Pixel", "px") }
 			])]);
+		},
+		st_fmt: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) {
+				var checks = checkGridFrom(fs[0]);
+				var grid = fieldGrid([{ id: "webui.dateformat" }]);
+				if (grid && checks) checks.style.marginTop = "14px";
+				rebuildFieldset(fs[0], [grid, checks]);
+			}
+			if (fs[1]) {
+				var table = fs[1].querySelector("table");
+				if (table) {
+					table.classList.add("cqb-table");
+					var tds = table.querySelectorAll("tbody td");
+					for (var i = 0; i < tds.length; i++) if (tds[i].querySelector("input")) tds[i].classList.add("cqb-num");
+					var ths = table.querySelectorAll("thead th");
+					for (var j = 1; j < ths.length; j++) ths[j].classList.add("cqb-col-num");
+				}
+				fs[1].appendChild(helpLine(L("cqb_decimals_hint", "Leave a cell blank to inherit the default.")));
+			}
 		}
 	};
 
