@@ -23,13 +23,15 @@ ul.noty_cont.noty_layout_bottomRight li {
 	background-image: none !important;
 	color: var(--qb-foreground);
 	border: 1px solid var(--qb-border);
-	border-left: 3px solid var(--qb-fg-muted);
 	border-radius: var(--qb-radius-lg);
 	box-shadow: var(--qb-shadow);
 	overflow: hidden;
 }
 
 .noty_bar.noty_theme_default .noty_message {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
 	padding: 12px 36px 12px 14px;
 	font-size: 13px;
 	font-weight: 500;
@@ -39,24 +41,36 @@ ul.noty_cont.noty_layout_bottomRight li {
 	color: var(--qb-foreground);
 }
 
-/* Tone bar per status */
-.noty_bar.noty_theme_default.noty_error {
-	border-left-color: var(--qb-destructive);
-	background: var(--qb-surface) !important;
-	color: var(--qb-foreground);
+/* Tone glyph: a 16px masked icon tinted by tone, in place of a tone stripe. */
+.noty_bar.noty_theme_default .noty_message::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	margin-top: 1px;
+	background-color: var(--qb-fg-muted);
+	background-image: none;
+	-webkit-mask: url(../images/icons/header-about.svg) center / contain no-repeat;
+	mask: url(../images/icons/header-about.svg) center / contain no-repeat;
 }
 
-.noty_bar.noty_theme_default.noty_success {
-	border-left-color: var(--qb-primary);
-	background: var(--qb-surface) !important;
-	color: var(--qb-foreground);
+.noty_bar.noty_theme_default.noty_error .noty_message::before {
+	background-color: var(--qb-destructive);
+	-webkit-mask-image: url(../images/icons/state-error.svg);
+	mask-image: url(../images/icons/state-error.svg);
 }
 
-.noty_bar.noty_theme_default.noty_information,
-.noty_bar.noty_theme_default.noty_alert {
-	border-left-color: var(--qb-accent-text);
-	background: var(--qb-surface) !important;
-	color: var(--qb-foreground);
+.noty_bar.noty_theme_default.noty_success .noty_message::before {
+	background-color: var(--qb-primary);
+	-webkit-mask-image: url(../images/icons/state-finished.svg);
+	mask-image: url(../images/icons/state-finished.svg);
+}
+
+.noty_bar.noty_theme_default.noty_information .noty_message::before,
+.noty_bar.noty_theme_default.noty_alert .noty_message::before {
+	background-color: var(--qb-accent-text);
+	-webkit-mask-image: url(../images/icons/header-about.svg);
+	mask-image: url(../images/icons/header-about.svg);
 }
 
 /* Close control: masked glyph, no raster */
@@ -233,7 +247,6 @@ ul.noty_cont.noty_layout_bottomRight li {
 	gap: 10px;
 	padding: 9px 10px;
 	border-radius: 8px;
-	border-left: 2px solid transparent;
 	cursor: pointer;
 	color: var(--qb-foreground);
 }
@@ -269,8 +282,7 @@ ul.noty_cont.noty_layout_bottomRight li {
 
 #cqb-palette .cqb-pal-row.is-active {
 	background: color-mix(in srgb, var(--qb-primary) 14%, transparent);
-	border-left-color: var(--qb-primary);
-	color: var(--qb-foreground);
+	color: var(--qb-primary-text);
 }
 
 #cqb-palette .cqb-pal-row.is-active .cqb-pal-row-icon {
