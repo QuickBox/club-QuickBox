@@ -62,7 +62,7 @@ Pick a variant from the appearance selector in Settings, beside the stock theme 
 
 ## Install
 
-On QuickBox Pro the theme is installed and set as the default ruTorrent skin automatically, so there is nothing to do.
+On a new QuickBox Pro install the theme is installed and set as the default ruTorrent skin automatically, so there is nothing to do.
 
 To install it by hand on any ruTorrent, clone it into ruTorrent's theme directory, usually `plugins/theme/themes`:
 
@@ -81,7 +81,7 @@ cd /path/to/rutorrent/plugins/theme/themes/club-QuickBox
 git checkout --force latest && git pull
 ```
 
-On QuickBox Pro the theme updates with the rest of the stack through `qb`.
+On QuickBox Pro an existing install picks up the latest club-QuickBox by updating ruTorrent as an admin, with your admin username: `qb update rutorrent -u <username>`.
 
 ## Credits
 
