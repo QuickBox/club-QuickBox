@@ -16,6 +16,10 @@
  *  read as its call.
  */
 ;(function () {
+	/* Cache key for every theme asset URL. The build tool rewrites the value
+	 * whenever a theme file changes, so a changed file always resolves to a new
+	 * URL and no stale copy is served from the browser cache. */
+	var CQB_REV = "dev";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
@@ -42,11 +46,39 @@
 		if (h && h.parentNode) h.parentNode.removeChild(h);
 	}
 	var remaining = CSS_MODULES.length;
+	function cssDone() {
+		if (--remaining <= 0) clearHold();
+	}
 	CSS_MODULES.forEach(function (name) {
-		plugin.loadCSS("css/" + name, function () {
-			if (--remaining <= 0) clearHold();
-		});
+		injectCSS(plugin.path + "css/" + name + ".css?cqb=" + CQB_REV, cssDone);
 	});
+
+	/* Re-key the three sheets the theme plugin loaded itself before this file
+	 * ran (style.css, stable.css, plugins.css at the skin root). Each already
+	 * carries ruTorrent's ?v= cache-bust; prepend ?cqb=<rev> and keep the v so a
+	 * changed sheet gets a fresh URL. Done synchronously while the hold is up and
+	 * counted into it (remaining++ / cssDone), so the href swap re-fetches behind
+	 * the cover and never flashes unstyled chrome. The 2500ms timer still clears
+	 * the hold if any onload never fires. */
+	var SELF_SHEETS = ["style.css", "stable.css", "plugins.css"];
+	var links = (document.head || root).getElementsByTagName("link");
+	for (var li = 0; li < links.length; li++) {
+		var lk = links[li];
+		var href = lk.getAttribute("href") || "";
+		if (href.indexOf("cqb=") !== -1) continue;
+		var hit = false;
+		for (var si = 0; si < SELF_SHEETS.length; si++) {
+			if (href.indexOf("themes/club-QuickBox/" + SELF_SHEETS[si]) !== -1) { hit = true; break; }
+		}
+		if (!hit) continue;
+		var q = href.indexOf("?");
+		var base = q === -1 ? href : href.slice(0, q);
+		var vm = href.match(/[?&]v=([^&]*)/);
+		remaining++;
+		lk.onload = cssDone;
+		lk.onerror = cssDone;
+		lk.setAttribute("href", base + "?cqb=" + CQB_REV + (vm ? "&v=" + vm[1] : ""));
+	}
 	setTimeout(clearHold, 2500);
 
 	/* ============================================================
@@ -68,7 +100,16 @@
 		document.body.appendChild(tipEl);
 		return tipEl;
 	}
+	/* A tip is suppressed while its control -- or the nearest [aria-expanded]
+	 * ancestor it lives in -- is open, so a hover hint never sits over the menu
+	 * the control just opened. closest() returns the element itself when it
+	 * carries the attribute, covering both the control and its ancestor. */
+	function tipSuppressed(el) {
+		var ex = el && el.closest ? el.closest("[aria-expanded]") : null;
+		return !!(ex && ex.getAttribute("aria-expanded") === "true");
+	}
 	function showTip(el) {
+		if (tipSuppressed(el)) return;
 		var text = el.getAttribute("data-cqb-tip");
 		if (!text) return;
 		var t = ensureTip();
@@ -76,11 +117,22 @@
 		t.style.display = "block";
 		var r = el.getBoundingClientRect();
 		var tw = t.offsetWidth, th = t.offsetHeight;
-		var left = Math.max(4, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 4));
-		var top = r.bottom + 6;
-		if (top + th > window.innerHeight - 4) top = r.top - th - 6;
+		var left, top;
+		if (el.getAttribute("data-cqb-tip-side") === "right") {
+			/* Beside the control, flipping to its left when the right edge has no
+			 * room; vertically centred and clamped into the viewport. */
+			left = r.right + 6;
+			if (left + tw > window.innerWidth - 4) left = r.left - tw - 6;
+			left = Math.max(4, left);
+			top = Math.max(4, Math.min(r.top + r.height / 2 - th / 2, window.innerHeight - th - 4));
+		} else {
+			left = Math.max(4, Math.min(r.left + r.width / 2 - tw / 2, window.innerWidth - tw - 4));
+			top = r.bottom + 6;
+			if (top + th > window.innerHeight - 4) top = r.top - th - 6;
+			top = Math.max(4, top);
+		}
 		t.style.left = left + "px";
-		t.style.top = Math.max(4, top) + "px";
+		t.style.top = top + "px";
 		t.style.opacity = "1";
 	}
 	function scheduleTip(el) {
@@ -136,10 +188,14 @@
 		/* Mark an element for the one shared custom tooltip. Never a native
 		 * title= (that bypasses theme styling); the delegated listeners below
 		 * drive display, so this just records the text. */
-		tooltip: function (el, text) {
+		tooltip: function (el, text, opts) {
 			if (!el || !text) return;
 			el.removeAttribute("title");
 			el.setAttribute("data-cqb-tip", text);
+			/* { side: "right" } places the tip beside the control (see showTip);
+			 * default placement (below) is unchanged. An element can opt in with
+			 * data-cqb-tip-side="right" in markup without touching this file. */
+			if (opts && opts.side === "right") el.setAttribute("data-cqb-tip-side", "right");
 			if (!el.getAttribute("aria-label") && !el.getAttribute("aria-labelledby") &&
 				!(el.textContent || "").trim()) {
 				el.setAttribute("aria-label", text);
@@ -200,8 +256,21 @@
 	document.addEventListener("focusout", function (e) {
 		if (closestTip(e.target)) hideTip();
 	});
+	/* Activating a control dismisses its tip: pointerdown and click cover mouse
+	 * and touch, the keydown branch covers keyboard activation (Enter/Space). A
+	 * control that opens a menu on activation thus loses its hint, and the
+	 * aria-expanded guard in showTip keeps it from reappearing while the menu is
+	 * open. */
+	document.addEventListener("pointerdown", function (e) {
+		if (closestTip(e.target)) hideTip();
+	});
+	document.addEventListener("click", function (e) {
+		if (closestTip(e.target)) hideTip();
+	});
 	document.addEventListener("keydown", function (e) {
-		if (e.key === "Escape" || e.keyCode === 27) hideTip();
+		if (e.key === "Escape" || e.keyCode === 27) { hideTip(); return; }
+		if ((e.key === "Enter" || e.key === " " || e.key === "Spacebar" ||
+			e.keyCode === 13 || e.keyCode === 32) && closestTip(e.target)) hideTip();
 	});
 
 	/* ============================================================
@@ -388,7 +457,7 @@
 		if (!jsModulesLoaded) {
 			jsModulesLoaded = true;
 			JS_MODULES.forEach(function (name) {
-				injectScript(plugin.path + "js/" + name + ".js");
+				injectScript(plugin.path + "js/" + name + ".js?cqb=" + CQB_REV);
 			});
 		}
 	};
