@@ -574,6 +574,111 @@
 			b.textContent = cat.name;
 			c.appendChild(b);
 		});
+		// "More" overflow trigger at the end of the one-line strip.
+		var more = el("button", "cqb-cat-more", { type: "button", "aria-haspopup": "listbox", "aria-expanded": "false", "aria-label": "More categories" });
+		var moreLbl = el("span", "cqb-cat-more-label"); moreLbl.textContent = "More";
+		var chev = el("span", "cqb-select-chevron"); chev.setAttribute("aria-hidden", "true");
+		more.appendChild(moreLbl); more.appendChild(chev);
+		picker.moreChip = more; picker.moreLabel = moreLbl;
+		wireMoreChip(more);
+		c.appendChild(more);
+		fitChips();
+	}
+	/* Keep the chip strip to ONE row: park trailing non-active chips that will
+	 * not fit and reach them through the More popover (the detail tab-strip
+	 * overflow idiom). Recomputed whenever the strip is resized. */
+	function fitChips() {
+		var c = picker.chips, more = picker.moreChip;
+		if (!c || !more) return;
+		var chips = c.querySelectorAll(".cqb-cat-chip"), i;
+		for (i = 0; i < chips.length; i++) chips[i].classList.remove("cqb-cat-parked");
+		more.style.display = "none";
+		if (c.clientWidth === 0) return;               // not displayed yet
+		if (c.scrollWidth <= c.clientWidth + 1) return; // everything fits
+		more.style.display = "";
+		var parked = 0;
+		for (i = chips.length - 1; i >= 0 && c.scrollWidth > c.clientWidth + 1; i--) {
+			if (chips[i].getAttribute("aria-pressed") === "true") continue; // keep the active chip
+			if (chips[i].getAttribute("data-cat") === "all") continue;       // keep All
+			chips[i].classList.add("cqb-cat-parked");
+			parked++;
+		}
+		if (parked === 0) { more.style.display = "none"; return; }
+		picker.moreLabel.textContent = "More (" + parked + ")";
+	}
+	function scheduleFitChips() {
+		if (picker.fitScheduled) return;
+		picker.fitScheduled = true;
+		var run = function () { picker.fitScheduled = false; if (picker.backdrop.style.display !== "none") fitChips(); };
+		if (window.requestAnimationFrame) requestAnimationFrame(run); else setTimeout(run, 16);
+	}
+	function wireMoreChip(btn) {
+		var panel = null, options = [];
+		function parkedChips() { return picker.chips.querySelectorAll(".cqb-cat-chip.cqb-cat-parked"); }
+		function close(refocus) {
+			if (!panel) return;
+			document.removeEventListener("mousedown", onDown, true);
+			window.removeEventListener("resize", onMove);
+			window.removeEventListener("scroll", onMove, true);
+			if (panel.parentNode) panel.parentNode.removeChild(panel);
+			panel = null;
+			btn.setAttribute("aria-expanded", "false");
+			if (refocus) btn.focus();
+		}
+		function onDown(e) { if (btn.contains(e.target) || (panel && panel.contains(e.target))) return; close(false); }
+		function onMove() { if (panel) place(); }
+		function place() {
+			var r = btn.getBoundingClientRect();
+			var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight, pad = 8, gap = 4;
+			panel.querySelector(".cqb-select-list").style.maxHeight = Math.min(320, Math.floor(vh * 0.7), vh - r.bottom - pad) + "px";
+			var pw = panel.offsetWidth;
+			panel.style.top = Math.max(pad, r.bottom + gap) + "px";
+			panel.style.left = Math.min(Math.max(pad, r.left), Math.max(pad, vw - pw - pad)) + "px";
+		}
+		function open() {
+			panel = el("div", "cqb-select-panel cqb-cat-more-panel");
+			panel.setAttribute("role", "presentation");
+			panel.addEventListener("mousedown", function (e) { e.preventDefault(); });
+			var list = el("div", "cqb-select-list"); list.setAttribute("role", "listbox"); list.setAttribute("aria-label", "More categories");
+			options = [];
+			var parked = parkedChips();
+			for (var i = 0; i < parked.length; i++) {
+				(function (chip) {
+					var row = el("button", "cqb-select-option", { type: "button", role: "option" });
+					var lbl = el("span", "cqb-select-option-label"); lbl.textContent = chip.textContent;
+					row.appendChild(lbl);
+					row.addEventListener("click", function (e) {
+						e.preventDefault();
+						picker.state.cat = chip.getAttribute("data-cat");
+						renderChips(); renderGrid();
+						close(true);
+					});
+					list.appendChild(row);
+					options.push(row);
+				})(parked[i]);
+			}
+			panel.appendChild(list);
+			document.body.appendChild(panel);
+			btn.setAttribute("aria-expanded", "true");
+			place();
+			panel.classList.add("cqb-open");
+			document.addEventListener("mousedown", onDown, true);
+			window.addEventListener("resize", onMove);
+			window.addEventListener("scroll", onMove, true);
+			panel.addEventListener("keydown", function (e) {
+				if (e.key === "Escape") { e.preventDefault(); close(true); return; }
+				var idx = options.indexOf(document.activeElement);
+				if (e.key === "ArrowDown") { e.preventDefault(); (options[idx + 1] || options[0]).focus(); }
+				else if (e.key === "ArrowUp") { e.preventDefault(); (options[idx - 1] || options[options.length - 1]).focus(); }
+				else if ((e.key === "Enter" || e.key === " " || e.key === "Spacebar") && idx >= 0) { e.preventDefault(); options[idx].click(); }
+			});
+			if (options[0]) options[0].focus();
+		}
+		btn.addEventListener("click", function () { if (panel) close(true); else open(); });
+		btn.addEventListener("keydown", function (e) {
+			if (!panel && (e.key === "Enter" || e.key === " " || e.key === "Spacebar" || e.key === "ArrowDown")) { e.preventDefault(); open(); }
+			else if (panel && e.key === "Escape") { e.preventDefault(); close(true); }
+		});
 	}
 
 	function selectTab(which) {
@@ -663,6 +768,9 @@
 			p.state.cat = b.getAttribute("data-cat");
 			renderChips(); renderGrid();
 		});
+		// Recompute the one-row chip fit whenever the strip's width changes.
+		if (window.ResizeObserver) new ResizeObserver(scheduleFitChips).observe(p.chips);
+		window.addEventListener("resize", scheduleFitChips);
 		p.grid.addEventListener("click", function (e) {
 			var t = e.target.closest(".cqb-tile"); if (!t) return;
 			var prev = p.grid.querySelector('.cqb-tile[aria-pressed="true"]');
@@ -788,6 +896,7 @@
 			// force reflow then animate in
 			void p.backdrop.offsetWidth;
 			p.backdrop.classList.add("is-open");
+			fitChips(); // the strip now has a real width to measure against
 			setTimeout(function () { p.searchInput.focus(); }, 30);
 		});
 	}

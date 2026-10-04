@@ -319,20 +319,22 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	color: var(--qb-fg-muted);
 }
 
-/* Category chips size to their own content and wrap onto a second line inside
- * the padded body: no fixed core width, no horizontal scroll, no clipping. */
+/* Category chips stay on ONE row so the grid keeps its height. Chips that will
+ * not fit are parked (display:none) and reached through the "More" popover, the
+ * same overflow idiom the detail tab strip uses. No wrap, no scrollbar. */
 .cqb-cat-chips {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 6px;
 	margin-top: 10px;
+	overflow: hidden;
 }
 
 .cqb-cat-chip {
 	flex: 0 0 auto;
 	appearance: none;
 	/* Core style.css pins every button to width:80px + margin:0.25rem, which
-	 * clips the chip label and breaks the single-row scroll; reset both. */
+	 * clips the chip label; reset both so the chip is content-sized. */
 	width: auto;
 	margin: 0;
 	font: inherit;
@@ -346,6 +348,49 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	color: var(--qb-fg-muted);
 	cursor: pointer;
 	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+/* Chips that will not fit this row are parked out of the strip (and its width). */
+.cqb-cat-chip.cqb-cat-parked {
+	display: none;
+}
+
+/* "More (N)" overflow trigger -- a chip that opens the shared select popover. */
+.cqb-cat-more {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	width: auto;
+	margin: 0;
+	appearance: none;
+	font: inherit;
+	font-size: 12px;
+	font-weight: 500;
+	white-space: nowrap;
+	padding: 4px 8px 4px 10px;
+	border-radius: 999px;
+	border: 1px solid var(--qb-border);
+	background: var(--qb-surface-2);
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.cqb-cat-more:hover,
+.cqb-cat-more[aria-expanded="true"] {
+	color: var(--qb-foreground);
+	border-color: var(--qb-fg-muted);
+}
+
+.cqb-cat-more .cqb-select-chevron {
+	width: 12px;
+	height: 12px;
+}
+
+.cqb-cat-more:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
 }
 
 .cqb-cat-chip:hover {
@@ -723,7 +768,9 @@ button.cqb-row-edit {
 }
 
 .cqb-picker .cqb-cat-chip:hover,
-.cqb-picker .cqb-cat-chip:active {
+.cqb-picker .cqb-cat-chip:active,
+.cqb-picker .cqb-cat-more:hover,
+.cqb-picker .cqb-cat-more:active {
 	background-color: var(--qb-surface-2);
 }
 
