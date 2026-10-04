@@ -138,10 +138,14 @@ div#TrackerList {
 	mask-size: 15px;
 }
 
-/* Blank the underlying raster only where an SVG mask replaces it: the torrent
- * list states and the file list glyphs. Elsewhere the raster is left intact. */
-#List .stable-icon,
-#FileList .stable-icon {
+/* Blank the underlying raster on EVERY masked glyph, in EVERY table (torrent
+ * list, file list, History, and any plugin table that renders Status_*/Icon_*
+ * classes), so the old state sprite never paints through the SVG mask -- the
+ * DOUBLE defect, which also pushed the row name under the icon. Exempt only the
+ * genuine content rasters: the geoip country flag (.stable-icon.geoip, carrying
+ * the .geoip_flag_<cc> image). Tracker favicons are an inline background-image
+ * (the core {src} icon path) and are untouched by this stylesheet rule. */
+.stable-icon:not(.geoip) {
 	background-image: none;
 }
 
