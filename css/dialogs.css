@@ -679,6 +679,19 @@ dialog.browseFrame .rmenuitem.active {
 	container-type: inline-size;
 }
 
+/* The plugin add dialogs size to content and are narrow; give their option
+ * list the full content width (drop the Bootstrap offset) and keep each label
+ * on one line so the longest option never wraps. */
+:is(#dlgLoadTorrents, #tegLoadTorrents) .cqb-opts-wrap {
+	margin-left: 0;
+	max-width: 100%;
+	flex-basis: 100%;
+}
+
+:is(#dlgLoadTorrents, #tegLoadTorrents) .cqb-opt-text > label {
+	white-space: nowrap;
+}
+
 @container (max-width: 640px) {
 	.dlg-window .cqb-opts-grid { grid-template-columns: 1fr; }
 }
