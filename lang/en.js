@@ -25,3 +25,4 @@ theUILang.cqb_grp_limits     = "Limits";
 theUILang.cqb_grp_network    = "Network";
 theUILang.cqb_grp_session    = "Session and timeouts";
 theUILang.cqb_grp_flags      = "Flags";
+theUILang.cqb_stg_empty      = "No matching trackers";

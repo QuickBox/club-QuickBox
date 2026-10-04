@@ -28,6 +28,7 @@
 		theUILang.cqb_grp_network = theUILang.cqb_grp_network || "Network";
 		theUILang.cqb_grp_session = theUILang.cqb_grp_session || "Session and timeouts";
 		theUILang.cqb_grp_flags = theUILang.cqb_grp_flags || "Flags";
+		theUILang.cqb_stg_empty = theUILang.cqb_stg_empty || "No matching trackers";
 	}
 
 	/* Pages that belong to the "ruTorrent" group; everything else is a plugin. */
@@ -311,6 +312,13 @@
 		nodes.forEach(function (n) { if (n) fieldset.appendChild(n); });
 	}
 
+	function acctCell(ctrl, cls) {
+		var td = document.createElement("td");
+		if (cls) td.className = cls;
+		if (ctrl) td.appendChild(ctrl);
+		return td;
+	}
+
 	function L(key, dflt) { return (window.theUILang && theUILang[key]) || dflt; }
 	function unitKbs() { return L("KB", "KiB") + "/" + L("s", "s"); }
 
@@ -374,6 +382,81 @@
 				{ id: "webui.side_panel_max_width_percent", unit: "%" },
 				{ id: "webui.list_table_min_height", unit: L("Pixel", "px") }
 			])]);
+		},
+		st_loginmgr: function (pane) {
+			var fss = [].slice.call(pane.querySelectorAll("fieldset"));
+			if (!fss.length) return;
+			var rows = [];
+			fss.forEach(function (fs) {
+				var legend = fs.querySelector("legend");
+				var name = legend ? legend.textContent.trim() : "";
+				var en = fs.querySelector('input[type="checkbox"]');
+				var auto = fs.querySelector("select");
+				var login = fs.querySelector('input[type="text"]');
+				var pass = fs.querySelector('input[type="password"]');
+				if (en) en.setAttribute("aria-label", name + " " + L("cqb_enabled", "Enabled"));
+				if (login) login.setAttribute("aria-label", name + " login");
+				if (pass) pass.setAttribute("aria-label", name + " password");
+				if (auto) auto.setAttribute("aria-label", name + " autologin");
+				rows.push({ name: name, en: en, auto: auto, login: login, pass: pass, on: !!(en && en.checked) });
+			});
+			rows.sort(function (a, b) { return a.on !== b.on ? (a.on ? -1 : 1) : a.name.localeCompare(b.name); });
+
+			var wrap = document.createElement("div");
+			wrap.className = "cqb-table-wrap";
+			var table = document.createElement("table");
+			table.className = "cqb-table cqb-accounts";
+			var thead = document.createElement("thead");
+			var htr = document.createElement("tr");
+			[[L("cqb_tracker", "Tracker"), ""], [L("cqb_enabled", "Enabled"), "cqb-col-en"],
+			 [L("Autologin", "Autologin"), "cqb-col-auto"], [L("Login", "Login"), ""], [L("Password", "Password"), ""]]
+				.forEach(function (c) { var th = document.createElement("th"); th.textContent = c[0]; if (c[1]) th.className = c[1]; htr.appendChild(th); });
+			thead.appendChild(htr);
+			var tbody = document.createElement("tbody");
+			rows.forEach(function (r) {
+				var tr = document.createElement("tr");
+				tr.dataset.name = r.name.toLowerCase();
+				var tdName = document.createElement("td");
+				tdName.className = "cqb-acct-name";
+				tdName.textContent = r.name;
+				tr.appendChild(tdName);
+				tr.appendChild(acctCell(r.en, "cqb-acct-en"));
+				tr.appendChild(acctCell(r.auto, "cqb-col-auto"));
+				tr.appendChild(acctCell(r.login, ""));
+				tr.appendChild(acctCell(r.pass, ""));
+				tbody.appendChild(tr);
+			});
+			table.appendChild(thead);
+			table.appendChild(tbody);
+			wrap.appendChild(table);
+
+			var filt = document.createElement("div");
+			filt.className = "cqb-acct-filter";
+			filt.appendChild(mkIcon("toolbar-search"));
+			var inp = document.createElement("input");
+			inp.type = "search";
+			inp.placeholder = L("cqb_filter_trackers", "Filter trackers");
+			inp.setAttribute("aria-label", L("cqb_filter_trackers", "Filter trackers"));
+			filt.appendChild(inp);
+			var empty = document.createElement("div");
+			empty.className = "cqb-help cqb-acct-empty";
+			empty.textContent = L("cqb_stg_empty", "No matching trackers");
+			empty.style.display = "none";
+			inp.addEventListener("input", function () {
+				var q = inp.value.trim().toLowerCase();
+				var shown = 0, trs = tbody.querySelectorAll("tr");
+				for (var i = 0; i < trs.length; i++) {
+					var m = !q || (trs[i].dataset.name || "").indexOf(q) !== -1;
+					trs[i].style.display = m ? "" : "none";
+					if (m) shown++;
+				}
+				empty.style.display = shown ? "none" : "block";
+			});
+
+			fss.forEach(function (fs) { fs.remove(); });
+			pane.appendChild(filt);
+			pane.appendChild(wrap);
+			pane.appendChild(empty);
 		},
 		st_ao: function (pane) {
 			var fs = pane.querySelectorAll("fieldset")[0];

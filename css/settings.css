@@ -591,3 +591,55 @@
 }
 
 #stg .cqb-subhead:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+
+/* Accounts page: one compact table with a tracker filter. */
+#stg .cqb-acct-filter {
+	position: relative;
+	display: flex;
+	align-items: center;
+	max-width: 320px;
+	margin: 0 0 12px;
+}
+
+#stg .cqb-acct-filter .cqb-icon {
+	position: absolute;
+	left: 9px;
+	width: 14px;
+	height: 14px;
+	pointer-events: none;
+	background-color: var(--qb-fg-muted);
+}
+
+#stg .cqb-acct-filter input {
+	width: 100%;
+	height: 32px;
+	margin: 0;
+	padding: 0 8px 0 28px;
+	background-color: var(--qb-input);
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#stg .cqb-acct-filter input:focus,
+#stg .cqb-acct-filter input:focus-visible {
+	outline: none;
+	border-color: var(--qb-ring);
+	box-shadow: 0 0 0 2px var(--qb-focus);
+}
+
+#stg .cqb-accounts td.cqb-acct-name {
+	font-weight: 500;
+	color: var(--qb-foreground);
+	white-space: nowrap;
+}
+
+#stg .cqb-accounts th.cqb-col-en,
+#stg .cqb-accounts td.cqb-acct-en { width: 74px; text-align: center; }
+
+#stg .cqb-accounts td.cqb-acct-en input { width: auto; margin: 0; }
+
+#stg .cqb-accounts th.cqb-col-auto,
+#stg .cqb-accounts td.cqb-col-auto { width: 150px; }
