@@ -42,6 +42,16 @@ div#logoff:hover {
  * tinting is an init.js concern (see return note).
  * ============================================================ */
 
+/* Neutralize the cpuload/diskspace base64 GIF on the pane glyph so it cannot
+ * bleed through the mask. statusbar.css owns the mask glyph and its tint; its
+ * `#StatusBar .icon { background-image: none }` ties the plugin rule on
+ * specificity and loses on order, so the override has to live here. */
+#meter-disk-pane .icon,
+#meter-cpu-pane .icon {
+	background-color: var(--qb-icon);
+	background-image: none !important;
+}
+
 /* Track: a 56px rounded rail the fill width maps onto. The right margin
  * reserves in-flow room for the absolutely-placed % label. */
 #meter-disk-holder,
