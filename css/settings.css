@@ -23,16 +23,20 @@
 #stg.dlg-window {
 	width: min(1040px, 92vw);
 	max-width: 92vw;
+	/* Grow to the taller column (usually the 23-item nav) so it need not
+	 * scroll, capped so a very long page still fits the viewport. */
+	height: auto;
+	max-height: min(900px, 90vh);
 }
 
 #stg #stg_c {
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
+	flex: 1 1 auto;
 	gap: 0;
 	padding: 0;
-	height: min(760px, 88vh);
-	min-height: 420px;
+	min-height: 0;
 	overflow: hidden;
 	background-color: var(--qb-surface);
 	border-radius: 0 0 var(--qb-radius-lg) var(--qb-radius-lg);
@@ -121,7 +125,7 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 34px;
+	min-height: 32px;
 	margin: 1px 0;
 	padding: 0 10px;
 	border: 0;
