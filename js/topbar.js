@@ -38,7 +38,13 @@
 		return e;
 	}
 	function byId(id) { return document.getElementById(id); }
-	function mark(e) { if (e) e.setAttribute("data-cqb-placed", "1"); }
+	function mark(e) {
+		if (!e) return;
+		e.setAttribute("data-cqb-placed", "1");
+		/* The core stretches toolbar anchors with flex-grow-1; drop it so icon
+		 * buttons stay 36px and the Add action stays compact. */
+		if (e.classList) e.classList.remove("flex-grow-1");
+	}
 
 	/* ============================================================
 	 * cqb.setVariant -- apply a variant override the way init.js does.
@@ -129,7 +135,7 @@
 		mark(add);
 		if (!add.querySelector(".cqb-add-label")) {
 			var lbl = el("span", "cqb-add-label");
-			lbl.textContent = "Add";
+			lbl.textContent = "Add torrent";
 			add.appendChild(lbl);
 		}
 		decorate(add);
@@ -196,6 +202,14 @@
 	spark.setAttribute("class", "cqb-spark");
 	spark.setAttribute("viewBox", "0 0 72 26");
 	spark.setAttribute("preserveAspectRatio", "none");
+	var baseLine = document.createElementNS(SVGNS, "line");
+	baseLine.setAttribute("x1", "0");
+	baseLine.setAttribute("y1", "24");
+	baseLine.setAttribute("x2", "72");
+	baseLine.setAttribute("y2", "24");
+	baseLine.setAttribute("stroke-width", "1");
+	baseLine.style.stroke = "var(--qb-border)";
+	spark.appendChild(baseLine);
 	var dLine = document.createElementNS(SVGNS, "polyline");
 	var uLine = document.createElementNS(SVGNS, "polyline");
 	[dLine, uLine].forEach(function (p) {
@@ -242,6 +256,10 @@
 		uRate.val.textContent = fmtSpeed(u);
 		drawSpark();
 	}
+	/* Prefill the window so the sparkline spans full width from the start and
+	 * rests on the baseline track rather than showing a single short segment. */
+	for (var pf = 0; pf < N; pf++) { downBuf.push(0); upBuf.push(0); }
+	drawSpark();
 	window.setInterval(sampleSpeed, 1000);
 	sampleSpeed();
 

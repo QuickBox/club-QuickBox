@@ -10,6 +10,12 @@
 /* ============================================================
  * Bar shell -- 56px app bar with the variant gradient along its base.
  * ============================================================ */
+/* The app bar is 56px; the core sizes #t and the main-area height calc from
+ * this var, so keep it in step or the footer is pushed off-screen. */
+:root {
+	--navbar-height: 56px;
+}
+
 #t {
 	min-height: 56px;
 	width: 100%;
@@ -98,6 +104,7 @@
 	border: 0;
 	border-radius: 8px;
 	background-color: transparent;
+	background-image: none;
 	cursor: pointer;
 	transition: background-color 0.15s ease-out, transform 0.15s ease-out;
 }
@@ -106,17 +113,22 @@
  * tone, and the button lifts 1px. No forced white wash. */
 #t a.nav-link:hover {
 	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	background-image: none;
 	transform: translateY(-1px);
 	text-decoration: none;
+	filter: none;
 }
 
-/* Pressed: a deeper tint and a subtle scale-in. */
+/* Pressed: a deeper tint and a subtle scale-in (override the core padding shift). */
 #t a.nav-link:active {
 	background-color: color-mix(in srgb, var(--qb-primary) 20%, transparent);
+	background-image: none;
 	transform: scale(0.96);
+	padding: 0;
 }
 
 #t a.nav-link:focus-visible {
+	background-image: none;
 	outline: 2px solid var(--qb-ring);
 	outline-offset: 1px;
 }
@@ -132,8 +144,9 @@
 	background-color: transparent;
 }
 
-/* The mobile-only text labels plugins append next to their glyph. */
-#t a.nav-link > span {
+/* The mobile-only text labels plugins append next to their glyph (but keep
+ * the Add action's own label). */
+#t a.nav-link > span:not(.cqb-add-label) {
 	display: none;
 }
 
@@ -223,6 +236,7 @@
 #t a#mnu_add.cqb-add-primary:focus {
 	filter: brightness(1.06);
 	background-color: var(--qb-primary);
+	background-image: none;
 }
 
 #t a#mnu_add.cqb-add-primary div#add,
@@ -284,7 +298,7 @@
 	padding: 0 10px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
-	border-radius: var(--qb-radius-lg);
+	border-radius: 8px;
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -303,6 +317,9 @@
 
 #t .cqb-search a#mnu_search:hover {
 	background-color: transparent;
+	background-image: none;
+	transform: none;
+	filter: none;
 }
 
 #t .cqb-search a#mnu_search div#search {

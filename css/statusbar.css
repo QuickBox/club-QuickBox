@@ -6,6 +6,12 @@
  *  raster bleeds through the glyph.
  */
 
+/* The footer is 32px; the core sizes #StatusBar and the main-area height calc
+ * from this var, so keep it in step or the footer is pushed off-screen. */
+:root {
+	--footer-height: 32px;
+}
+
 /* ============================================================
  * Bar shell -- 32px flex strip of chips on the surface.
  * ============================================================ */
