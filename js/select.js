@@ -141,9 +141,29 @@
 			value.textContent = placeholder ? (select.getAttribute("data-cqb-placeholder") || "") : text;
 			value.classList.toggle("cqb-is-placeholder", placeholder);
 			fitTriggerWidth();
+			syncVisibility();
 			if (openController === ctx) renderList();
 		}
 		select.__cqbResync = resync;
+
+		/* Mirror the native control's rendered visibility. Core ruTorrent toggles
+		 * some selects with jQuery .hide()/.show() (e.g. the Add Torrent label
+		 * select when "New label..." is chosen), setting inline display, the
+		 * hidden attribute, or a hiding class on the native element. The trigger
+		 * is a separate node, so it must follow or it stays stranded next to the
+		 * control core swapped in. Reading the native's computed display catches
+		 * all three mechanisms cheaply; hiding also closes an open panel. */
+		function syncVisibility() {
+			var hidden = select.hidden || window.getComputedStyle(select).display === "none";
+			if (hidden) {
+				if (openController === ctx) close(false);
+				trigger.style.display = "none";
+				trigger.setAttribute("aria-hidden", "true");
+			} else if (trigger.style.display === "none") {
+				trigger.style.display = "";
+				trigger.removeAttribute("aria-hidden");
+			}
+		}
 
 		/* Size an inline trigger to its longest option so the full label shows
 		 * without clipping against the chevron (spec: the trigger is at least as
@@ -483,7 +503,7 @@
 		if (window.MutationObserver) {
 			var mo = new MutationObserver(function () { resync(); });
 			mo.observe(select, { childList: true, subtree: true, attributes: true,
-				attributeFilter: ["disabled", "aria-label"] });
+				attributeFilter: ["disabled", "aria-label", "style", "class", "hidden"] });
 		}
 		/* Raw `el.value = ` / `el.selectedIndex = ` go through the native setters;
 		 * wrap them on this instance so the trigger follows. jQuery's .val() takes
