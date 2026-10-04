@@ -252,16 +252,29 @@
 
 	/* ---- fill the pane --------------------------------------------------- */
 
-	/* Auto-fit is OFF the moment the user resizes any peer column: then the core
-	 * colsdata widths (persisted by theWebUI.save on resize-end) are authoritative
-	 * and kept across updates, pane resizes and reloads. The lock lives in the
-	 * server-persisted settings (like the column widths themselves), so it follows
-	 * the user across devices, not just this browser. installLock wraps the prs
-	 * table's own resize-end. */
-	var LOCK_KEY = "webui.cqb.prs_fitlock";
-	function userLocked() {
-		try { return !!(window.theWebUI && theWebUI.settings && theWebUI.settings[LOCK_KEY]); }
-		catch (e) { return false; }
+	/* Per-column user override: the set of column ids the user has resized by hand.
+	 * Those keep their core colsdata width; the pane slack is still distributed to
+	 * the columns the user has NOT resized, so the table always fills. The set lives
+	 * in the server-persisted settings (like the column widths), so it follows the
+	 * user across devices. installLock records the column each resize touched. */
+	var WIDTHS_KEY = "webui.cqb.prs_userwidths";
+	function userWidths() {
+		try {
+			var v = window.theWebUI && theWebUI.settings ? theWebUI.settings[WIDTHS_KEY] : null;
+			if (Array.isArray(v)) return v.slice();
+			return v ? String(v).split(",").filter(Boolean) : [];
+		} catch (e) { return []; }
+	}
+	function addUserWidth(id) {
+		if (!id) return;
+		try {
+			var set = userWidths();
+			if (set.indexOf(id) === -1) {
+				set.push(id);
+				theWebUI.settings[WIDTHS_KEY] = set;
+				if (typeof theWebUI.save === "function") theWebUI.save();
+			}
+		} catch (e) { /* noop */ }
 	}
 	function installLock(obj) {
 		if (!obj || obj._cqbLock) return;
@@ -270,31 +283,23 @@
 		if (typeof origEnd === "function") {
 			obj.colDragResizeEnd = function () {
 				try {
-					theWebUI.settings[LOCK_KEY] = 1;
-					if (typeof theWebUI.save === "function") theWebUI.save();
+					var hc = this.hotCell;
+					if (hc != null && hc >= 0 && this.colsdata[hc]) addUserWidth(this.colsdata[hc].id);
 				} catch (e) { /* noop */ }
 				return origEnd.apply(this, arguments);
 			};
 		}
 	}
 
-	/* While no user width exists, Address + Client absorb the pane slack so the
-	 * table fills its width. Widths are recomputed ABSOLUTELY from the available
-	 * width and the other (possibly user-dragged) columns -- never from the
-	 * previous name/version width -- so it is reload-safe and never drifts; each
-	 * is floored at its content so a value is never clipped. Recomputed only when
-	 * the body width or enabled-column count changes. */
 	/* Flags holds the country flag + up to three 18px chips, so its default 60px
-	 * clips; floor it to fit the full cluster (never below, so a wider user width
-	 * is kept). */
-	var NAME_MIN = 150, VER_MIN = 140, FLAGS_MIN = 112, lastW = -1, lastN = -1;
+	 * clips; floor it to the full cluster. */
+	var NAME_MIN = 150, VER_MIN = 140, FLAGS_MIN = 112, lastSig = "";
 
 	/* Floor every enabled column so its header text is never clipped: Flags to the
-	 * flag+chips cluster, and each column to its header's intrinsic width. While
-	 * auto-fitting, a clipped header GROWS to fit; once the user has locked widths
-	 * by hand, a too-narrow header is left to ellipsize and carries a tooltip with
-	 * the full label instead. Returns true if any colsdata width changed. */
-	function applyMinimums(obj, cont, locked) {
+	 * flag+chips cluster, and each column to its header's intrinsic width + 2px of
+	 * slack. A column the user sized by hand is left to ellipsize with a tooltip
+	 * instead of growing. Returns true if any colsdata width changed. */
+	function applyMinimums(obj, cont, uset) {
 		var heads = cont.querySelectorAll("thead td");
 		var order = obj.colOrder || [];
 		var changed = false;
@@ -303,12 +308,13 @@
 			if (oi == null) oi = di;
 			var c = obj.colsdata[oi];
 			if (!c || !c.enabled) continue;
-			if (c.id === "flags" && (parseInt(c.width, 10) || 0) < FLAGS_MIN) { c.width = FLAGS_MIN; changed = true; }
+			var sized = uset.indexOf(c.id) !== -1;
+			if (c.id === "flags" && !sized && (parseInt(c.width, 10) || 0) < FLAGS_MIN) { c.width = FLAGS_MIN; changed = true; }
 			var d = heads[di].querySelector("div");
 			if (!d) continue;
 			var clip = d.scrollWidth > d.clientWidth + 1;
-			if (clip && !locked) {
-				c.width = (parseInt(c.width, 10) || 0) + (d.scrollWidth - d.clientWidth) + 4;
+			if (clip && !sized) {
+				c.width = (parseInt(c.width, 10) || 0) + (d.scrollWidth - d.clientWidth) + 6;
 				changed = true;
 			} else if (clip && cqb.tooltip) {
 				cqb.tooltip(d, (c.text || d.textContent || "").trim());
@@ -319,35 +325,66 @@
 		return changed;
 	}
 
+	function lastVisibleCol(obj) {
+		var order = obj.colOrder || [], last = null;
+		for (var di = 0; di < order.length; di++) {
+			var c = obj.colsdata[order[di]];
+			if (c && c.enabled) last = c;
+		}
+		return last;
+	}
+
+	/* Distribute the pane slack to the fillers the user has NOT resized (Address
+	 * first, then Client); once both are user-sized the slack goes to the last
+	 * visible column, so the table always fills. User-resized columns keep their
+	 * width; everything else keeps its header-floored minimum. */
 	function fitColumns(cont) {
 		var obj = tableObj();
 		if (!obj || !obj.colsdata) return;
 		var body = cont.querySelector(".stable-body");
 		var avail = body ? body.clientWidth : 0;
 		if (!avail) return;
-		var locked = userLocked();
-		var changed = applyMinimums(obj, cont, locked);
-		if (locked) { if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn(); return; }
-		var nameCol = null, verCol = null, other = 0, n = 0;
+		var uset = userWidths();
+		var changed = applyMinimums(obj, cont, uset);
+
+		var nameCol = null, verCol = null, n = 0;
 		for (var i = 0; i < obj.colsdata.length; i++) {
 			var c = obj.colsdata[i];
 			if (!c.enabled) continue;
 			n++;
 			if (c.id === "name") nameCol = c;
 			else if (c.id === "version") verCol = c;
-			else other += (parseInt(c.width, 10) || 0);
 		}
-		if (!nameCol || !verCol) { if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn(); return; }
-		if (avail === lastW && n === lastN && !changed) return;
-		lastW = avail; lastN = n;
+		var fillers = [];
+		if (nameCol && uset.indexOf("name") === -1) fillers.push(nameCol);
+		if (verCol && uset.indexOf("version") === -1) fillers.push(verCol);
+		if (!fillers.length) { var lv = lastVisibleCol(obj); if (lv) fillers.push(lv); }
+		if (!fillers.length) { if (changed) obj.resizeColumn(); return; }
+
+		var sig = avail + ":" + n + ":" + uset.slice().sort().join(",");
+		if (sig === lastSig && !changed) return;
+		lastSig = sig;
+
+		var other = 0;
+		for (var j = 0; j < obj.colsdata.length; j++) {
+			var cc = obj.colsdata[j];
+			if (!cc.enabled || fillers.indexOf(cc) !== -1) continue;
+			other += (parseInt(cc.width, 10) || 0);
+		}
 		var pool = avail - other - 2;
-		var nameW = Math.max(NAME_MIN, Math.round(pool * 0.6));
-		var verW = Math.max(VER_MIN, pool - nameW);
-		if (nameCol.width !== nameW || verCol.width !== verW || changed) {
-			nameCol.width = nameW;
-			verCol.width = verW;
-			if (typeof obj.resizeColumn === "function") obj.resizeColumn();
+		var touched = false;
+		if (fillers.length >= 2) {
+			var nameW = Math.max(NAME_MIN, Math.round(pool * 0.6));
+			var verW = Math.max(VER_MIN, pool - nameW);
+			if (fillers[0].width !== nameW) { fillers[0].width = nameW; touched = true; }
+			if (fillers[1].width !== verW) { fillers[1].width = verW; touched = true; }
+		} else {
+			var f = fillers[0];
+			var floor = f.id === "name" ? NAME_MIN : (f.id === "version" ? VER_MIN : (parseInt(f.width, 10) || 0));
+			var w = Math.max(floor, pool);
+			if (f.width !== w) { f.width = w; touched = true; }
 		}
+		if ((touched || changed) && typeof obj.resizeColumn === "function") obj.resizeColumn();
 	}
 
 	/* ---- observer + wiring ----------------------------------------------- */
