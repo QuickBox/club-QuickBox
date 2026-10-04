@@ -140,9 +140,41 @@
 			var placeholder = !text;
 			value.textContent = placeholder ? (select.getAttribute("data-cqb-placeholder") || "") : text;
 			value.classList.toggle("cqb-is-placeholder", placeholder);
+			fitTriggerWidth();
 			if (openController === ctx) renderList();
 		}
 		select.__cqbResync = resync;
+
+		/* Size an inline trigger to its longest option so the full label shows
+		 * without clipping against the chevron (spec: the trigger is at least as
+		 * wide as its longest option, capped at the row). Flex/full triggers
+		 * already fill their row; the collapsed clock trigger stays square.
+		 * Measurement is best-effort and never throws the control. */
+		function fitTriggerWidth() {
+			try {
+				if (trigger.hasAttribute("data-cqb-grow") ||
+					trigger.hasAttribute("data-cqb-block") ||
+					trigger.classList.contains("cqb-flm-recent")) return;
+				if (!ctx.fitFont) {
+					var cs = window.getComputedStyle(trigger);
+					ctx.fitFont = "500 " + (cs.fontSize || "14px") + " " + (cs.fontFamily || "sans-serif");
+				}
+				var longest = 0;
+				for (var i = 0; i < ctx.model.length; i++) {
+					var w = measureText(ctx.model[i].label, ctx.fitFont);
+					if (w > longest) longest = w;
+				}
+				/* 12+10 trigger padding + 10 value/chevron gap + 16 chevron. */
+				var preferred = Math.ceil(longest) + 48;
+				if (preferred > 120) {
+					trigger.style.setProperty("--cqb-fit-width", preferred + "px");
+					trigger.setAttribute("data-cqb-fit", "");
+				} else {
+					trigger.style.removeProperty("--cqb-fit-width");
+					trigger.removeAttribute("data-cqb-fit");
+				}
+			} catch (e) { /* measurement is best-effort, never fatal */ }
+		}
 
 		/* ---- Commit a pick back through the native control. ---- */
 		function commitIndex(nativeIndex) {
@@ -256,7 +288,11 @@
 			var vw = document.documentElement.clientWidth;
 			var vh = document.documentElement.clientHeight;
 			var pad = 8, gap = 4;
-			panel.style.minWidth = r.width + "px";
+			/* Panel floor: at least the trigger width, never below 180px, and
+			 * never wider than the viewport inset -- so a narrow trigger (e.g.
+			 * the collapsed Recent-folders clock) still opens a readable list
+			 * instead of a cramped sliver at the viewport edge. */
+			panel.style.minWidth = Math.min(Math.max(r.width, 180), vw - pad * 2) + "px";
 			panel.style.maxHeight = "";
 			listEl.style.maxHeight = "";
 			var ph = panel.offsetHeight;
@@ -459,6 +495,21 @@
 	}
 
 	var listSeq = 0;
+
+	/* One shared canvas measures option-label widths for trigger auto-fit, so
+	 * no hidden DOM node or reflow is needed. Falls back to a rough per-char
+	 * estimate if 2D canvas is unavailable. */
+	var measureCtx = null, measureCtxReady = false;
+	function measureText(text, font) {
+		if (!measureCtxReady) {
+			measureCtxReady = true;
+			try { measureCtx = document.createElement("canvas").getContext("2d"); }
+			catch (e) { measureCtx = null; }
+		}
+		if (!measureCtx) return String(text).length * 7.5;
+		measureCtx.font = font;
+		return measureCtx.measureText(String(text)).width;
+	}
 
 	function hookSetter(el, prop, after) {
 		try {

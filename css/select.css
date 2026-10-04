@@ -39,7 +39,7 @@ select.cqb-native {
 	display: inline-flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 8px;
+	gap: 10px;
 	height: 36px;
 	max-width: 100%;
 	min-width: 120px;
@@ -65,6 +65,18 @@ select.cqb-native {
 .cqb-select-trigger[data-cqb-block] {
 	display: flex;
 	width: 100%;
+}
+/* When an inline trigger sits in a row with room, js/select.js measures the
+ * longest option and publishes it as --cqb-fit-width so the trigger is at
+ * least that wide and its text never clips; capped at the row by 100%. */
+.cqb-select-trigger[data-cqb-fit] {
+	min-width: min(var(--cqb-fit-width, 120px), 100%);
+}
+/* The collapsed icon trigger (File Manager Recent folders) stays a square and
+ * never auto-fits; written after the fit rule so it wins at equal specificity
+ * even though the class is added after the first measure. */
+.cqb-select-trigger.cqb-flm-recent {
+	min-width: 0;
 }
 .cqb-select-trigger:hover {
 	border-color: var(--qb-fg-muted);
@@ -130,14 +142,16 @@ select.cqb-native {
 	z-index: 99998;
 	display: flex;
 	flex-direction: column;
-	max-width: 100vw;
+	max-width: calc(100vw - 16px);
 	overflow: hidden;
 	font-family: var(--qb-font);
 	color: var(--qb-foreground);
-	background: var(--qb-surface);
-	border: 1px solid var(--qb-border);
+	background: color-mix(in srgb, var(--qb-surface) 95%, transparent);
+	border: 1px solid color-mix(in srgb, var(--qb-border) 60%, transparent);
 	border-radius: var(--qb-radius-lg);
-	box-shadow: var(--qb-shadow);
+	box-shadow: var(--qb-shadow-soft);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
 	opacity: 0;
 	transform: scale(.98);
 	transform-origin: top center;
@@ -204,7 +218,7 @@ select.cqb-native {
 .cqb-select-list::-webkit-scrollbar-thumb:hover { background: var(--qb-scrollbar-thumb-hover); }
 
 .cqb-select-group {
-	padding: 8px 10px 2px;
+	padding: 8px 10px 4px;
 	font-size: 11px;
 	font-weight: 600;
 	letter-spacing: .06em;
@@ -239,17 +253,16 @@ select.cqb-native {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
-/* Highlight (keyboard + hover) -- a tinted surface, never an edge bar. */
+/* Highlight (keyboard + hover) -- a muted surface wash, never an edge bar. */
 .cqb-select-option.cqb-active {
-	background: color-mix(in srgb, var(--qb-fg-muted) 16%, transparent);
+	background: color-mix(in srgb, var(--qb-muted) 60%, transparent);
 }
-/* Selected -- tinted surface + readable primary text + medium weight + check. */
+/* Selected -- readable primary text + medium weight + check, NO tinted fill.
+ * When the selected row is also the active row it still shows only the shared
+ * muted highlight above; the selected state never adds its own fill. */
 .cqb-select-option[aria-selected="true"] {
 	color: var(--qb-primary-text);
 	font-weight: 500;
-}
-.cqb-select-option[aria-selected="true"].cqb-active {
-	background: color-mix(in srgb, var(--qb-primary) 12%, transparent);
 }
 .cqb-select-option[aria-disabled="true"] {
 	opacity: .4;
@@ -257,9 +270,9 @@ select.cqb-native {
 }
 .cqb-select-check {
 	flex: none;
-	width: 14px;
-	height: 14px;
-	background-color: var(--qb-primary-text);
+	width: 12px;
+	height: 12px;
+	background-color: var(--qb-primary);
 	-webkit-mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
 	mask: url(../images/icons/menu-check.svg) center / contain no-repeat;
 }
