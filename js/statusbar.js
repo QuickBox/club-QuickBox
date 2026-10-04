@@ -13,23 +13,18 @@
 	"use strict";
 	void cqb;
 
-	if (!window.theWebUI || typeof theWebUI.updateStatus !== "function") return;
-	if (theWebUI.cqbStatusWrapped) return;
-	theWebUI.cqbStatusWrapped = true;
+	if (window.cqbStatusBackfill) return;
+	window.cqbStatusBackfill = true;
 
+	/* The core leaves the rate cell blank at zero. A standalone interval keeps
+	 * an explicit "0 B/s" regardless of how the core schedules its refresh
+	 * (the periodic caller may hold the original updateStatus reference). */
 	function backfillZero() {
 		["stup_speed", "stdown_speed"].forEach(function (id) {
 			var el = document.getElementById(id);
 			if (el && !el.textContent.trim()) el.textContent = "0 B/s";
 		});
 	}
-
-	var original = theWebUI.updateStatus;
-	theWebUI.updateStatus = function () {
-		var result = original.apply(this, arguments);
-		try { backfillZero(); } catch (e) { /* never break the status loop */ }
-		return result;
-	};
-
+	window.setInterval(backfillZero, 1000);
 	backfillZero();
 })(window.cqb);

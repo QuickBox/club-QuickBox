@@ -125,7 +125,7 @@
  * <div>, so target it as the sthdr right after the icon, not by nth-of-type. */
 #st_up .icon + .sthdr,
 #st_down .icon + .sthdr {
-	display: none;
+	display: none !important;
 }
 
 #stup_speed,
