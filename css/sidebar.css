@@ -45,6 +45,8 @@ panel-label {
 	--badge-color: var(--qb-fg-muted);
 	--icon-letter-color: var(--qb-fg-muted);
 	--badge-background-color: var(--qb-pill-bg);
+	--badge-padding: 0 6px;
+	--badge-border-radius: 999px;
 }
 
 panel-label:hover {
@@ -63,15 +65,23 @@ panel-label[selected]:hover {
 	background-color: color-mix(in srgb, var(--qb-primary) 18%, transparent);
 }
 
-/* Count stays a right-aligned pill; size trails it as plain muted text. */
+/* Count is a right-aligned circle for one digit (min-width = height), growing
+ * into a pill once a second digit arrives; size trails it as muted text. */
 panel-label::part(count) {
 	margin-left: auto;
+	box-sizing: border-box;
+	min-width: 20px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
 }
 
 panel-label::part(size) {
 	background: transparent !important;
 	color: var(--qb-fg-muted) !important;
-	padding-left: 4px !important;
+	padding: 0 0 0 4px !important;
+	border-radius: 0 !important;
 }
 
 /* The "No Label" bucket ships a red raster via tracklabels; mask it to an SVG. */
