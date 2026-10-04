@@ -86,6 +86,51 @@
 		return { setFiles: setFiles, renderChips: renderChips };
 	}
 
+	/* Wrap a core checkbox as one pill-switch option row: the shared treatment
+	 * every add-flow dialog uses, so a boolean reads the same whether it sits in
+	 * Add Torrent, Load Torrents or the search add dialog. The core checkbox is
+	 * MOVED into the switch (never cloned), so its value and handlers stay live;
+	 * labelEl is the moved <label>, helpText an optional one-line hint. */
+	function cqbSwitchRow(cb, labelEl, helpText) {
+		var opt = document.createElement("div");
+		opt.className = "cqb-opt";
+		var sw = document.createElement("label");
+		sw.className = "cqb-switch";
+		sw.appendChild(cb);
+		var track = document.createElement("span");
+		track.className = "cqb-switch-track";
+		sw.appendChild(track);
+		var txt = document.createElement("div");
+		txt.className = "cqb-opt-text";
+		if (labelEl) txt.appendChild(labelEl);
+		if (helpText) {
+			var help = document.createElement("div");
+			help.className = "cqb-help";
+			help.textContent = helpText;
+			txt.appendChild(help);
+		}
+		opt.appendChild(sw);
+		opt.appendChild(txt);
+		return opt;
+	}
+
+	/* Convert a dialog's native add-option checkboxes into one .cqb-opts-grid of
+	 * switch rows, reusing the Add Torrent treatment. Each id names a core
+	 * checkbox; its <label for=id> is moved in beside the switch. Returns the
+	 * grid (empty if none of the ids resolved), or null. */
+	function buildOptsGrid(dlg, ids) {
+		if (!dlg) return null;
+		var grid = document.createElement("div");
+		grid.className = "cqb-opts-grid";
+		ids.forEach(function (id) {
+			var cb = document.getElementById(id);
+			if (!cb) return;
+			var lbl = dlg.querySelector('label[for="' + id + '"]');
+			grid.appendChild(cqbSwitchRow(cb, lbl));
+		});
+		return grid;
+	}
+
 	/* Rebuild the Add Torrent dialog as two v4 cards -- Source first (WHAT you
 	 * add: a File/URL segmented control over the drop-zone or the URL field),
 	 * Options second (HOW: directory, label, the four switches). Every core id
@@ -266,28 +311,8 @@
 		}
 
 		/* The four add options as switch rows in a two-column grid. */
-		var optsGrid = document.createElement("div");
-		optsGrid.className = "cqb-opts-grid";
-		["not_add_path", "torrents_start_stopped", "fast_resume", "randomize_hash"].forEach(function (id) {
-			var cb = document.getElementById(id);
-			if (!cb) return;
-			var lbl = dlg.querySelector('label[for="' + id + '"]');
-			var opt = document.createElement("div");
-			opt.className = "cqb-opt";
-			var sw = document.createElement("label");
-			sw.className = "cqb-switch";
-			sw.appendChild(cb);
-			var track = document.createElement("span");
-			track.className = "cqb-switch-track";
-			sw.appendChild(track);
-			var txt = document.createElement("div");
-			txt.className = "cqb-opt-text";
-			if (lbl) txt.appendChild(lbl);
-			opt.appendChild(sw);
-			opt.appendChild(txt);
-			optsGrid.appendChild(opt);
-		});
-		if (optsGrid.children.length) optCard.appendChild(optsGrid);
+		var optsGrid = buildOptsGrid(dlg, ["not_add_path", "torrents_start_stopped", "fast_resume", "randomize_hash"]);
+		if (optsGrid && optsGrid.children.length) optCard.appendChild(optsGrid);
 
 		/* Place Source first, Options second, then tuck the (now emptied) file
 		 * form -- it still holds #torrent_file + #add_button behind the cards. */
@@ -710,24 +735,7 @@
 			var lbl = dlg.querySelector('label[for="' + id + '"]') || document.getElementById("lbl_" + id);
 			var col = cb.closest("[class*='col-']") || cb.parentNode;
 			if (!otherFs) otherFs = col && col.closest("fieldset");
-			var opt = document.createElement("div");
-			opt.className = "cqb-opt";
-			var sw = document.createElement("label");
-			sw.className = "cqb-switch";
-			sw.appendChild(cb);
-			var track = document.createElement("span");
-			track.className = "cqb-switch-track";
-			sw.appendChild(track);
-			var txt = document.createElement("div");
-			txt.className = "cqb-opt-text";
-			if (lbl) txt.appendChild(lbl);
-			var help = document.createElement("div");
-			help.className = "cqb-help";
-			help.textContent = HELP[id] || "";
-			txt.appendChild(help);
-			opt.appendChild(sw);
-			opt.appendChild(txt);
-			opts.appendChild(opt);
+			opts.appendChild(cqbSwitchRow(cb, lbl, HELP[id]));
 		});
 		if (otherFs) {
 			var oldRow = otherFs.querySelector(".row");
@@ -1104,6 +1112,33 @@
 		}
 	}
 
+	/* Load Torrents and the search add dialog ship the same add booleans as Add
+	 * Torrent but as native checkboxes; convert them to the shared switch grid.
+	 * The core checkbox is MOVED (its id, checked state and submit handler stay
+	 * live), the emptied legacy columns are removed, and the grid drops into a
+	 * container so it collapses on its own width. Idempotent. */
+	function enhanceAddOpts(dlgId, ids) {
+		var dlg = document.getElementById(dlgId);
+		if (!dlg || dlg.getAttribute("data-cqb-opts") === "1") return;
+		var cols = [];
+		ids.forEach(function (id) {
+			var cb = document.getElementById(id);
+			if (!cb) return;
+			var col = cb.closest("[class*='col-']");
+			if (col) cols.push(col);
+		});
+		if (!cols.length) return;
+		var grid = buildOptsGrid(dlg, ids);
+		if (!grid || !grid.children.length) return;
+		dlg.setAttribute("data-cqb-opts", "1");
+		var wrap = document.createElement("div");
+		wrap.className = "cqb-opts-wrap col-12 col-md-9 offset-md-3";
+		wrap.appendChild(grid);
+		cols[0].parentNode.insertBefore(wrap, cols[0]);
+		cols.forEach(function (c) { if (c !== wrap && !c.querySelector("input")) c.remove(); });
+		return true;
+	}
+
 	/* Both dialogs are preloaded, but the task console is built a little after
 	 * the add dialog; retry (idempotently) until both are decorated. */
 	function run() {
@@ -1111,6 +1146,8 @@
 		try { enhanceTaskConsole(); } catch (e) { /* never break the dialog */ }
 		try { enhanceCreate(); } catch (e) { /* never break the dialog */ }
 		try { enhanceFieldForms(); } catch (e) { /* never break the dialog */ }
+		try { enhanceAddOpts("dlgLoadTorrents", ["RSSnot_add_path", "RSStorrents_start_stopped"]); } catch (e) { /* never break the dialog */ }
+		try { enhanceAddOpts("tegLoadTorrents", ["tegnot_add_path", "tegtorrents_start_stopped", "tegfast_resume"]); } catch (e) { /* never break the dialog */ }
 		try { enhanceUnpack(); } catch (e) { /* never break the dialog */ }
 		try { enhanceTrackLabels(); } catch (e) { /* never break the dialog */ }
 		try { enhanceEditTorrent(); } catch (e) { /* never break the dialog */ }

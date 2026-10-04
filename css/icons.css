@@ -151,7 +151,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	flex: 0 0 32px;
 	width: 32px;
 	height: 32px;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
 	display: inline-flex;
 	align-items: center;
@@ -195,7 +195,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	margin: 0;
 	padding: 0;
 	border: none;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: transparent;
 	color: var(--qb-fg-muted);
 	cursor: pointer;
@@ -441,7 +441,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	aspect-ratio: 1 / 1;
 	align-self: start;
 	border: 1px solid transparent;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-surface-2);
 	cursor: pointer;
 	display: flex;
@@ -515,7 +515,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	font-size: 13px;
 	font-weight: 500;
 	padding: 7px 14px;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	border: 1px solid transparent;
 	cursor: pointer;
 	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
@@ -637,7 +637,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	gap: 8px;
 	margin-left: auto;
 	padding: 4px 12px 4px 8px;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-surface);
 	border: 1px solid var(--qb-border);
 	max-width: 180px;
@@ -678,7 +678,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	gap: 8px;
 	padding: 28px 16px;
 	border: 1.5px dashed var(--qb-border);
-	border-radius: 12px;
+	border-radius: var(--qb-radius-lg);
 	background: var(--qb-surface-2);
 	color: var(--qb-fg-muted);
 	text-align: center;
@@ -716,7 +716,7 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	gap: 12px;
 	padding: 10px 12px;
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	background: var(--qb-surface);
 }
 

@@ -37,7 +37,7 @@ panel-label {
 	min-height: 34px;
 	margin: 1px 8px;
 	padding: 0 8px;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	font-size: 13px;
 	background-color: transparent;
 	--prefix-color: var(--qb-foreground);

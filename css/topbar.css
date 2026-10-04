@@ -105,7 +105,7 @@
 	margin: 0 2px 0 0;
 	padding: 0;
 	border: 0;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background-color: transparent;
 	background-image: none;
 	color: var(--qb-fg-muted);
@@ -181,7 +181,7 @@
 	margin: 0;
 	padding: 0;
 	border: 0;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background-color: transparent;
 	background-image: none;
 	cursor: pointer;
@@ -377,7 +377,7 @@
 	padding: 0 10px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 

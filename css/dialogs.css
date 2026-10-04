@@ -3,9 +3,10 @@
  *  Chrome shared by every .dlg-window: modal backdrop, window frame, header
  *  glyph tiles, form controls, footer buttons, the directory-browse popover,
  *  the Add Torrent card layout and the context menu. Every color is a --qb-*
- *  token; dialog-local radius is fixed in px so the v4 rounding holds whatever
- *  the global radius tokens resolve to. Form rules are scoped to .dlg-window so
- *  the table and base surfaces are left untouched.
+ *  token; card, panel, menu and control radii use the shared --qb-radius /
+ *  --qb-radius-lg tokens, while the window frame keeps a fixed 14px shell.
+ *  Form rules are scoped to .dlg-window so the table and base surfaces are
+ *  left untouched.
  */
 
 /* ============================================================
@@ -75,7 +76,7 @@ div.dlg-header > div:first-child::before {
 	transform: translateY(-50%);
 	width: 32px;
 	height: 32px;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
 }
 
@@ -194,7 +195,7 @@ a.dlg-close:visited {
 	margin: 0;
 	padding: 0;
 	border: none;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: transparent;
 	transition: background-color 0.15s ease;
 }
@@ -239,7 +240,7 @@ div.dlg-window > .cont {
  * ============================================================ */
 .dlg-window fieldset {
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	background-color: var(--qb-surface);
 	margin: 0 0 12px 0;
 	padding: 14px 14px 10px;
@@ -287,7 +288,7 @@ div.dlg-window > .cont {
 	padding: 0 10px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
 	font-size: 13px;
@@ -302,7 +303,7 @@ div.dlg-window > .cont {
 	padding: 10px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
 	font-size: 13px;
@@ -371,7 +372,7 @@ div.dlg-window > .cont {
 	margin: 0;
 	padding: 0 16px;
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-muted, var(--qb-surface-2));
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
@@ -472,7 +473,7 @@ div.dlg-window > .cont {
 dialog.browseFrame {
 	background-color: var(--qb-surface);
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	box-shadow: var(--qb-shadow);
 	color: var(--qb-foreground);
 	padding: 6px;
@@ -484,7 +485,7 @@ dialog.browseFrame .filter-dir {
 	margin-bottom: 4px;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	color: var(--qb-foreground);
 	font-size: 13px;
 }
@@ -563,7 +564,7 @@ dialog.browseFrame .rmenuitem.active {
 	container-type: inline-size;
 	padding: 20px;
 	border: 1px solid var(--qb-border);
-	border-radius: 12px;
+	border-radius: var(--qb-radius-lg);
 	background-color: var(--qb-surface);
 }
 
@@ -590,7 +591,7 @@ dialog.browseFrame .rmenuitem.active {
 	padding: 2px;
 	background: var(--qb-muted);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 }
 
 .dlg-window#tadd .cqb-seg-btn {
@@ -663,15 +664,23 @@ dialog.browseFrame .rmenuitem.active {
 	mask-image: url(../images/icons/header-label.svg);
 }
 
-/* The four add options as switch rows, two columns when there is room. */
-.dlg-window#tadd .cqb-opts-grid {
+/* Add options as switch rows, two columns when there is room. Shared by every
+ * add-flow dialog (Add Torrent, Load Torrents, the search add dialog) so one
+ * add boolean reads the same everywhere. */
+.dlg-window .cqb-opts-grid {
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	gap: 8px 16px;
 }
 
+/* A container so the grid collapses on the width it actually gets, not the
+ * viewport (the plugin add dialogs are far narrower than #tadd's card). */
+.dlg-window .cqb-opts-wrap {
+	container-type: inline-size;
+}
+
 @container (max-width: 640px) {
-	.dlg-window#tadd .cqb-opts-grid { grid-template-columns: 1fr; }
+	.dlg-window .cqb-opts-grid { grid-template-columns: 1fr; }
 }
 
 .cqb-dropzone {
@@ -684,7 +693,7 @@ dialog.browseFrame .rmenuitem.active {
 	margin: 0;
 	padding: 20px;
 	border: 2px dashed var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	background-color: var(--qb-input);
 	color: var(--qb-fg-muted);
 	text-align: center;
@@ -812,7 +821,7 @@ ul.CMenu {
 	padding: 6px;
 	background-color: var(--qb-surface);
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	box-shadow: var(--qb-shadow);
 	opacity: 1;
 	list-style: none;
@@ -912,7 +921,7 @@ ul.CMenu li a.sel:hover::before {
 ul.CMenu li ul {
 	background-color: var(--qb-surface);
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	box-shadow: var(--qb-shadow);
 	padding: 6px;
 }
@@ -975,7 +984,7 @@ ul.CMenu li ul li a.dis:hover {
 	max-width: 100%;
 	margin: 0;
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-	font-size: 12.5px;
+	font-size: 13px;
 	line-height: 1.5;
 	background: var(--qb-input);
 	color: var(--qb-foreground);
@@ -985,7 +994,7 @@ ul.CMenu li ul li a.dis:hover {
 	overflow-x: hidden;
 	overflow-y: auto;
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	padding: 10px 12px;
 }
 
@@ -1003,7 +1012,14 @@ ul.CMenu li ul li a.dis:hover {
 /* Kill the raster running-loader strip the plugin reserves space for, and
  * restore the even 12px footer padding every dialog footer uses. */
 #tsk_btns {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
 	padding: 12px 16px !important;
+	border-top: 1px solid var(--qb-border);
 	background-color: var(--qb-surface) !important;
 	background-image: none !important;
 }
@@ -1071,8 +1087,9 @@ ul.CMenu li ul li a.dis:hover {
 	color: var(--qb-destructive-text, var(--qb-destructive));
 }
 
-/* Screenshot nav arrows stay square. */
-#tsk_btns .scplay {
+/* Screenshot nav arrows stay square; the two save buttons share the .scplay
+ * class but carry a text label, so they keep the default text-width sizing. */
+#tsk_btns .scplay:not(#scsave):not(#scsaveall) {
 	min-width: 36px;
 	width: 36px;
 	padding: 0 8px;
@@ -1122,7 +1139,7 @@ ul.CMenu li ul li a.dis:hover {
 	padding: 2px;
 	background: var(--qb-muted);
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 }
 
 .cqb-mi-seg > button {
@@ -1165,7 +1182,7 @@ ul.CMenu li ul li a.dis:hover {
 
 .cqb-mi-section {
 	border: 1px solid var(--qb-border);
-	border-radius: 10px;
+	border-radius: var(--qb-radius-lg);
 	background: var(--qb-surface);
 	padding: 12px 14px;
 }
@@ -1202,7 +1219,7 @@ ul.CMenu li ul li a.dis:hover {
 
 .cqb-mi-value.cqb-mono {
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-	font-size: 12.5px;
+	font-size: 13px;
 }
 
 /* ============================================================
@@ -1451,7 +1468,7 @@ ul.CMenu li ul li a.dis:hover {
 
 #dlgEditRatioRules #ratioRuleList {
 	border-color: var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-input);
 }
 
@@ -1494,7 +1511,7 @@ ul.CMenu li ul li a.dis:hover {
 /* The filter list box carries a token border + hosts its empty state. */
 #dlgEditFilters #filterList {
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-input);
 }
 
@@ -1725,7 +1742,7 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 
 [id^="flm_popup_"] .cont .input-group > .form-control {
 	width: 100%;
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 }
 
 [id^="flm_popup_"] .cont .row { margin: 0; }
@@ -1744,7 +1761,7 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 	box-sizing: border-box;
 	overflow: auto;
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-input);
 	padding: 10px 12px;
 }
@@ -1759,7 +1776,7 @@ div.dlg-header > div:first-child:has(.sprite-console)::after {
 	word-break: break-word;
 	overflow-wrap: anywhere;
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-	font-size: 12.5px;
+	font-size: 13px;
 	line-height: 1.5;
 	color: var(--qb-foreground);
 }
@@ -1782,7 +1799,7 @@ fieldset:has(#flm_popup_console-log-container) {
 	max-height: 48vh;
 	overflow: auto;
 	border: 1px solid var(--qb-border);
-	border-radius: 8px;
+	border-radius: var(--qb-radius);
 	background: var(--qb-input);
 	padding: 10px 12px;
 }
@@ -1793,7 +1810,7 @@ fieldset:has(#flm_popup_console-log-container) {
 	white-space: pre-wrap;
 	word-break: break-word;
 	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-	font-size: 12.5px;
+	font-size: 13px;
 	color: var(--qb-foreground);
 }
 

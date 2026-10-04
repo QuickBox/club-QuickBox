@@ -307,7 +307,7 @@ div#gcont.tab {
 }
 .cqb-ov-name .cqb-mid-b { white-space: nowrap; flex: none; }
 .cqb-ov-metaline {
-	font-size: 11.5px;
+	font-size: 11px;
 	color: var(--qb-fg-muted);
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
@@ -354,7 +354,7 @@ div#gcont.tab {
 
 .cqb-hero-sub {
 	color: var(--qb-fg-muted);
-	font-size: 11.5px;
+	font-size: 11px;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 	overflow: hidden;
@@ -391,7 +391,7 @@ div#gcont.tab {
 	gap: 6px;
 	padding: 3px 10px;
 	border-radius: 999px;
-	font-size: 11.5px;
+	font-size: 12px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	background: var(--qb-pill-bg);
@@ -435,7 +435,7 @@ div#gcont.tab {
 	white-space: nowrap;
 }
 .cqb-spd-lab {
-	font-size: 10.5px;
+	font-size: 11px;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--qb-fg-muted);
@@ -541,7 +541,7 @@ div#gcont.tab {
 }
 .cqb-card-icon { width: 16px; height: 16px; flex: none; background-color: var(--qb-primary-text); }
 .cqb-card-title {
-	font-size: 12.5px;
+	font-size: 13px;
 	font-weight: 700;
 	letter-spacing: 0.03em;
 	color: var(--qb-foreground);
@@ -648,7 +648,7 @@ div#gcont.tab {
 	gap: 6px;
 	padding: 2px 9px;
 	border-radius: 999px;
-	font-size: 11.5px;
+	font-size: 12px;
 	font-weight: 600;
 	background: var(--qb-pill-bg);
 	color: var(--qb-fg-muted);
@@ -1162,7 +1162,7 @@ button#flm-nav-refresh .sprite-refresh {
 .cqb-kpi[data-met="1"] .cqb-kpi-val { color: var(--qb-primary-text); }
 .cqb-kpi[data-met="0"] .cqb-kpi-val { color: var(--qb-destructive-text); }
 .cqb-kpi-lab {
-	font-size: 9.5px;
+	font-size: 11px;
 	letter-spacing: 0.05em;
 	text-transform: uppercase;
 	color: var(--qb-fg-muted);
