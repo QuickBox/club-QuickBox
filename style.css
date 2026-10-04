@@ -22,6 +22,7 @@
 	--qb-input: #0a1120;
 	--qb-primary: #26ae7f;
 	--qb-primary-fg: #060818;
+	--qb-primary-text: #26ae7f;
 	--qb-accent: #2aebcb;
 	--qb-accent-fg: #060818;
 	--qb-accent-text: #2aebcb;
@@ -67,6 +68,7 @@
 	--qb-input: #1b1917;
 	--qb-primary: #f0a500;
 	--qb-primary-fg: #181614;
+	--qb-primary-text: #f0a500;
 	--qb-accent: #483d2c;
 	--qb-accent-fg: #e3e0db;
 	--qb-accent-text: #e8c582;

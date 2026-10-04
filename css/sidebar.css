@@ -3,20 +3,43 @@
  *  Moved out of style.css; every color reads from a --qb-* token.
  */
 
-/* Side / category panels */
+/* Side / category panels. Section headings are flat (no bands): 11px
+ * uppercase muted with a tinted SVG chevron; the raster chevron is killed. */
 category-panel {
 	color: var(--qb-foreground);
 	--open-background-image: none;
 	--close-background-image: none;
-	--heading-background-color: var(--qb-surface-2);
+	--heading-background-color: transparent;
 	--heading-border-color: transparent;
 }
 
+category-panel::part(heading) {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--qb-fg-muted);
+	padding: 14px 8px 4px;
+}
+
+category-panel::part(heading)::before {
+	width: 14px !important;
+	height: 14px !important;
+	background: var(--qb-fg-muted) !important;
+	-webkit-mask: url(../images/icons/panel-expanded.svg) center / 12px no-repeat !important;
+	mask: url(../images/icons/panel-expanded.svg) center / 12px no-repeat !important;
+}
+
+/* Rows: 34px, radius 8, inset 8px from the panel edge; glyph + gap + label. */
 panel-label {
 	color: var(--qb-foreground);
 	border: none;
-	padding: 4px;
-	background-color: var(--qb-surface);
+	min-height: 34px;
+	margin: 1px 8px;
+	padding: 0 8px;
+	border-radius: 8px;
+	font-size: 13px;
+	background-color: transparent;
 	--prefix-color: var(--qb-foreground);
 	--prefix-fontsize: 21px;
 	--badge-color: var(--qb-fg-muted);
@@ -29,14 +52,60 @@ panel-label:hover {
 }
 
 panel-label[selected] {
-	background-color: var(--qb-surface-2);
-	color: var(--qb-primary);
+	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	color: var(--qb-primary-text);
 	text-shadow: none;
-	--badge-color: var(--qb-primary);
+	box-shadow: inset 2px 0 0 var(--qb-primary);
+	--badge-color: var(--qb-primary-text);
 }
 
 panel-label[selected]:hover {
-	background-color: var(--qb-surface-3);
+	background-color: color-mix(in srgb, var(--qb-primary) 18%, transparent);
+}
+
+/* Count stays a right-aligned pill; size trails it as plain muted text. */
+panel-label::part(count) {
+	margin-left: auto;
+}
+
+panel-label::part(size) {
+	background: transparent !important;
+	color: var(--qb-fg-muted) !important;
+	padding-left: 4px !important;
+}
+
+/* The "No Label" bucket ships a red raster via tracklabels; mask it to an SVG. */
+panel-label[icon$="label=nlb"]::part(icon) {
+	flex: 0 0 16px;
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	background-image: none !important;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/header-label.svg) center / 16px no-repeat;
+	mask: url(../images/icons/header-label.svg) center / 16px no-repeat;
+}
+
+/* The "save view" control in the Views heading: a flat masked icon button,
+ * not the stock bordered box; the core click handler stays intact. */
+#pview_save_view_button.Button {
+	min-width: 20px;
+	width: 20px;
+	height: 20px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 6px;
+	font-size: 0;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/toolbar-add.svg) center / 16px no-repeat;
+	mask: url(../images/icons/toolbar-add.svg) center / 16px no-repeat;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+#pview_save_view_button.Button:hover {
+	background-color: var(--qb-foreground);
 }
 
 /* Category/view glyphs: SVG masks tinted per state, drawn into the shadow
@@ -194,43 +263,3 @@ category-list {
 	border: 1px solid var(--qb-border);
 }
 
-category-panel::part(heading) {
-	font-size: 12px;
-}
-
-div[part="heading"] {
-	display: flex;
-	background-color: var(--qb-surface-2);
-	border-top: 1px solid var(--qb-border);
-	border-bottom: 1px solid var(--qb-border);
-	padding: 2px 5px 2px 21px;
-	margin: 0;
-	line-height: 16px;
-	cursor: pointer;
-	user-select: none;
-}
-
-div[part=heading]::before {
-	content: "";
-	display: block;
-	width: 16px;
-	height: 28px !important;
-	background-color: var(--qb-icon);
-	-webkit-mask: url(../images/icons/panel-expanded.svg) center / 14px no-repeat;
-	mask: url(../images/icons/panel-expanded.svg) center / 14px no-repeat;
-}
-
-:host([closed]) div[part="heading"]::before {
-	-webkit-mask-image: url(../images/icons/panel-collapsed.svg);
-	mask-image: url(../images/icons/panel-collapsed.svg);
-}
-
-[part="count"],
-[part="size"] {
-	color: var(--qb-foreground);
-	background-color: var(--qb-pill-bg);
-	padding: 0.1em 0.3em;
-	border-radius: 0.8em;
-	font-size: 10px;
-	white-space: nowrap;
-}
