@@ -44,9 +44,9 @@
 	transition: opacity 0.15s ease;
 }
 
-#VDivider:hover,
-#HDivider:hover {
-	background-color: color-mix(in srgb, var(--qb-primary) 32%, transparent);
+div#VDivider:hover,
+div#HDivider:hover {
+	background: color-mix(in srgb, var(--qb-primary) 32%, transparent);
 }
 
 #VDivider:hover::after {
