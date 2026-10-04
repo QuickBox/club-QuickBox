@@ -721,6 +721,28 @@
 			 * without coupling to flm internals. */
 			render();
 			new MutationObserver(render).observe(navpath, { childList: true });
+
+			/* The shared select enhances this history <select> into a trigger +
+			 * popover. Collapse that trigger to a compact "Recent folders" clock
+			 * button pinned at the toolbar's far right: the breadcrumb stays the
+			 * single visible path, while the popover still lists the path history
+			 * and drives the kept-wired <select>. The trigger may not exist yet
+			 * when this runs, so wait for it. */
+			var tagRecent = function () {
+				var trig = group.querySelector(".cqb-select-trigger");
+				if (!trig) return false;
+				trig.classList.add("cqb-flm-recent");
+				trig.removeAttribute("data-cqb-grow");
+				group.appendChild(trig);
+				if (cqb && cqb.tooltip) cqb.tooltip(trig, "Recent folders");
+				return true;
+			};
+			if (!tagRecent()) {
+				var recentMo = new MutationObserver(function () {
+					if (tagRecent()) recentMo.disconnect();
+				});
+				recentMo.observe(group, { childList: true });
+			}
 		} catch (e) { /* never break the bundle */ }
 	}
 

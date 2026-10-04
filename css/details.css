@@ -722,7 +722,11 @@ div#tdetails.cqb-empty .cqb-details-empty {
 	gap: 6px;
 	min-width: 0;
 	width: auto;
+	padding: 0;
 }
+
+/* Zero the stock input-group child margins so the row sits flush. */
+#flm-navigation-head .input-group > * { margin: 0; }
 
 /* Icon-button group (refresh, dir-up, mkdir). */
 .cqb-flm-tools {
@@ -779,8 +783,8 @@ button#flm-nav-refresh .sprite-refresh {
 	mask: center / 16px no-repeat;
 }
 
-/* Hide the stock history <select>; the breadcrumb replaces it (handler
- * stays wired for keyboard users via the sr-only class). */
+/* Hide the stock history <select>; the breadcrumb shows the path and the
+ * compact Recent trigger drives this control (kept wired, sr-only). */
 #flm-navpath.cqb-sr {
 	position: absolute;
 	width: 1px;
@@ -837,6 +841,47 @@ button#flm-nav-refresh .sprite-refresh {
 	font-size: 12px;
 	padding: 0 1px;
 }
+
+/* "Recent folders" -- the history <select>, enhanced by the shared select,
+ * collapsed to a compact clock trigger at the toolbar's far right. Only as
+ * wide as its glyph + chevron; the popover lists the path history. */
+.cqb-flm-recent.cqb-select-trigger,
+.cqb-flm-recent.cqb-select-trigger[data-cqb-grow] {
+	flex: none;
+	width: auto;
+	min-width: 0;
+	gap: 3px;
+	padding: 0 7px;
+	background: transparent;
+	border-color: transparent;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-flm-recent.cqb-select-trigger::before {
+	content: "";
+	flex: none;
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: url(../images/icons/statusbar-clock.svg) center / 16px no-repeat;
+	mask: url(../images/icons/statusbar-clock.svg) center / 16px no-repeat;
+}
+
+.cqb-flm-recent .cqb-select-value { display: none; }
+
+.cqb-flm-recent.cqb-select-trigger:hover,
+.cqb-flm-recent.cqb-select-trigger[aria-expanded="true"] {
+	background: var(--qb-surface-3);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+}
+
+/* File table fills the pane: Name flexes into the free space, the tabular
+ * columns keep their widths; the stock dxSTable would otherwise leave the
+ * right half of the pane empty. */
+#flm-browser-table table { width: 100%; }
+#flm-browser-table colgroup col:first-child,
+#flm-browser-table thead td[index="0"] { width: auto !important; }
 
 /* ============================================================
  * Flot charts (Speed + Traffic tabs) -- token series colors are set
