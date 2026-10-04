@@ -292,8 +292,10 @@
 		var b = ensureEditBtn();
 		editRow = el;
 		var r = el.getBoundingClientRect();
-		b.style.top = (r.top + (r.height - 22) / 2) + "px";
-		b.style.left = (r.right - 28) + "px";
+		// Seat the 24px button in the right-edge slot the count/size cluster
+		// vacates on hover (8px inset clears the row's own right padding).
+		b.style.top = (r.top + (r.height - 24) / 2) + "px";
+		b.style.left = (r.right - 24 - 8) + "px";
 		b.classList.add("is-visible");
 		clearTimeout(hideTimer);
 	}
@@ -373,8 +375,8 @@
 		/* --- icons panel --- */
 		var iconsPanel = el("div", "cqb-panel");
 		var controls = el("div", "cqb-picker-controls");
-		var search = el("div", "cqb-search cqb-input-group");
-		var searchIco = el("span", "cqb-search-ico"); searchIco.setAttribute("aria-hidden", "true");
+		var search = el("div", "cqb-pk-search cqb-input-group");
+		var searchIco = el("span", "cqb-pk-search-ico"); searchIco.setAttribute("aria-hidden", "true");
 		var searchInput = el("input", null, { type: "text", placeholder: "Search icons", "aria-label": "Search icons" });
 		search.appendChild(searchIco); search.appendChild(searchInput);
 		var chips = el("div", "cqb-cat-chips"); chips.setAttribute("role", "group"); chips.setAttribute("aria-label", "Categories");

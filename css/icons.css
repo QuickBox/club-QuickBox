@@ -30,26 +30,30 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	background-color: var(--cqb-tint, var(--qb-primary-text)) !important;
 }
 
-/* Hover edit affordance: one shared floating button repositioned over the row
- * on hover (panel-label is a closed shadow template with no slot, so an inline
- * child cannot render -- a floating overlay is the only non-plugin path). */
+/* Hover edit affordance: one shared 24px square button repositioned over the
+ * row on hover (panel-label is a closed shadow template with no slot, so an
+ * inline child cannot render -- a floating overlay is the only non-plugin path).
+ * It seats in the right-edge slot the count/size cluster vacates on hover (see
+ * the ::part fade below), so it never covers row content. */
 .cqb-row-edit {
 	position: fixed;
 	z-index: 9000;
-	width: 22px;
-	height: 22px;
+	width: 24px;
+	height: 24px;
+	min-width: 0;
+	min-height: 0;
 	margin: 0;
 	padding: 0;
 	border: none;
 	border-radius: 6px;
-	background-color: var(--qb-surface-3);
+	background-color: var(--qb-surface-2);
 	color: var(--qb-foreground);
 	display: none;
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
 	box-shadow: var(--qb-shadow-soft);
-	transition: background-color 0.12s ease, transform 0.12s ease;
+	transition: background-color 0.12s ease;
 }
 
 .cqb-row-edit.is-visible {
@@ -58,24 +62,36 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 
 .cqb-row-edit::before {
 	content: "";
-	width: 13px;
-	height: 13px;
-	background-color: var(--qb-icon);
+	width: 14px;
+	height: 14px;
+	background-color: var(--qb-fg-muted);
 	-webkit-mask: url(../images/icons/fm-rename.svg) center / contain no-repeat;
 	mask: url(../images/icons/fm-rename.svg) center / contain no-repeat;
 }
 
 .cqb-row-edit:hover {
-	background-color: var(--qb-primary);
+	background-color: var(--qb-surface-3);
 }
 
 .cqb-row-edit:hover::before {
-	background-color: var(--qb-primary-fg);
+	background-color: var(--qb-foreground);
 }
 
 .cqb-row-edit:focus-visible {
 	outline: 2px solid var(--qb-ring);
 	outline-offset: 2px;
+}
+
+/* On hover of a label/tracker row, fade the count/size cluster so the edit
+ * button can take its place at the right edge without covering any content. */
+#plabel panel-label:hover::part(count),
+#plabel panel-label:hover::part(separator),
+#plabel panel-label:hover::part(size),
+#ptrackers panel-label:hover::part(count),
+#ptrackers panel-label:hover::part(separator),
+#ptrackers panel-label:hover::part(size) {
+	opacity: 0;
+	transition: opacity 0.12s ease;
 }
 
 /* ============================================================
@@ -276,12 +292,12 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 /* Search: the shared .cqb-input-group supplies the single 36px field and one
  * focus-within ring; a leading magnifier glyph sits inside that one border so
  * the control reads as a single box, not a box within a box. */
-.cqb-search {
+.cqb-pk-search {
 	position: relative;
 	align-items: center;
 }
 
-.cqb-search-ico {
+.cqb-pk-search-ico {
 	position: absolute;
 	left: 12px;
 	top: 50%;
@@ -295,11 +311,11 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 }
 
 /* The input fills the whole group; only its left padding clears the glyph. */
-.cqb-search > input {
+.cqb-pk-search > input {
 	padding-left: 32px;
 }
 
-.cqb-search > input::placeholder {
+.cqb-pk-search > input::placeholder {
 	color: var(--qb-fg-muted);
 }
 
@@ -442,7 +458,10 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	flex: 1 1 auto;
 }
 
-.cqb-btn {
+/* All .cqb-btn rules are scoped under the picker root: the top-bar lane reuses
+ * the same .cqb-btn class (js/topbar.js adds it to every #t a button), so an
+ * unscoped rule here would leak our padding/width into the 36x36 icon buttons. */
+.cqb-picker .cqb-btn {
 	appearance: none;
 	/* Neutralise core style.css button { width:80px; margin:0.25rem }. */
 	width: auto;
@@ -457,42 +476,42 @@ panel-label[data-cqb-mask][selected]::part(icon) {
 	transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
 
-.cqb-btn:focus-visible {
+.cqb-picker .cqb-btn:focus-visible {
 	outline: 2px solid var(--qb-ring);
 	outline-offset: 2px;
 }
 
-.cqb-btn-ghost {
+.cqb-picker .cqb-btn-ghost {
 	background: transparent;
 	color: var(--qb-fg-muted);
 	border-color: var(--qb-border);
 }
 
-.cqb-btn-ghost:hover {
+.cqb-picker .cqb-btn-ghost:hover {
 	color: var(--qb-foreground);
 	background: var(--qb-surface-2);
 }
 
-.cqb-btn-secondary {
+.cqb-picker .cqb-btn-secondary {
 	background: var(--qb-surface-2);
 	color: var(--qb-foreground);
 	border-color: var(--qb-border);
 }
 
-.cqb-btn-secondary:hover {
+.cqb-picker .cqb-btn-secondary:hover {
 	background: var(--qb-surface-3);
 }
 
-.cqb-btn-primary {
+.cqb-picker .cqb-btn-primary {
 	background: var(--qb-primary);
 	color: var(--qb-primary-fg);
 }
 
-.cqb-btn-primary:hover {
+.cqb-picker .cqb-btn-primary:hover {
 	filter: brightness(1.06);
 }
 
-.cqb-btn:disabled {
+.cqb-picker .cqb-btn:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
@@ -752,5 +771,5 @@ button.cqb-row-edit {
 
 button.cqb-row-edit:hover,
 button.cqb-row-edit:active {
-	background-color: var(--qb-primary);
+	background-color: var(--qb-surface-3);
 }
