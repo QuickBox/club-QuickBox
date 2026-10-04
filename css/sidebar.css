@@ -96,26 +96,48 @@ panel-label[icon$="label=nlb"]::part(icon) {
 	mask: url(../images/icons/header-label.svg) center / 16px no-repeat;
 }
 
-/* The "save view" control in the Views heading: a flat masked icon button,
- * not the stock bordered box; the core click handler stays intact. */
+/* The "save view" control in the Views heading: a square 24x24 icon button
+ * (radius 6, 14px muted glyph) rather than the stock bordered box. The glyph
+ * is a ::before mask so the button itself can carry a hover surface; the core
+ * click handler stays intact. */
 #pview_save_view_button.Button {
-	min-width: 20px;
-	width: 20px;
-	height: 20px;
+	position: relative;
+	box-sizing: border-box;
+	min-width: 24px;
+	width: 24px;
+	min-height: 24px;
+	height: 24px;
 	margin: 0;
 	padding: 0;
-	border: none;
+	border: 0;
 	border-radius: 6px;
 	font-size: 0;
-	background-color: var(--qb-fg-muted);
-	-webkit-mask: url(../images/icons/toolbar-add.svg) center / 16px no-repeat;
-	mask: url(../images/icons/toolbar-add.svg) center / 16px no-repeat;
+	background-color: transparent;
+	background-image: none;
 	cursor: pointer;
 	transition: background-color 0.15s ease;
 }
 
+#pview_save_view_button.Button::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/toolbar-add.svg) center / 14px no-repeat;
+	mask: url(../images/icons/toolbar-add.svg) center / 14px no-repeat;
+}
+
 #pview_save_view_button.Button:hover {
+	background-color: var(--qb-surface-2);
+}
+
+#pview_save_view_button.Button:hover::before {
 	background-color: var(--qb-foreground);
+}
+
+#pview_save_view_button.Button:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
 }
 
 /* Category/view glyphs: SVG masks tinted per state, drawn into the shadow
@@ -271,5 +293,99 @@ category-list {
 
 #side-panel {
 	border: 1px solid var(--qb-border);
+}
+
+/* ============================================================
+ * Icon rail -- the collapsed sidebar (data-cqb-rail on <html>).
+ * The 264px sidebar drops to a fixed 76px column; the main column
+ * (flex:1 1 auto) reclaims the space. Rows become a centered 20px glyph
+ * in a 36px target with the count as a corner badge; labels/size hide and
+ * the custom tooltip carries "Label (count)". Section headings collapse to
+ * hairline separators. Active = tint + primary-text, no edge bar. Every
+ * core panel-label click/filter handler is untouched.
+ * ============================================================ */
+:root[data-cqb-rail] #offcanvas-sidepanel {
+	flex: 0 0 76px !important;
+	width: 76px !important;
+	min-width: 76px !important;
+	max-width: 76px !important;
+	overflow-x: hidden;
+}
+
+/* Lock the sidebar divider while collapsed so the stored hsplit survives
+ * untouched and restores on expand (the rail width wins meanwhile). */
+:root[data-cqb-rail] #HDivider {
+	pointer-events: none;
+	cursor: default;
+}
+
+/* Rows: a centered glyph in a 36px target; label, size and separator hide. */
+:root[data-cqb-rail] panel-label {
+	position: relative;
+	justify-content: center;
+	margin: 1px 10px;
+	padding: 0;
+	min-height: 36px;
+}
+
+:root[data-cqb-rail] panel-label::part(text),
+:root[data-cqb-rail] panel-label::part(size),
+:root[data-cqb-rail] panel-label::part(separator) {
+	display: none !important;
+}
+
+:root[data-cqb-rail] panel-label::part(icon) {
+	flex: 0 0 20px !important;
+	margin-right: 0 !important;
+	width: 20px !important;
+	height: 20px !important;
+	-webkit-mask-size: 20px !important;
+	mask-size: 20px !important;
+}
+
+/* Count -> a small corner badge pinned to the row's top-right (the host is
+ * positioned, so the shadow part anchors to it). */
+:root[data-cqb-rail] panel-label::part(count) {
+	position: absolute;
+	top: 1px;
+	right: 6px;
+	margin-left: 0;
+	box-sizing: border-box;
+	min-width: 15px;
+	height: 15px;
+	line-height: 15px;
+	padding: 0 4px;
+	font-size: 10px;
+	border-radius: 999px;
+}
+
+:root[data-cqb-rail] panel-label[selected]::part(count) {
+	color: var(--qb-primary-text);
+}
+
+/* The Views "save view" button has no room in the rail. */
+:root[data-cqb-rail] #pview_save_view_button.Button {
+	display: none;
+}
+
+/* Section headings -> hairline separators (label + chevron hidden). */
+:root[data-cqb-rail] category-panel::part(heading) {
+	font-size: 0 !important;
+	letter-spacing: 0 !important;
+	height: 1px;
+	padding: 0 !important;
+	margin: 10px 14px;
+	background-color: var(--qb-border);
+	overflow: hidden;
+}
+
+:root[data-cqb-rail] category-panel::part(heading)::before {
+	display: none !important;
+}
+
+/* The first section needs no leading separator. */
+:root[data-cqb-rail] category-list > category-panel:first-of-type::part(heading) {
+	margin-top: 2px;
+	height: 0;
 }
 

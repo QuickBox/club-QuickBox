@@ -35,6 +35,13 @@
 	};
 	function label(id) { var p = LABELS[id]; return p ? t(p[0], p[1]) : ""; }
 
+	/* Toggle labels; English defaults seed theUILang so a loaded translation
+	 * wins when present. The rail state + persistence live in js/sidebar.js. */
+	if (window.theUILang) {
+		theUILang.cqb_nav_collapse = theUILang.cqb_nav_collapse || "Collapse sidebar";
+		theUILang.cqb_nav_expand = theUILang.cqb_nav_expand || "Expand sidebar";
+	}
+
 	function el(tag, cls) {
 		var e = document.createElement(tag);
 		if (cls) e.className = cls;
@@ -126,6 +133,35 @@
 	/* ============================================================
 	 * Containers.
 	 * ============================================================ */
+	/* Sidebar rail toggle -- far left, before the brand. A square 36px control
+	 * from the top-bar family (not a 44px circle), with a hamburger that morphs
+	 * to an X when collapsed. Behavior + persistence belong to the sidebar
+	 * module (window.cqb.rail); click/keyboard resolve it lazily so either
+	 * module may load first. Initial aria is seeded from the shared cookie. */
+	var navToggle = el("a", "nav-toggle cqb-nav-toggle");
+	navToggle.href = "#!";
+	navToggle.setAttribute("role", "button");
+	navToggle.setAttribute("tabindex", "0");
+	var bars = el("span");
+	bars.setAttribute("aria-hidden", "true");
+	navToggle.appendChild(bars);
+	var initCollapsed = /(?:^|;\s*)qb_sidebar=collapsed/.test(document.cookie) ||
+		document.documentElement.hasAttribute("data-cqb-rail");
+	var toggleLbl = initCollapsed ? t("cqb_nav_expand", "Expand sidebar")
+		: t("cqb_nav_collapse", "Collapse sidebar");
+	navToggle.setAttribute("aria-expanded", initCollapsed ? "false" : "true");
+	navToggle.setAttribute("data-collapsed", initCollapsed ? "true" : "false");
+	navToggle.setAttribute("aria-label", toggleLbl);
+	cqb.tooltip(navToggle, toggleLbl);
+	function fireToggle() { if (window.cqb && cqb.rail) cqb.rail.toggle(); }
+	navToggle.addEventListener("click", function (e) { e.preventDefault(); fireToggle(); });
+	navToggle.addEventListener("keydown", function (e) {
+		if (e.key === "Enter" || e.key === " " || e.keyCode === 13 || e.keyCode === 32) {
+			e.preventDefault();
+			fireToggle();
+		}
+	});
+
 	var brand = el("div", "cqb-brand");
 	var markEl = el("span", "cqb-brand-mark");
 	var word = el("span", "cqb-brand-word");
@@ -381,6 +417,7 @@
 	/* ============================================================
 	 * Order the bar + drop leftover empty wrappers / core separators.
 	 * ============================================================ */
+	nav.appendChild(navToggle);
 	nav.appendChild(brand);
 	if (add) nav.appendChild(add);
 	nav.appendChild(gTransport);
@@ -389,7 +426,7 @@
 	nav.appendChild(sep());
 	nav.appendChild(gPlugins);
 	nav.appendChild(rc);
-	var keep = [brand, add, gTransport, gRemove, gPlugins, rc];
+	var keep = [navToggle, brand, add, gTransport, gRemove, gPlugins, rc];
 	Array.prototype.slice.call(nav.children).forEach(function (ch) {
 		if (keep.indexOf(ch) !== -1 || (ch.classList && ch.classList.contains("cqb-tb-sep"))) return;
 		var isSep = ch.classList && ch.classList.contains("TB_Separator");

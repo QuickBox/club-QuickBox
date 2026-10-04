@@ -4,9 +4,131 @@
  *  Loaded by init.js once theWebUI is ready. Runs in global scope with
  *  theWebUI, jQuery ($, $$) and window.cqb available. The leading
  *  semicolon keeps the file safe if it is ever concatenated after another.
- *  A feature lane fills in the sidebar surface; an empty module is a no-op.
+ *
+ *  Owns the icon-rail collapse: the toggle lives in the top bar (js/topbar.js
+ *  builds the .cqb-nav-toggle control), the state + persistence + reflow live
+ *  here on window.cqb.rail. Collapsed, the 264px sidebar drops to a 76px rail
+ *  styled by css/sidebar.css; every core panel-label click/filter handler is
+ *  left intact (we add a root attribute and a tooltip, never touch the nodes).
  */
 ;(function (cqb) {
 	"use strict";
-	void cqb;
+	if (!cqb) return;
+	if (window.cqbSidebarInit) return;
+	window.cqbSidebarInit = true;
+
+	var RAIL_SETTING = "webui.cqb.rail";
+	var COOKIE_DAYS = 365;
+	var root = document.documentElement;
+
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
+	/* Localized labels for the toggle; English defaults seed theUILang so a
+	 * translation (loaded before the modules run) wins when present. */
+	if (window.theUILang) {
+		theUILang.cqb_nav_collapse = theUILang.cqb_nav_collapse || "Collapse sidebar";
+		theUILang.cqb_nav_expand = theUILang.cqb_nav_expand || "Expand sidebar";
+	}
+
+	function sidebar() { return document.getElementById("offcanvas-sidepanel"); }
+
+	/* Mirror the dashboard's cookie so the two shells share one choice:
+	 * Path=/ makes it visible to the v4 dashboard on the same host. */
+	function writeCookie(value) {
+		document.cookie = "qb_sidebar=" + value + "; Path=/; Max-Age=" +
+			(COOKIE_DAYS * 24 * 60 * 60) + "; SameSite=Lax";
+	}
+	function cookieCollapsed() {
+		var m = document.cookie.match(/(?:^|;\s*)qb_sidebar=([^;]*)/);
+		return m ? (m[1] === "collapsed") : null; /* null = unset */
+	}
+
+	/* Collapsed rows hide their label, so each needs a tooltip carrying
+	 * "Label (count)". Composed from the panel-label attributes; refreshed as
+	 * the live counts change while the rail is open. */
+	function refreshRailTips() {
+		var sp = sidebar();
+		if (!sp) return;
+		var rows = sp.querySelectorAll("panel-label");
+		for (var i = 0; i < rows.length; i++) {
+			var pl = rows[i];
+			var text = (pl.getAttribute("text") || "").trim();
+			if (!text) continue;
+			var count = pl.getAttribute("count");
+			var tip = text + (count != null && count !== "" ? " (" + count + ")" : "");
+			cqb.tooltip(pl, tip);
+		}
+	}
+
+	/* The canonical reflow: recompute the layout from hsplit/vsplit so the
+	 * table + details drawer re-fit to the new main-column width and the
+	 * dxSTable scroll area is corrected. */
+	function reflow() {
+		if (window.theWebUI && typeof theWebUI.resize === "function") {
+			try { theWebUI.resize(); } catch (e) { /* layout not ready yet */ }
+		}
+	}
+
+	function syncToggle(collapsed) {
+		var tgl = document.querySelector(".cqb-nav-toggle");
+		if (!tgl) return;
+		tgl.setAttribute("aria-expanded", collapsed ? "false" : "true");
+		tgl.setAttribute("data-collapsed", collapsed ? "true" : "false");
+		var lbl = collapsed ? t("cqb_nav_expand", "Expand sidebar")
+			: t("cqb_nav_collapse", "Collapse sidebar");
+		tgl.setAttribute("aria-label", lbl);
+		cqb.tooltip(tgl, lbl);
+	}
+
+	var collapsed = false;
+
+	function apply(next, persist) {
+		collapsed = !!next;
+		if (collapsed) root.setAttribute("data-cqb-rail", "1");
+		else root.removeAttribute("data-cqb-rail");
+		syncToggle(collapsed);
+		if (collapsed) refreshRailTips();
+		reflow();
+		if (persist) {
+			writeCookie(collapsed ? "collapsed" : "expanded");
+			if (window.theWebUI && theWebUI.settings) {
+				theWebUI.settings[RAIL_SETTING] = collapsed ? 1 : 0;
+				if (typeof theWebUI.save === "function") {
+					try { theWebUI.save(); } catch (e) { /* settings save is best-effort */ }
+				}
+			}
+		}
+	}
+
+	/* window.cqb.rail -- the single source of truth; the top-bar toggle calls
+	 * toggle(), lazily, so load order between the two modules never matters. */
+	cqb.rail = {
+		isCollapsed: function () { return collapsed; },
+		set: function (v) { apply(v, true); },
+		toggle: function () { apply(!collapsed, true); }
+	};
+
+	/* Initial state follows the dashboard's qb_sidebar cookie (same idea as the
+	 * variant engine following qb_theme); when unset, the stored rail setting;
+	 * else expanded. A no-persist apply so the first paint writes nothing back. */
+	function initialCollapsed() {
+		var c = cookieCollapsed();
+		if (c !== null) return c;
+		var s = (window.theWebUI && theWebUI.settings) ? theWebUI.settings[RAIL_SETTING] : undefined;
+		return s === 1 || s === "1" || s === true;
+	}
+	apply(initialCollapsed(), false);
+
+	/* Keep the rail tooltips current as counts update while collapsed. */
+	if (window.MutationObserver) {
+		var sp = sidebar();
+		if (sp) {
+			new MutationObserver(function () {
+				if (collapsed) refreshRailTips();
+			}).observe(sp, {
+				subtree: true, attributes: true,
+				attributeFilter: ["count", "text", "selected"]
+			});
+		}
+	}
 })(window.cqb);

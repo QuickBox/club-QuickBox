@@ -90,6 +90,85 @@
 }
 
 /* ============================================================
+ * Sidebar rail toggle -- the leftmost control, a square 36px button
+ * from the icon-button family. A hamburger that morphs to an X when the
+ * sidebar is collapsed (data-collapsed="true"), tinted with tokens.
+ * ============================================================ */
+#t .cqb-nav-toggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	flex: none;
+	margin: 0 2px 0 0;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background-color: transparent;
+	background-image: none;
+	color: var(--qb-fg-muted);
+	cursor: pointer;
+	transition: background-color 0.15s ease-out, color 0.15s ease-out;
+}
+
+#t .cqb-nav-toggle:hover {
+	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
+	background-image: none;
+	color: var(--qb-foreground);
+	text-decoration: none;
+}
+
+#t .cqb-nav-toggle:active {
+	background-color: color-mix(in srgb, var(--qb-primary) 20%, transparent);
+}
+
+#t .cqb-nav-toggle:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
+#t .cqb-nav-toggle span {
+	position: relative;
+	display: block;
+	width: 17px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+	transition: transform 180ms ease, opacity 180ms ease;
+}
+
+#t .cqb-nav-toggle span::before,
+#t .cqb-nav-toggle span::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	width: 17px;
+	height: 2px;
+	border-radius: 999px;
+	background: currentColor;
+	transition: transform 180ms ease, opacity 180ms ease;
+}
+
+#t .cqb-nav-toggle span::before { top: -6px; }
+#t .cqb-nav-toggle span::after { top: 6px; }
+
+/* Collapsed (rail): the bars cross into an X that invites re-expanding. */
+#t .cqb-nav-toggle[data-collapsed="true"] span { transform: rotate(45deg); }
+#t .cqb-nav-toggle[data-collapsed="true"] span::before { transform: translateY(6px) rotate(90deg); }
+#t .cqb-nav-toggle[data-collapsed="true"] span::after { transform: translateY(-6px) rotate(90deg); }
+
+@media (prefers-reduced-motion: reduce) {
+	#t .cqb-nav-toggle span,
+	#t .cqb-nav-toggle span::before,
+	#t .cqb-nav-toggle span::after {
+		transition: none;
+	}
+}
+
+/* ============================================================
  * Icon buttons -- 36px hit target, 18px glyph, token tint.
  * ============================================================ */
 #t a.cqb-btn {
