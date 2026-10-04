@@ -53,6 +53,7 @@
 	border-radius: 0;
 	overflow-x: hidden;
 	overflow-y: auto;
+	scrollbar-gutter: stable;
 }
 
 /* Filter field pinned above the scrolling nav list */
@@ -110,8 +111,9 @@
 
 #stg .cqb-stg-group:first-of-type { padding-top: 2px; }
 
-#stg .cqb-stg-group.cqb-hidden,
-#stg .lm.list-group .list-group-item.cqb-hidden { display: none; }
+/* Filter-hidden rows/headers: these must out-rank the two-id base row rule. */
+#stg #stg_c .lm.list-group .cqb-stg-group.cqb-hidden,
+#stg #stg_c .lm.list-group .list-group-item.cqb-hidden { display: none; }
 
 /* Nav rows */
 #stg #stg_c .lm.list-group .list-group-item {
