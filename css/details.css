@@ -501,29 +501,54 @@ button#flm-nav-refresh .sprite-refresh {
  * a 40px surface row, Clear as an icon-button (details.js), 32px selects.
  * ============================================================ */
 #traf_graph_ctrl,
+#Chunks > div.d-flex.flex-row,
 .cqb-pane-toolbar {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: 8px;
 	height: 40px;
-	padding: 0 8px;
+	padding: 0 10px;
 	margin-bottom: 8px;
 	background: var(--qb-surface-2);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius-lg);
+	overflow-x: auto;
+	scrollbar-width: thin;
 }
 
 #traf_graph_ctrl select,
+#Chunks > div.d-flex.flex-row select,
 .cqb-pane-toolbar select {
 	height: 32px;
 	padding: 0 8px;
 	width: auto;
+	flex: none;
 	background-color: var(--qb-input);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
 	font-size: 13px;
+}
+
+/* Chunks stat chips in the toolbar row. */
+#Chunks > div.d-flex.flex-row .sthdr {
+	flex: none;
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+#Chunks > div.d-flex.flex-row .stval {
+	flex: none;
+	color: var(--qb-foreground);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	margin-right: 4px;
 }
 
 #traf_graph { margin-top: 2px; }
