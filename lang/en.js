@@ -201,3 +201,6 @@ theUILang.cqb_ao_bind                 = "Bind address";
 theUILang.cqb_ao_session              = "Session directory";
 theUILang.cqb_ao_timeout_safe_sync    = "Safe sync timeout";
 theUILang.cqb_ao_timeout_sync         = "Sync timeout";
+theUILang.cqb_empty_ratio_rules       = "No ratio rules yet";
+theUILang.cqb_empty_rss_filters       = "No filters yet";
+theUILang.cqb_empty_rss_group         = "No feeds in this group yet";

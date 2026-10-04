@@ -791,9 +791,53 @@
 			if (!dlg || dlg.id === "stg") return; /* settings lane owns its footer */
 			if (footer.getAttribute("data-cqb-footer") === "1") return;
 			footer.setAttribute("data-cqb-footer", "1");
-			var primary = footer.querySelector(".OK, input[type='submit'], .cqb-primary");
+			var primary = footer.querySelector(".OK, input[type='submit'], .cqb-primary, .flm-diag-start");
 			if (primary && primary.parentNode === footer) footer.appendChild(primary);
 		});
+	}
+
+	/* File Manager dialogs (console + the shared modal window) are built
+	 * lazily on first open, so they miss the one-shot run(). Decorate each
+	 * when the dialog node lands in #dialog-container: trim the input-group /
+	 * legend colons into the lane field layout, promote the start action to
+	 * primary, and float it rightmost. Header glyph + layout are pure CSS. */
+	function enhanceFileManager(dlg) {
+		if (!dlg || dlg.getAttribute("data-cqb-flm") === "1") return;
+		dlg.setAttribute("data-cqb-flm", "1");
+		stripColons(dlg); /* label.input-group-text ("Rename to:") loses its colon */
+		dlg.querySelectorAll("legend").forEach(function (l) {
+			if (l.children.length) return;
+			l.textContent = l.textContent.replace(/\s*:\s*$/, ""); /* "Command log:" */
+		});
+		var start = dlg.querySelector(".flm-diag-start");
+		if (start) start.classList.add("cqb-primary");
+		dlg.querySelectorAll(".buttons-list").forEach(function (f) {
+			var p = f.querySelector(".cqb-primary, .OK, input[type='submit'], .flm-diag-start");
+			if (p && p.parentNode === f) f.appendChild(p);
+		});
+	}
+
+	var flmObserved = false;
+	function observeFileManager() {
+		if (flmObserved) return;
+		var container = document.getElementById("dialog-container");
+		if (!container) return;
+		flmObserved = true;
+		/* Decorate any FM dialogs already present, then watch for new ones. */
+		container.querySelectorAll("[id^='flm_popup_'].dlg-window").forEach(function (d) {
+			try { enhanceFileManager(d); } catch (e) { /* never break the dialog */ }
+		});
+		var obs = new MutationObserver(function (muts) {
+			muts.forEach(function (m) {
+				Array.prototype.forEach.call(m.addedNodes, function (n) {
+					if (n.nodeType !== 1) return;
+					if (n.id && n.id.indexOf("flm_popup_") === 0 && n.classList.contains("dlg-window")) {
+						try { enhanceFileManager(n); } catch (e) { /* never break the dialog */ }
+					}
+				});
+			});
+		});
+		obs.observe(container, { childList: true });
 	}
 
 	/* Both dialogs are preloaded, but the task console is built a little after
@@ -807,6 +851,7 @@
 		try { enhanceTrackLabels(); } catch (e) { /* never break the dialog */ }
 		try { enhanceEmptyStates(); } catch (e) { /* never break the dialog */ }
 		try { decorateConfirms(); normalizeFooters(); } catch (e) { /* never break the dialog */ }
+		try { observeFileManager(); } catch (e) { /* never break the dialog */ }
 		try { sweepBrowse(); patchDirBrowser(); } catch (e) { /* never break the dialog */ }
 		return enhanced("tadd", "data-cqb-add") &&
 			enhanced("tskConsole", "data-cqb-tsk") &&

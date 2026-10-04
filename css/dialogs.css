@@ -1466,3 +1466,219 @@ ul.CMenu li ul li a.dis:hover {
 #dlgAbout .pt-3 { margin-top: 8px; }
 
 #dlgAbout a { color: var(--qb-primary-text, var(--qb-primary)); }
+
+/* ============================================================
+ * Ratio Rules THEN rows (rev23): the label shrinks to its text
+ * and the select trigger grows, so each select has room for its
+ * longest option. The select panel itself belongs to select.css.
+ * ============================================================ */
+#dlgEditRatioRules fieldset .row.align-items-center > [class*="col-"]:first-child {
+	flex: 0 0 auto;
+	width: auto;
+	max-width: 55%;
+}
+
+#dlgEditRatioRules fieldset .row.align-items-center > [class*="col-"]:last-child {
+	flex: 1 1 auto;
+	width: auto;
+	min-width: 0;
+}
+
+/* ============================================================
+ * File Manager dialogs (console + the shared modal window):
+ * header glyph tile, lane field layout, one console scroll
+ * region, a flush footer bar. The plugin prepends a raster
+ * sprite <icon> and zeroes the title padding -- both undone.
+ * ============================================================ */
+
+/* Restore the 44px glyph gutter the plugin zeroes, and drop its
+ * raster sprite (the spritesheet would double under my glyph). */
+#flm_popup_window > div.dlg-header > div:first-child,
+#flm_popup_console > div.dlg-header > div:first-child {
+	padding-left: 44px;
+}
+
+#flm_popup_window-header .flm-sprite-diag,
+#flm_popup_console-header .flm-sprite-diag {
+	display: none;
+}
+
+/* Per-task header glyph, keyed off the sprite class the plugin
+ * prepends (the modal window is shared across operations). */
+#flm_popup_console-header::after {
+	-webkit-mask-image: url(../images/icons/fm-console.svg);
+	mask-image: url(../images/icons/fm-console.svg);
+}
+#flm_popup_window-header:has(.sprite-mkdir)::after {
+	-webkit-mask-image: url(../images/icons/fm-mkdir.svg);
+	mask-image: url(../images/icons/fm-mkdir.svg);
+}
+#flm_popup_window-header:has(.sprite-rename)::after {
+	-webkit-mask-image: url(../images/icons/fm-rename.svg);
+	mask-image: url(../images/icons/fm-rename.svg);
+}
+#flm_popup_window-header:has(.sprite-delete)::after {
+	-webkit-mask-image: url(../images/icons/fm-delete.svg);
+	mask-image: url(../images/icons/fm-delete.svg);
+}
+#flm_popup_window-header:has(.sprite-copy)::after {
+	-webkit-mask-image: url(../images/icons/fm-copy.svg);
+	mask-image: url(../images/icons/fm-copy.svg);
+}
+#flm_popup_window-header:has(.sprite-move)::after {
+	-webkit-mask-image: url(../images/icons/fm-move.svg);
+	mask-image: url(../images/icons/fm-move.svg);
+}
+#flm_popup_window-header:has(.sprite-permissions)::after {
+	-webkit-mask-image: url(../images/icons/header-settings.svg);
+	mask-image: url(../images/icons/header-settings.svg);
+}
+#flm_popup_window-header:has(.sprite-archive_create)::after {
+	-webkit-mask-image: url(../images/icons/fm-archive-create.svg);
+	mask-image: url(../images/icons/fm-archive-create.svg);
+}
+#flm_popup_window-header:has(.sprite-archive_extract)::after {
+	-webkit-mask-image: url(../images/icons/fm-extract.svg);
+	mask-image: url(../images/icons/fm-extract.svg);
+}
+#flm_popup_window-header:has(.sprite-checksum_create)::after,
+#flm_popup_window-header:has(.sprite-checksum_check)::after {
+	-webkit-mask-image: url(../images/icons/fm-checksum-create.svg);
+	mask-image: url(../images/icons/fm-checksum-create.svg);
+}
+#flm_popup_window-header:has(.sprite-nfo_view)::after {
+	-webkit-mask-image: url(../images/icons/file-nfo.svg);
+	mask-image: url(../images/icons/file-nfo.svg);
+}
+
+/* Field layout: un-fuse the Bootstrap input-group chip into the lane
+ * pattern -- a left muted label above a full-width input. */
+:is(#flm_popup_window, #flm_popup_console) .cont .input-group {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	margin-bottom: 12px;
+}
+
+:is(#flm_popup_window, #flm_popup_console) .cont .input-group > .input-group-text {
+	justify-content: flex-start;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: left;
+}
+
+:is(#flm_popup_window, #flm_popup_console) .cont .input-group > .form-control {
+	width: 100%;
+	border-radius: 8px;
+}
+
+:is(#flm_popup_window, #flm_popup_console) .cont .row { margin: 0; }
+
+/* Console: one scroll region. Core forces 380/420px + an inline 500x310
+ * box with a scrolling <pre> inside (box-in-box, double scroll). The
+ * container is the single scroller; the <pre> just flows. */
+#flm_popup_console #flm_popup_console-log-container {
+	width: auto !important;
+	max-width: 100%;
+	height: auto !important;
+	min-height: 200px !important;
+	max-height: 46vh;
+	box-sizing: border-box;
+	overflow: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	background: var(--qb-input);
+	padding: 10px 12px;
+}
+
+#flm_popup_console #flm_popup_console-log-container > pre {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	overflow: visible;
+	white-space: pre-wrap;
+	word-break: break-word;
+	overflow-wrap: anywhere;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12.5px;
+	line-height: 1.5;
+	color: var(--qb-foreground);
+}
+
+/* The console surface is the card; the fieldset carries no inner box. */
+#flm_popup_console fieldset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: none;
+}
+
+/* NFO view: token the scroll box, drop the fixed raster-era dimensions. */
+#flm_popup_window #flm_popup_nfo_view-content {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	min-height: 200px;
+	max-height: 48vh;
+	overflow: auto;
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+	background: var(--qb-input);
+	padding: 10px 12px;
+}
+
+#flm_popup_window #flm_popup_nfo_view-content pre {
+	margin: 0;
+	overflow: visible;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 12.5px;
+	color: var(--qb-foreground);
+}
+
+/* The FM footer lives INSIDE .cont; pull it flush to the dialog edges
+ * with a hairline + normal padding (no oversized band, no float). */
+:is(#flm_popup_window, #flm_popup_console) .cont > .buttons-list,
+:is(#flm_popup_window, #flm_popup_console) .cont > form + .buttons-list {
+	float: none;
+	width: auto;
+	margin: 12px -16px -16px;
+	padding: 12px 16px;
+	border-top: 1px solid var(--qb-border);
+	background: var(--qb-surface);
+}
+
+/* The start action is the primary confirm (JS adds .cqb-primary too). */
+:is(#flm_popup_window, #flm_popup_console) .flm-diag-start {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+
+/* ============================================================
+ * Rounded-corner integrity (rev26): every dialog window clips to
+ * its own radius so no edge surface (footer, header, body) can
+ * notch a corner. The File Manager plugin forces overflow:visible
+ * on its windows; its dir-browser popover lives in #dir-container
+ * (not a descendant), so restoring the clip is safe. Window-bottom
+ * footers also carry the matching bottom radius as a backstop.
+ * ============================================================ */
+#flm_popup_window.dlg-window,
+#flm_popup_console.dlg-window {
+	overflow: hidden;
+}
+
+.dlg-window > .buttons-list,
+:is(#flm_popup_window, #flm_popup_console) .cont > .buttons-list,
+:is(#flm_popup_window, #flm_popup_console) .cont > form + .buttons-list {
+	border-bottom-left-radius: 14px;
+	border-bottom-right-radius: 14px;
+}
