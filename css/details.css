@@ -88,10 +88,13 @@ div#tdcont {
 #tab_traf a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-traffic.svg); mask-image: url(../images/icons/tab-traffic.svg); }
 #tab_lcont a.nav-link::before { -webkit-mask-image: url(../images/icons/tab-log.svg); mask-image: url(../images/icons/tab-log.svg); }
 
-.tabbar li.nav-item a.nav-link:hover {
+.tabbar li.nav-item a.nav-link:hover,
+.tabbar li.nav-item a.nav-link:focus {
 	color: var(--qb-foreground);
+	border-top: 0;
 	border-bottom-color: var(--qb-border);
 	background: transparent;
+	text-decoration: none;
 }
 
 .tabbar li.nav-item.selected a.nav-link,

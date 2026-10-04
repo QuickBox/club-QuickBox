@@ -124,6 +124,9 @@ a:focus {
 	--bs-btn-hover-bg: var(--qb-surface-3);
 	--bs-btn-hover-border-color: var(--qb-border);
 	--bs-btn-hover-color: var(--qb-foreground);
+	--bs-btn-active-bg: var(--qb-surface-3);
+	--bs-btn-active-border-color: var(--qb-border);
+	--bs-btn-active-color: var(--qb-foreground);
 }
 
 /* Horizontal Rule */
@@ -337,11 +340,24 @@ legend {
 	color: var(--qb-fg-muted);
 }
 
-/* Generic buttons */
+/* Generic buttons -- token hover/active surfaces so the core near-white
+ * washes never show on any variant, for every button family. */
 button:not(:disabled):hover,
 input[type=button]:not(:disabled):hover,
+input[type=submit]:not(:disabled):hover,
+input.Button:not(:disabled):hover,
 a.Button:not(:disabled):hover {
 	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
+}
+
+button:not(:disabled):active,
+input[type=button]:not(:disabled):active,
+input[type=submit]:not(:disabled):active,
+input.Button:not(:disabled):active,
+a.Button:not(:disabled):active {
+	background-color: var(--qb-surface-3);
+	color: var(--qb-foreground);
 }
 
 button,

@@ -46,12 +46,12 @@
 
 #VDivider:hover,
 #HDivider:hover {
-	background-color: var(--qb-primary);
+	background-color: color-mix(in srgb, var(--qb-primary) 32%, transparent);
 }
 
 #VDivider:hover::after {
-	opacity: 0.9;
-	background-color: var(--qb-primary-fg);
+	opacity: 1;
+	background-color: var(--qb-primary);
 }
 
 /* Selection marquee */
