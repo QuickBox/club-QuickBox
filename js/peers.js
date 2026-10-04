@@ -1,0 +1,303 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- Peers pane (#PeerList).
+ *
+ *  Loaded by init.js once theWebUI is ready. Runs in global scope with
+ *  theWebUI, dxSTable, jQuery and window.cqb available. The leading semicolon
+ *  keeps the file safe if it is ever concatenated after another.
+ *
+ *  The core `prs` dxSTable re-renders its cells in place on every peers poll,
+ *  so none of its text is clobbered: one MutationObserver, batched per frame,
+ *  tags each cell with data-cqb-col (the stable column id) and layers the
+ *  decoration css/peers.css draws -- a framed country flag + mono IP, glyph
+ *  chips for the peer flags, the shared Done track (--cqb-p), muted zeros and
+ *  tinted live rates, the country name without its |CC| prefix, and the
+ *  zero-peers empty state. Address + Client absorb the pane slack so the table
+ *  fills its width.
+ */
+;(function (cqb) {
+	"use strict";
+
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
+	/* Peer-flag chip labels + the zero-peers message. */
+	theUILang.cqb_peerFlagIncoming = theUILang.cqb_peerFlagIncoming || "Incoming connection";
+	theUILang.cqb_peerFlagEncrypted = theUILang.cqb_peerFlagEncrypted || "Encrypted";
+	theUILang.cqb_peerFlagSnubbed = theUILang.cqb_peerFlagSnubbed || "Snubbed";
+	theUILang.cqb_noPeers = theUILang.cqb_noPeers || "No peers connected";
+
+	var CONTAINER = "PeerList";
+	/* Peer flag letter -> { glyph svg, chip key, label }. Order drives render. */
+	var FLAGS = [
+		{ ch: "I", kind: "incoming",  svg: "toolbar-move-down", label: "cqb_peerFlagIncoming" },
+		{ ch: "E", kind: "encrypted", svg: "search-private",    label: "cqb_peerFlagEncrypted" },
+		{ ch: "S", kind: "snubbed",   svg: "state-error",       label: "cqb_peerFlagSnubbed" }
+	];
+
+	/* geoip2 serves its flag gifs from plugins/geoip2/flags/<cc>.gif; css/table.css
+	 * blanks every .stable-icon, so the Address flag is re-pointed inline from this
+	 * base (derived off the theme plugin path, which ends in the skin dir). */
+	function flagsBase() {
+		var p = (cqb && cqb.path) || "";
+		var root = p.replace(/plugins\/theme\/.*$/, "");
+		return root + "plugins/geoip2/flags/";
+	}
+	var FLAGS_BASE = flagsBase();
+
+	function tableObj() {
+		try {
+			return window.theWebUI && theWebUI.tables && theWebUI.tables.prs
+				? theWebUI.tables.prs.obj : null;
+		} catch (e) { return null; }
+	}
+
+	/* Cell class stable-PeerList-col-N carries the ORIGINAL column index, so
+	 * obj.ids[N] is the stable column id regardless of display reorder. */
+	function cellColId(td, ids) {
+		var m = /stable-PeerList-col-(\d+)/.exec(td.className || "");
+		if (!m || !ids) return null;
+		var id = ids[parseInt(m[1], 10)];
+		return id == null ? null : id;
+	}
+
+	function firstDiv(td) {
+		for (var i = 0; i < td.children.length; i++) {
+			if (td.children[i].tagName === "DIV" &&
+				!td.children[i].classList.contains("meter-value")) return td.children[i];
+		}
+		return null;
+	}
+
+	/* ---- per-column decorators ------------------------------------------- */
+
+	function decorateFlag(td) {
+		var icon = td.querySelector(".stable-icon");
+		if (!icon) return;
+		var m = /geoip_flag_([a-z]{2})/i.exec(icon.className || "");
+		if (!m) return;
+		var cc = m[1].toLowerCase();
+		if (icon.getAttribute("data-cqb-cc") === cc) return;
+		icon.setAttribute("data-cqb-cc", cc);
+		icon.style.backgroundImage = 'url("' + FLAGS_BASE + cc + '.gif")';
+		if (!icon.classList.contains("cqb-flag")) icon.classList.add("cqb-flag");
+	}
+
+	function makeChip(spec) {
+		var chip = document.createElement("span");
+		chip.className = "cqb-flag-chip";
+		chip.setAttribute("data-flag", spec.kind);
+		var glyph = document.createElement("span");
+		glyph.className = "cqb-flag-glyph";
+		var u = 'url("' + cqb.path + "images/icons/" + spec.svg + '.svg")';
+		glyph.style.webkitMaskImage = u;
+		glyph.style.maskImage = u;
+		chip.appendChild(glyph);
+		if (cqb.tooltip) cqb.tooltip(chip, t(spec.label, spec.kind));
+		return chip;
+	}
+
+	function decorateFlags(td) {
+		var div = firstDiv(td);
+		var letters = div ? (div.textContent || "").trim() : "";
+		var box = td.querySelector(".cqb-flags");
+		if (box && box.getAttribute("data-f") === letters) return;
+		if (!box) {
+			box = document.createElement("span");
+			box.className = "cqb-flags";
+			td.insertBefore(box, td.firstChild);
+		}
+		box.setAttribute("data-f", letters);
+		box.textContent = "";
+		for (var i = 0; i < FLAGS.length; i++) {
+			if (letters.indexOf(FLAGS[i].ch) !== -1) box.appendChild(makeChip(FLAGS[i]));
+		}
+	}
+
+	/* The core writes the fill percent as .meter-value's inline width; mirror it
+	 * onto the cell as --cqb-p (0..1) so css/table.css draws the fixed track. */
+	function decorateDone(td) {
+		var mv = td.querySelector(".meter-value");
+		if (!mv) return;
+		var pct = parseFloat(mv.style.width);
+		if (isNaN(pct)) return;
+		if (pct < 0) pct = 0; else if (pct > 100) pct = 100;
+		td.style.setProperty("--cqb-p", pct / 100);
+	}
+
+	/* Drop the geoip "|CC| " prefix, leaving the country name. Idempotent: after
+	 * the strip the text no longer matches, so a repeat pass is a no-op; the next
+	 * core update re-adds the prefix and is stripped again. */
+	function decorateCountry(td) {
+		var div = firstDiv(td);
+		if (!div) return;
+		var txt = div.textContent || "";
+		var m = /^\|[A-Za-z]{2}\|\s*/.exec(txt);
+		if (m) div.textContent = txt.slice(m[0].length);
+	}
+
+	/* Trailing version token muted; the client name stays in the foreground. */
+	function decorateClient(td) {
+		var div = firstDiv(td);
+		if (!div) return;
+		var raw = div.textContent || "";
+		if (div.getAttribute("data-cqb-cv") === raw && div.querySelector(".cqb-ver")) return;
+		var m = /^(.*\S)\s+(v?\d[\w.\-]*)$/.exec(raw);
+		div.textContent = "";
+		if (m) {
+			div.appendChild(document.createTextNode(m[1] + " "));
+			var vs = document.createElement("span");
+			vs.className = "cqb-ver";
+			vs.textContent = m[2];
+			div.appendChild(vs);
+		} else {
+			div.appendChild(document.createTextNode(raw));
+		}
+		div.setAttribute("data-cqb-cv", div.textContent);
+	}
+
+	/* A byte total or rate that formats to zero (or an empty rate) is muted. */
+	function decorateZero(td) {
+		var div = firstDiv(td);
+		var zero = !div || !parseFloat(div.textContent || "");
+		if (zero !== td.classList.contains("cqb-zero")) td.classList.toggle("cqb-zero", zero);
+	}
+
+	function decorateCell(td, ids) {
+		var id = cellColId(td, ids);
+		if (!id) return;
+		if (td.getAttribute("data-cqb-col") !== id) td.setAttribute("data-cqb-col", id);
+		switch (id) {
+			case "name": decorateFlag(td); break;
+			case "flags": decorateFlags(td); break;
+			case "done": decorateDone(td); break;
+			case "country": decorateCountry(td); break;
+			case "version": decorateClient(td); break;
+			case "downloaded": case "uploaded": case "peerdownloaded":
+			case "dl": case "ul": case "peerdl": decorateZero(td); break;
+			default: break;
+		}
+	}
+
+	function realRows(cont) {
+		return cont.querySelectorAll(".stable-body tbody:not(.stable-virtpad) tr");
+	}
+
+	function decorateAll(cont, ids) {
+		var rows = realRows(cont);
+		for (var i = 0; i < rows.length; i++) {
+			var cells = rows[i].cells;
+			for (var c = 0; c < cells.length; c++) decorateCell(cells[c], ids);
+		}
+	}
+
+	/* ---- empty state ----------------------------------------------------- */
+
+	function ensureEmpty(cont) {
+		var el = cont.querySelector(".cqb-peer-empty");
+		if (el) return el;
+		el = document.createElement("div");
+		el.className = "cqb-peer-empty";
+		var g = document.createElement("span");
+		g.className = "cqb-peer-empty-glyph";
+		var u = 'url("' + cqb.path + 'images/icons/tab-peers.svg")';
+		g.style.webkitMaskImage = u;
+		g.style.maskImage = u;
+		var txt = document.createElement("span");
+		txt.className = "cqb-peer-empty-text";
+		txt.textContent = t("cqb_noPeers", "No peers connected");
+		el.appendChild(g);
+		el.appendChild(txt);
+		cont.appendChild(el);
+		return el;
+	}
+
+	/* A selected torrent with zero peer rows shows the empty state. No selection
+	 * is the details module's prompt, never ours. */
+	function updateEmpty(cont) {
+		ensureEmpty(cont);
+		var selected = false;
+		try { selected = !!(window.theWebUI && theWebUI.dID); } catch (e) { selected = false; }
+		var empty = selected && realRows(cont).length === 0;
+		if (empty !== cont.hasAttribute("data-cqb-empty")) {
+			if (empty) cont.setAttribute("data-cqb-empty", "1");
+			else cont.removeAttribute("data-cqb-empty");
+		}
+	}
+
+	/* ---- fill the pane --------------------------------------------------- */
+
+	/* Address + Client take the slack so the table fills its pane. Recomputed
+	 * absolutely (never incrementally) and only when the body width or the
+	 * enabled-column count changes, so it neither drifts nor fights a steady
+	 * layout; other columns keep whatever width the user dragged them to. */
+	var lastW = -1, lastN = -1;
+	function fitColumns(cont) {
+		var obj = tableObj();
+		if (!obj || !obj.colsdata) return;
+		var body = cont.querySelector(".stable-body");
+		var avail = body ? body.clientWidth : 0;
+		if (!avail) return;
+		var nameCol = null, verCol = null, other = 0, n = 0;
+		for (var i = 0; i < obj.colsdata.length; i++) {
+			var c = obj.colsdata[i];
+			if (!c.enabled) continue;
+			n++;
+			if (c.id === "name") nameCol = c;
+			else if (c.id === "version") verCol = c;
+			else other += (parseInt(c.width, 10) || 0);
+		}
+		if (!nameCol || !verCol) return;
+		if (nameCol.cqbBase == null) nameCol.cqbBase = parseInt(nameCol.width, 10) || 100;
+		if (verCol.cqbBase == null) verCol.cqbBase = parseInt(verCol.width, 10) || 120;
+		if (avail === lastW && n === lastN) return;
+		lastW = avail; lastN = n;
+		var slack = avail - other - nameCol.cqbBase - verCol.cqbBase - 2;
+		var nameW = nameCol.cqbBase, verW = verCol.cqbBase;
+		if (slack > 2) { nameW += Math.round(slack * 0.6); verW += (slack - Math.round(slack * 0.6)); }
+		if (nameCol.width !== nameW || verCol.width !== verW) {
+			nameCol.width = nameW;
+			verCol.width = verW;
+			if (typeof obj.resizeColumn === "function") obj.resizeColumn();
+		}
+	}
+
+	/* ---- observer + wiring ----------------------------------------------- */
+
+	function run(cont) {
+		var ids = null;
+		var obj = tableObj();
+		if (obj) ids = obj.ids;
+		if (ids) decorateAll(cont, ids);
+		fitColumns(cont);
+		updateEmpty(cont);
+	}
+
+	function watch(cont) {
+		if (!cont || cont.getAttribute("data-cqb-peers")) return;
+		cont.setAttribute("data-cqb-peers", "1");
+		run(cont);
+		var pending = false;
+		function schedule() {
+			if (pending) return;
+			pending = true;
+			requestAnimationFrame(function () { pending = false; run(cont); });
+		}
+		try {
+			new MutationObserver(schedule).observe(cont, {
+				subtree: true, childList: true, attributes: true, attributeFilter: ["style", "class"]
+			});
+		} catch (e) { /* never break the bundle */ }
+		try {
+			if (window.ResizeObserver) new ResizeObserver(schedule).observe(cont);
+			else window.addEventListener("resize", schedule);
+		} catch (e) { window.addEventListener("resize", schedule); }
+	}
+
+	function init() {
+		var cont = document.getElementById(CONTAINER);
+		if (cont) watch(cont);
+	}
+
+	init();
+	/* The peer table can finish building just after this module is injected. */
+	setTimeout(init, 1200);
+})(window.cqb);

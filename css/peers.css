@@ -1,0 +1,174 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- Peers pane (#PeerList).
+ *  The core `prs` dxSTable plus the geoip2 Country/Comment columns, dressed in
+ *  the torrent-table language: a framed country flag + mono IP in Address,
+ *  glyph chips for the peer flags, the shared Done track, right-aligned
+ *  tabular numerics with muted zeros and tinted live rates, the country NAME
+ *  only, and a centered empty state. js/peers.js tags each cell with
+ *  data-cqb-col (the stable column id) and feeds the flag + chips + fill;
+ *  every color is a --qb-* token and the table is scoped to #PeerList.
+ */
+
+/* ============================================================
+ * Address -- framed 16x12 country flag sharing one baseline with
+ * the IP in the mono font. The flag is the core .stable-icon (a
+ * geoip raster), re-pointed inline by js/peers.js; css/table.css
+ * blanks every .stable-icon, so this restores it as a data image
+ * (no mask, no tint) and frames it.
+ * ============================================================ */
+#PeerList td[data-cqb-col="name"] > div {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	letter-spacing: 0;
+}
+
+#PeerList td[data-cqb-col="name"] .stable-icon.cqb-flag {
+	float: none;
+	display: inline-block;
+	width: 16px;
+	height: 12px;
+	margin: 0 8px 0 0;
+	padding: 0 !important;
+	vertical-align: middle;
+	border-radius: 2px;
+	border: 1px solid var(--qb-border);
+	background-color: transparent;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: cover;
+	-webkit-mask: none;
+	mask: none;
+}
+
+/* ============================================================
+ * Flags -- one glyph chip per peer flag. js/peers.js hides the
+ * core letters and injects .cqb-flags (right-aligned to match the
+ * column). Each chip is an 18px tinted square with a masked glyph;
+ * incoming reads neutral, encrypted primary, snubbed warning.
+ * ============================================================ */
+#PeerList td[data-cqb-col="flags"] > div {
+	display: none;
+}
+
+#PeerList .cqb-flags {
+	display: inline-flex;
+	gap: 4px;
+	align-items: center;
+	justify-content: flex-end;
+	width: 100%;
+	height: 20px;
+	padding-right: 10px;
+	box-sizing: border-box;
+}
+
+#PeerList .cqb-flag-chip {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	flex: none;
+	border-radius: var(--qb-radius);
+	background: color-mix(in srgb, var(--cqb-chip, var(--qb-fg-muted)) 16%, transparent);
+}
+
+#PeerList .cqb-flag-chip > .cqb-flag-glyph {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	background-color: var(--cqb-chip, var(--qb-fg-muted));
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+#PeerList .cqb-flag-chip[data-flag="incoming"] { --cqb-chip: var(--qb-fg-muted); }
+#PeerList .cqb-flag-chip[data-flag="encrypted"] { --cqb-chip: var(--qb-primary); }
+#PeerList .cqb-flag-chip[data-flag="snubbed"] { --cqb-chip: var(--qb-state-paused); }
+
+/* ============================================================
+ * Numbers + rates -- right-aligned tabular-nums. Byte totals mute
+ * at zero; live rates take the speed tokens (down/peer-down cyan,
+ * up green) and mute when zero. js/peers.js adds .cqb-zero.
+ * ============================================================ */
+#PeerList td[data-cqb-col="downloaded"] > div,
+#PeerList td[data-cqb-col="uploaded"] > div,
+#PeerList td[data-cqb-col="peerdownloaded"] > div,
+#PeerList td[data-cqb-col="dl"] > div,
+#PeerList td[data-cqb-col="ul"] > div,
+#PeerList td[data-cqb-col="peerdl"] > div {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#PeerList td[data-cqb-col="dl"]:not(.cqb-zero) > div,
+#PeerList td[data-cqb-col="peerdl"]:not(.cqb-zero) > div {
+	color: var(--qb-speed-down);
+}
+
+#PeerList td[data-cqb-col="ul"]:not(.cqb-zero) > div {
+	color: var(--qb-speed-up);
+}
+
+#PeerList td.cqb-zero > div {
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Country NAME only (js/peers.js drops the |CC| prefix) + muted
+ * Comment, matching the subdued metadata weight.
+ * ============================================================ */
+#PeerList td[data-cqb-col="comment"] > div {
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Client -- name in the foreground, trailing version muted.
+ * ============================================================ */
+#PeerList td[data-cqb-col="version"] .cqb-ver {
+	color: var(--qb-fg-muted);
+	margin-left: 5px;
+}
+
+/* ============================================================
+ * Empty state -- a selected torrent with zero connected peers.
+ * js/peers.js sets data-cqb-empty on #PeerList and injects the
+ * overlay; the no-torrent-selected prompt belongs to the details
+ * module and is never shown here.
+ * ============================================================ */
+#PeerList {
+	position: relative;
+}
+
+#PeerList .cqb-peer-empty {
+	position: absolute;
+	inset: 36px 0 0 0;
+	display: none;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 24px;
+	pointer-events: none;
+	color: var(--qb-fg-muted);
+	background: var(--qb-surface);
+	z-index: 2;
+}
+
+#PeerList[data-cqb-empty] .cqb-peer-empty {
+	display: flex;
+}
+
+#PeerList .cqb-peer-empty .cqb-peer-empty-glyph {
+	width: 40px;
+	height: 40px;
+	flex: none;
+	background-color: var(--qb-fg-muted);
+	opacity: 0.6;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+#PeerList .cqb-peer-empty .cqb-peer-empty-text {
+	font-family: var(--qb-font);
+	font-size: 13px;
+	line-height: 1.3;
+}
