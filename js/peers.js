@@ -276,15 +276,27 @@
 			}
 		} catch (e) { /* noop */ }
 	}
-	function installLock(obj) {
+	/* Record a user width ONLY from a real pointer drag of a column divider -- never
+	 * from a programmatic resizeColumn, a load, a sort, a toggle or our own fit (all
+	 * of which can reach colDragResizeEnd or move widths). A genuine resize starts
+	 * with a pointerdown while the engine has a divider under the cursor
+	 * (obj.hotCell > -1) and ends with colDragResizeEnd while obj.isResizing is set. */
+	function installLock(obj, cont) {
 		if (!obj || obj._cqbLock) return;
 		obj._cqbLock = true;
+		var dragging = false;
+		cont.addEventListener("pointerdown", function () { dragging = obj.hotCell > -1; }, true);
+		var clear = function () { setTimeout(function () { dragging = false; }, 0); };
+		window.addEventListener("pointerup", clear, true);
+		window.addEventListener("pointercancel", function () { dragging = false; }, true);
 		var origEnd = obj.colDragResizeEnd;
 		if (typeof origEnd === "function") {
 			obj.colDragResizeEnd = function () {
 				try {
-					var hc = this.hotCell;
-					if (hc != null && hc >= 0 && this.colsdata[hc]) addUserWidth(this.colsdata[hc].id);
+					if (dragging && this.isResizing) {
+						var hc = this.hotCell;
+						if (hc != null && hc >= 0 && this.colsdata[hc]) addUserWidth(this.colsdata[hc].id);
+					}
 				} catch (e) { /* noop */ }
 				return origEnd.apply(this, arguments);
 			};
@@ -371,7 +383,7 @@
 			if (!cc.enabled || fillers.indexOf(cc) !== -1) continue;
 			other += (parseInt(cc.width, 10) || 0);
 		}
-		var pool = avail - other - 2;
+		var pool = avail - other - 1;
 		var touched = false;
 		if (fillers.length >= 2) {
 			var nameW = Math.max(NAME_MIN, Math.round(pool * 0.6));
@@ -391,7 +403,7 @@
 
 	function run(cont) {
 		var obj = tableObj();
-		if (obj) { installLock(obj); if (obj.ids) decorateAll(cont, obj.ids); }
+		if (obj) { installLock(obj, cont); if (obj.ids) decorateAll(cont, obj.ids); }
 		fitColumns(cont);
 		updateEmpty(cont);
 	}
