@@ -121,8 +121,10 @@
 	gap: 6px;
 }
 
-#st_up .sthdr:nth-of-type(1),
-#st_down .sthdr:nth-of-type(1) {
+/* The redundant leading "Speed:" label (the glyph is the label). All cells are
+ * <div>, so target it as the sthdr right after the icon, not by nth-of-type. */
+#st_up .icon + .sthdr,
+#st_down .icon + .sthdr {
 	display: none;
 }
 
@@ -133,9 +135,9 @@
 	color: var(--qb-foreground);
 }
 
-/* "limit" and "Total" labels + their values: muted 11px, set off with a gap. */
-#st_up .sthdr:nth-of-type(n + 2),
-#st_down .sthdr:nth-of-type(n + 2) {
+/* "limit" and "Total" labels (each sits right after a value): muted, offset. */
+#st_up .stval + .sthdr,
+#st_down .stval + .sthdr {
 	margin-left: 6px;
 	font-size: 11px;
 	font-weight: 500;

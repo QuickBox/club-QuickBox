@@ -517,7 +517,6 @@
 .cqb-palette-item.active {
 	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
 	color: var(--qb-primary-text, var(--qb-primary));
-	box-shadow: inset 2px 0 0 0 var(--qb-primary);
 }
 
 .cqb-palette-swatch {
