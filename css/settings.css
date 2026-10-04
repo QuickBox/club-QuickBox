@@ -21,8 +21,8 @@
 }
 
 #stg.dlg-window {
-	width: min(94vw, 920px);
-	max-width: 94vw;
+	width: min(1040px, 92vw);
+	max-width: 92vw;
 }
 
 #stg #stg_c {
@@ -31,8 +31,8 @@
 	align-items: stretch;
 	gap: 0;
 	padding: 0;
-	height: min(80vh, 660px);
-	min-height: 360px;
+	height: min(760px, 88vh);
+	min-height: 420px;
 	overflow: hidden;
 	background-color: var(--qb-surface);
 	border-radius: 0 0 var(--qb-radius-lg) var(--qb-radius-lg);
@@ -234,8 +234,8 @@
 
 /* Fieldset sections rendered as cards */
 #stg .stg_con fieldset {
-	margin: 0 0 14px;
-	padding: 14px 16px 10px;
+	margin: 0 0 16px;
+	padding: 16px;
 	background-color: var(--qb-surface);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius-lg);
@@ -258,15 +258,16 @@
 	line-height: 1.3;
 }
 
-/* Field rhythm + controls */
+/* Field rhythm + controls (12px between adjacent rows) */
 #stg .stg_con .row > [class*="col"] {
-	padding-top: 4px;
-	padding-bottom: 4px;
+	padding-top: 6px;
+	padding-bottom: 6px;
 }
 
 #stg .stg_con label {
 	color: var(--qb-foreground);
 	font-size: 12px;
+	white-space: normal;
 }
 
 #stg .stg_con input[type="checkbox"],
