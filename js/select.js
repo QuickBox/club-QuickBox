@@ -84,6 +84,11 @@
 			index: optionEl.index,
 			label: (optionEl.textContent || "").trim() || optionEl.value || "",
 			value: optionEl.value,
+			/* Extra search terms carried on the option so a user can find a row
+			 * by a name that is not its visible label (e.g. the English name of a
+			 * language whose label is its own native name). Any select can opt in
+			 * by setting data-cqb-keywords on its options. */
+			keywords: optionEl.getAttribute("data-cqb-keywords") || "",
 			disabled: optionEl.disabled,
 			group: group
 		});
@@ -96,6 +101,13 @@
 		if (shouldSkip(select)) return;
 		select.setAttribute("data-cqb-enhanced", "1");
 		select.classList.add("cqb-native");
+
+		/* ruTorrent's language picker lists each language in its own native name,
+		 * so enrich it with English (+ active-UI) search terms. Any other select
+		 * can request the same enrichment with data-cqb-lang-keywords. */
+		if (select.id === "webui.lang" || select.hasAttribute("data-cqb-lang-keywords")) {
+			stampLanguageKeywords(select);
+		}
 
 		var trigger = document.createElement("button");
 		trigger.type = "button";
@@ -216,7 +228,11 @@
 		function visibleModel() {
 			if (!ctx.query) return ctx.model;
 			var q = ctx.query.toLowerCase();
-			return ctx.model.filter(function (m) { return m.label.toLowerCase().indexOf(q) !== -1; });
+			return ctx.model.filter(function (m) {
+				return m.label.toLowerCase().indexOf(q) !== -1 ||
+					(m.value && m.value.toLowerCase().indexOf(q) !== -1) ||
+					(m.keywords && m.keywords.toLowerCase().indexOf(q) !== -1);
+			});
 		}
 
 		function renderList() {
@@ -313,6 +329,11 @@
 			 * the collapsed Recent-folders clock) still opens a readable list
 			 * instead of a cramped sliver at the viewport edge. */
 			panel.style.minWidth = Math.min(Math.max(r.width, 180), vw - pad * 2) + "px";
+			/* Keep the list's scroll offset across the measure: clearing maxHeight
+			 * to read the natural height momentarily makes the list unscrollable,
+			 * which clamps scrollTop to 0. Restore it after the cap is re-applied
+			 * so any re-placement (resize, page scroll) never jumps the list. */
+			var savedScroll = listEl.scrollTop;
 			panel.style.maxHeight = "";
 			listEl.style.maxHeight = "";
 			var ph = panel.offsetHeight;
@@ -322,6 +343,7 @@
 			var avail = flipUp ? above : below;
 			var cap = Math.min(320, Math.floor(vh * 0.7), avail);
 			listEl.style.maxHeight = cap + "px";
+			listEl.scrollTop = savedScroll;
 			ph = panel.offsetHeight;
 			var pw = panel.offsetWidth;
 			var top = flipUp ? (r.top - gap - ph) : (r.bottom + gap);
@@ -394,7 +416,11 @@
 			}
 			if (ctx.searchInput) ctx.searchInput.focus();
 
-			reposition = function () { if (panel) placePanel(); };
+			reposition = function (e) {
+				if (!panel) return;
+				if (cqb && cqb.panelScrolledInside && cqb.panelScrolledInside(e, panel)) return;
+				placePanel();
+			};
 			window.addEventListener("scroll", reposition, true);
 			window.addEventListener("resize", reposition);
 			document.addEventListener("mousedown", onDocDown, true);
@@ -544,6 +570,47 @@
 			});
 			el["__cqbHook_" + prop] = true;
 		} catch (e) { /* a hostile descriptor must never break the control */ }
+	}
+
+	/* Region-coded language codes ruTorrent ships that Intl.DisplayNames needs
+	 * as a proper BCP-47 tag before it will name them. */
+	var LANG_CODE_MAP = { "zh-cn": "zh-Hans", "zh-tw": "zh-Hant", "pt-br": "pt-BR", "pt-pt": "pt-PT" };
+	function toLangTag(code) {
+		var lc = String(code || "").toLowerCase();
+		return LANG_CODE_MAP[lc] || code;
+	}
+
+	/* A language select whose options are labelled in their own native names
+	 * (ruTorrent's language list). Stamp the English name -- and the active UI
+	 * language's name when that differs -- as searchable keywords on each
+	 * option, so "Chinese"/"Simplified"/"German" find a row labelled, e.g.,
+	 * "简体中文". Best-effort: without Intl.DisplayNames the rows stay searchable
+	 * by their label and code, and a stamp runs at most once per select. */
+	function stampLanguageKeywords(select) {
+		if (!select || select.getAttribute("data-cqb-lang-stamped") === "1") return;
+		if (!window.Intl || typeof Intl.DisplayNames !== "function") return;
+		var enNames, uiNames = null;
+		try { enNames = new Intl.DisplayNames(["en"], { type: "language" }); }
+		catch (e) { return; }
+		select.setAttribute("data-cqb-lang-stamped", "1");
+		var activeTag = toLangTag(select.value);
+		if (String(activeTag).toLowerCase().split("-")[0] !== "en") {
+			try { uiNames = new Intl.DisplayNames([activeTag], { type: "language" }); }
+			catch (e) { uiNames = null; }
+		}
+		var opts = select.options;
+		for (var i = 0; i < opts.length; i++) {
+			var tag = toLangTag(opts[i].value);
+			var names = [];
+			try { var en = enNames.of(tag); if (en && en !== tag) names.push(en); } catch (e) {}
+			if (uiNames) {
+				try { var ui = uiNames.of(tag); if (ui && ui !== tag && names.indexOf(ui) === -1) names.push(ui); } catch (e) {}
+			}
+			if (names.length) {
+				var existing = opts[i].getAttribute("data-cqb-keywords");
+				opts[i].setAttribute("data-cqb-keywords", (existing ? existing + " " : "") + names.join(" "));
+			}
+		}
 	}
 
 	/* Minimal CSS.escape for a label[for] lookup on older engines. */

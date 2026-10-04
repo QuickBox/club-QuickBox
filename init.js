@@ -19,7 +19,7 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "dd20412bfc";
+	var CQB_REV = "1000d6ec58";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
@@ -325,6 +325,20 @@
 				/* storage unavailable: fall back to a session-only apply */
 			}
 			applyVariant(resolveVariant());
+		},
+		/* True when a scroll event came from inside a body-level popover panel
+		 * (its own option list scrolling), rather than the page or a dialog
+		 * scrolling underneath. The custom popovers (select, category "More",
+		 * tab-overflow) listen for scroll in the capture phase so they re-place
+		 * when the surface behind them moves; without this guard the list's own
+		 * scroll re-triggers that placement, which re-measures the panel and
+		 * snaps the list back to the top. A page/document scroll has a non-element
+		 * target and is never treated as inside, so re-placement still runs. */
+		panelScrolledInside: function (e, panel) {
+			if (!e || !panel) return false;
+			var tgt = e.target;
+			if (!tgt || tgt.nodeType !== 1) return false;
+			return panel === tgt || (panel.contains && panel.contains(tgt));
 		}
 	};
 	window.cqb = cqb;
