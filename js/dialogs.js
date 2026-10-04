@@ -51,8 +51,10 @@
 		var browse = document.createElement("span");
 		browse.className = "cqb-dropzone-browse";
 		browse.textContent = t("browse", "browse");
-		zh.appendChild(document.createTextNode("Drag .torrent files here or "));
+		var dropHint = t("cqb_add_drop_hint", "Drag .torrent files here or {browse}").split("{browse}");
+		zh.appendChild(document.createTextNode(dropHint[0]));
 		zh.appendChild(browse);
+		if (dropHint[1]) zh.appendChild(document.createTextNode(dropHint[1]));
 
 		zone.appendChild(zi);
 		zone.appendChild(zh);
@@ -193,7 +195,7 @@
 			if (!line.trim()) return;
 			var m = line.match(/^(.+?)\s{2,}:\s?(.*)$/);
 			if (m) {
-				if (!cur) { cur = { name: "General", rows: [] }; sections.push(cur); }
+				if (!cur) { cur = { name: t("cqb_mi_general", "General"), rows: [] }; sections.push(cur); }
 				cur.rows.push({ k: m[1].trim(), v: m[2].trim() });
 			} else {
 				cur = { name: line.trim(), rows: [] };
@@ -214,10 +216,10 @@
 		dlg.setAttribute("data-cqb-tsk", "1");
 
 		var LABELS = {
-			mediainfo: "Media Info", screenshots: "Screenshots",
-			create: "Create Torrent", unpack: "Unpack"
+			mediainfo: t("cqb_task_mediainfo", "Media Info"), screenshots: t("cqb_task_screenshots", "Screenshots"),
+			create: t("cqb_task_create", "Create Torrent"), unpack: t("cqb_task_unpack", "Unpack")
 		};
-		var ctx = { task: "", title: "Task", sub: "", status: "running" };
+		var ctx = { task: "", title: t("cqb_task_title", "Task"), sub: "", status: "running" };
 
 		var showRaw = false;
 
@@ -226,7 +228,7 @@
 		var origStart = theWebUI.startConsoleTask;
 		theWebUI.startConsoleTask = function (taskName) {
 			ctx.task = taskName || "";
-			ctx.title = LABELS[taskName] || (window.theUILang && theUILang[taskName]) || "Task";
+			ctx.title = LABELS[taskName] || (window.theUILang && theUILang[taskName]) || t("cqb_task_title", "Task");
 			ctx.sub = "";
 			showRaw = false;
 			seg.style.display = "none";

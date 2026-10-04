@@ -23,14 +23,17 @@
 	if (!tb || !nav || !rc) return;
 	window.cqbTopbarInit = true;
 
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
 	var VKEY = "qb-rutorrent-variant";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var LABELS = {
-		mnu_add: "Add torrent", mnu_remove: "Remove", mnu_start: "Start",
-		mnu_pause: "Pause", mnu_stop: "Stop", mnu_settings: "Settings",
-		mnu_help: "Help", mnu_logoff: "Log off", mnu_create: "Create torrent",
-		mnu_rss: "RSS", mnu_plugins: "Plugins"
+		mnu_add: ["cqb_tb_add", "Add torrent"], mnu_remove: ["cqb_tb_remove", "Remove"], mnu_start: ["cqb_tb_start", "Start"],
+		mnu_pause: ["cqb_tb_pause", "Pause"], mnu_stop: ["cqb_tb_stop", "Stop"], mnu_settings: ["cqb_tb_settings", "Settings"],
+		mnu_help: ["cqb_tb_help", "Help"], mnu_logoff: ["cqb_tb_logoff", "Log off"], mnu_create: ["cqb_tb_create", "Create torrent"],
+		mnu_rss: ["cqb_tb_rss", "RSS"], mnu_plugins: ["cqb_tb_plugins", "Plugins"]
 	};
+	function label(id) { var p = LABELS[id]; return p ? t(p[0], p[1]) : ""; }
 
 	function el(tag, cls) {
 		var e = document.createElement(tag);
@@ -116,7 +119,7 @@
 		if (!node) return;
 		var a = (node.matches && node.matches("a")) ? node : node.querySelector("a");
 		var host = a || node;
-		var txt = host.getAttribute("title") || LABELS[host.id] || "";
+		var txt = host.getAttribute("title") || label(host.id) || "";
 		if (txt) cqb.tooltip(host, txt.replace(/\.\.\.$/, "").trim());
 	}
 
@@ -144,7 +147,7 @@
 		mark(add);
 		if (!add.querySelector(".cqb-add-label")) {
 			var lbl = el("span", "cqb-add-label");
-			lbl.textContent = "Add torrent";
+			lbl.textContent = t("cqb_tb_add", "Add torrent");
 			add.appendChild(lbl);
 		}
 		decorate(add);
@@ -169,7 +172,7 @@
 	var ind = byId("ind");
 	if (mnuSearch) { mark(mnuSearch); search.appendChild(mnuSearch); }
 	if (query) {
-		if (!query.getAttribute("placeholder")) query.setAttribute("placeholder", "Search");
+		if (!query.getAttribute("placeholder")) query.setAttribute("placeholder", t("cqb_search", "Search"));
 		search.appendChild(query);
 	}
 	var kbd = el("span", "cqb-kbd");
@@ -283,13 +286,13 @@
 	var menu = el("div", "cqb-palette-menu");
 	menu.hidden = true;
 	menu.setAttribute("role", "menu");
-	var OPTS = [["auto", "Auto"], ["spectre", "Spectre"], ["smoked", "Smoked"], ["reel", "Reel"], ["defaulted", "Light"]];
+	var OPTS = [["auto", "cqb_var_auto", "Auto"], ["spectre", "qbVariantSpectre", "Spectre"], ["smoked", "qbVariantSmoked", "Smoked"], ["reel", "qbVariantReel", "Reel"], ["defaulted", "qbVariantLight", "Light"]];
 	OPTS.forEach(function (o) {
 		var it = el("button", "cqb-palette-item");
 		it.type = "button";
 		it.setAttribute("data-variant", o[0]);
 		var lb = el("span");
-		lb.textContent = o[1];
+		lb.textContent = t(o[1], o[2]);
 		var ck = el("span", "cqb-palette-check");
 		it.appendChild(lb);
 		it.appendChild(ck);
@@ -322,7 +325,7 @@
 		document.removeEventListener("keydown", onEsc, true);
 	}
 	pbtn.addEventListener("click", function () { menu.hidden ? openMenu() : closeMenu(); });
-	cqb.tooltip(pbtn, "Appearance");
+	cqb.tooltip(pbtn, t("qbAppearance", "Appearance"));
 	pal.appendChild(pbtn);
 	pal.appendChild(menu);
 	cqb.onVariant(markActive);

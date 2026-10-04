@@ -317,8 +317,8 @@
 		}
 		var AP = lang("qbPalAppearance", "Appearance");
 		var prefix = lang("qbPalSwitch", "Switch to ");
-		[["auto", "Auto (dashboard)"], ["spectre", "Spectre"], ["smoked", "Smoked"], ["reel", "Reel"], ["defaulted", "Light"]].forEach(function (p) {
-			list.push({ group: AP, label: prefix + p[1], icon: "palette-switch", run: function () { cqb.setVariant(p[0]); } });
+		[["auto", "qbVariantAuto", "Auto (dashboard)"], ["spectre", "qbVariantSpectre", "Spectre"], ["smoked", "qbVariantSmoked", "Smoked"], ["reel", "qbVariantReel", "Reel"], ["defaulted", "qbVariantLight", "Light"]].forEach(function (p) {
+			list.push({ group: AP, label: prefix + lang(p[1], p[2]), icon: "palette-switch", run: function () { cqb.setVariant(p[0]); } });
 		});
 		var F = lang("qbPalFilters", "Filters");
 		var cl = tw && tw.categoryList;

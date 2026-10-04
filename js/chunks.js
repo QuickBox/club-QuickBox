@@ -18,6 +18,8 @@
 	var tipEl = null;
 	var rafPending = false;
 
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
 	function cssvar(name) {
 		try { return getComputedStyle(root).getPropertyValue(name).trim(); }
 		catch (e) { return ""; }
@@ -125,18 +127,18 @@
 
 		var bar = document.createElement("div"); bar.className = "qb-chunks-bar";
 		var stats = document.createElement("div"); stats.className = "qb-chunks-stats";
-		var cCount = chip("Chunks"), cSize = chip("Size"), cDone = chip("Done");
+		var cCount = chip(t("cqb_chunks_chunks", "Chunks")), cSize = chip(t("cqb_chunks_size", "Size")), cDone = chip(t("cqb_chunks_done", "Done"));
 		var note = document.createElement("span"); note.className = "qb-chunks-note";
 		stats.appendChild(cCount.el); stats.appendChild(cSize.el);
 		stats.appendChild(cDone.el); stats.appendChild(note);
 
 		var segGrp = document.createElement("div");
 		segGrp.className = "qb-seg"; segGrp.setAttribute("role", "tablist");
-		segGrp.setAttribute("aria-label", "Chunk map mode");
-		var segDl = seg(0, "Downloaded");
+		segGrp.setAttribute("aria-label", t("cqb_chunks_mode", "Chunk map mode"));
+		var segDl = seg(0, t("cqb_chunks_downloaded", "Downloaded"));
 		segGrp.appendChild(segDl);
 		var segSeen = null;
-		if (seenSupported()) { segSeen = seg(1, "Seen"); segGrp.appendChild(segSeen); }
+		if (seenSupported()) { segSeen = seg(1, t("cqb_chunks_seen", "Seen")); segGrp.appendChild(segSeen); }
 
 		bar.appendChild(stats); bar.appendChild(segGrp);
 
@@ -209,10 +211,12 @@
 		if (col < 0 || col >= lay.cols || i < 0 || i >= lay.cells) { hideTip(); return; }
 		var cpc = lay.cpc;
 		var first = i * cpc, last = Math.min((i + 1) * cpc, state.tsize) - 1;
-		var range = (first >= last) ? ("Chunk " + fmtInt(first)) : ("Chunks " + fmtInt(first) + "–" + fmtInt(last));
+		var range = (first >= last)
+			? t("cqb_chunks_one", "Chunk {n}").replace("{n}", fmtInt(first))
+			: t("cqb_chunks_range", "Chunks {a}–{b}").replace("{a}", fmtInt(first)).replace("{b}", fmtInt(last));
 		var pct = Math.round(completionAt(state, state.mode, i, lay.cells, lay.mx) * 100);
 		var label = state.mode
-			? (range + " · " + (parseInt((state.seen || "").substr(2 * i, 2), 16) || 0) + "× seen")
+			? (range + " · " + t("cqb_chunks_seen_count", "{n}× seen").replace("{n}", (parseInt((state.seen || "").substr(2 * i, 2), 16) || 0)))
 			: (range + " · " + pct + "%");
 		var t = ensureTip();
 		t.textContent = label;
@@ -301,8 +305,10 @@
 			var seen = 0, n = cells; for (var j = 0; j < n; j++) if (parseInt(d.seen.substr(2 * j, 2), 16)) seen++;
 			return n ? seen / n * 100 : 0;
 		})())) : doneValue();
-		ui.grid.setAttribute("aria-label", (mode ? "Chunk availability map: " + donePct + "% of groups seen, "
-			: "Chunk completion map: " + donePct + "% complete, ") + fmtInt(d.tsize) + " chunks");
+		var a11y = mode
+			? t("cqb_chunks_a11y_seen", "Chunk availability map: {pct}% of groups seen, {n} chunks")
+			: t("cqb_chunks_a11y_done", "Chunk completion map: {pct}% complete, {n} chunks");
+		ui.grid.setAttribute("aria-label", a11y.replace("{pct}", donePct).replace("{n}", fmtInt(d.tsize)));
 	}
 
 	function doneValue() {
@@ -318,14 +324,16 @@
 		ui.cCount.textContent = fmtInt(d.tsize);
 		ui.cSize.textContent = fmtSize(d.size);
 		var cpc = chunksPerCell(d, cells);
-		ui.note.textContent = "1 cell = " + cpc + (cpc === 1 ? " chunk" : " chunks");
+		ui.note.textContent = (cpc === 1
+			? t("cqb_chunks_cell_one", "1 cell = {n} chunk")
+			: t("cqb_chunks_cell_many", "1 cell = {n} chunks")).replace("{n}", cpc);
 		if (mode) {
 			var seen = 0, n = cells, j;
 			for (j = 0; j < n; j++) if (parseInt((d.seen || "").substr(2 * j, 2), 16)) seen++;
-			ui.done.querySelector(".qb-chunks-chip-l").textContent = "Seen";
+			ui.done.querySelector(".qb-chunks-chip-l").textContent = t("cqb_chunks_seen", "Seen");
 			ui.cDone.textContent = (n ? Math.round(seen / n * 100) : 0) + "%";
 		} else {
-			ui.done.querySelector(".qb-chunks-chip-l").textContent = "Done";
+			ui.done.querySelector(".qb-chunks-chip-l").textContent = t("cqb_chunks_done", "Done");
 			var dv = doneValue();
 			ui.cDone.textContent = (dv == null) ? "–" : ((dv % 10 === 0 ? dv : dv.toFixed(1)) + "%");
 		}

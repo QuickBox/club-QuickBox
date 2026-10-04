@@ -21,6 +21,8 @@
 ;(function (cqb) {
 	"use strict";
 
+	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
+
 	/* Only these detail tabs are scoped to a single torrent; the rest
 	 * (Plugins, File Manager, Speed, History, Tasks, Traffic, Log) always
 	 * render their own global content and never show the empty state. */
@@ -114,7 +116,7 @@
 		btn.type = "button";
 		btn.className = "cqb-copy-btn";
 		btn.appendChild(maskSpan("fm-copy"));
-		if (cqb && cqb.tooltip) cqb.tooltip(btn, "Copy");
+		if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_det_copy", "Copy"));
 		btn.addEventListener("click", function () {
 			var v = "";
 			try { v = getValue() || ""; } catch (e) { v = ""; }
@@ -314,12 +316,12 @@
 			statePill.textContent = "—";
 
 			var speedCell = el("div", "cqb-hero-cell cqb-hero-speed", hero);
-			var spDown = buildSpark(speedCell, "cqb-dir-down", "statusbar-download", "Download");
-			var spUp = buildSpark(speedCell, "cqb-dir-up", "statusbar-upload", "Upload");
+			var spDown = buildSpark(speedCell, "cqb-dir-down", "statusbar-download", t("cqb_det_download", "Download"));
+			var spUp = buildSpark(speedCell, "cqb-dir-up", "statusbar-upload", t("cqb_det_upload", "Upload"));
 
 			var ratioCell = el("div", "cqb-hero-cell cqb-hero-ratio", hero);
 			var rLab = el("div", "cqb-hero-label", ratioCell);
-			rLab.textContent = "Ratio";
+			rLab.textContent = t("cqb_det_ratio", "Ratio");
 			var rVal = el("div", "cqb-ratio-value", ratioCell);
 			rVal.textContent = "—";
 			var rTrack = el("div", "cqb-ratio-track", ratioCell);
@@ -330,45 +332,45 @@
 
 			var timeCell = el("div", "cqb-hero-cell cqb-hero-time", hero);
 			var tStats = el("div", "cqb-ministats", timeCell);
-			var tEta = { value: miniStat(tStats, "ETA") };
-			var tEl = { value: miniStat(tStats, "Elapsed") };
-			var tRem = { value: miniStat(tStats, "Remaining") };
+			var tEta = { value: miniStat(tStats, t("cqb_det_eta", "ETA")) };
+			var tEl = { value: miniStat(tStats, t("cqb_det_elapsed", "Elapsed")) };
+			var tRem = { value: miniStat(tStats, t("cqb_det_remaining", "Remaining")) };
 
 			/* ---- Cards ---- */
 			var cards = el("div", "cqb-ov-cards", root);
 
-			var swarm = buildCard(cards, "tab-peers", "Swarm");
+			var swarm = buildCard(cards, "tab-peers", t("cqb_det_swarm", "Swarm"));
 			var seedRow = el("div", "cqb-swarm-row", swarm);
-			el("div", "cqb-swarm-key", seedRow).textContent = "Seeds";
+			el("div", "cqb-swarm-key", seedRow).textContent = t("cqb_det_seeds", "Seeds");
 			var seedVal = el("div", "cqb-swarm-val", seedRow);
 			seedVal.textContent = "—";
 			var seedBar = el("div", "cqb-swarm-bar", swarm);
 			var seedFill = el("div", "cqb-swarm-fill cqb-dir-up", seedBar);
 			var peerRow = el("div", "cqb-swarm-row", swarm);
-			el("div", "cqb-swarm-key", peerRow).textContent = "Peers";
+			el("div", "cqb-swarm-key", peerRow).textContent = t("cqb_det_peers", "Peers");
 			var peerVal = el("div", "cqb-swarm-val", peerRow);
 			peerVal.textContent = "—";
 			var peerBar = el("div", "cqb-swarm-bar", swarm);
 			var peerFill = el("div", "cqb-swarm-fill cqb-dir-down", peerBar);
-			var wastedMeta = metaRow(swarm, "Wasted");
+			var wastedMeta = metaRow(swarm, t("cqb_det_wasted", "Wasted"));
 
-			var tracker = buildCard(cards, "tab-trackers", "Tracker");
+			var tracker = buildCard(cards, "tab-trackers", t("cqb_tracker", "Tracker"));
 			var trkUrlRow = el("div", "cqb-meta cqb-meta-wide", tracker);
-			el("div", "cqb-meta-label", trkUrlRow).textContent = "URL";
+			el("div", "cqb-meta-label", trkUrlRow).textContent = t("cqb_det_url", "URL");
 			var trkUrlWrap = el("div", "cqb-meta-value cqb-trunc-wrap", trkUrlRow);
 			var trkUrl = el("div", "cqb-trunc", trkUrlWrap);
 			trkUrl.textContent = "—";
 			trkUrlWrap.appendChild(copyButton(function () { return spanText("tu"); }));
 			var trkStatusRow = el("div", "cqb-meta", tracker);
-			el("div", "cqb-meta-label", trkStatusRow).textContent = "Status";
+			el("div", "cqb-meta-label", trkStatusRow).textContent = t("cqb_det_status", "Status");
 			var trkStatusVal = el("div", "cqb-meta-value cqb-status-cell", trkStatusRow);
 			var trkStatusPill = el("span", "cqb-status-pill", trkStatusVal);
 			trkStatusPill.textContent = "—";
-			var trkAnnounceMeta = metaRow(tracker, "Next announce");
+			var trkAnnounceMeta = metaRow(tracker, t("cqb_det_next_announce", "Next announce"));
 
-			var storage = buildCard(cards, "tab-filemanager", "Storage");
+			var storage = buildCard(cards, "tab-filemanager", t("cqb_det_storage", "Storage"));
 			var pathRow = el("div", "cqb-meta cqb-meta-wide", storage);
-			el("div", "cqb-meta-label", pathRow).textContent = "Save path";
+			el("div", "cqb-meta-label", pathRow).textContent = t("cqb_det_save_path", "Save path");
 			var pathWrap = el("div", "cqb-meta-value cqb-trunc-wrap", pathRow);
 			var pathVal = el("div", "cqb-trunc", pathWrap);
 			pathVal.textContent = "—";
@@ -378,7 +380,7 @@
 				fmBtn = el("button", "cqb-copy-btn cqb-fm-open", pathWrap);
 				fmBtn.type = "button";
 				fmBtn.appendChild(maskSpan("tab-filemanager"));
-				if (cqb && cqb.tooltip) cqb.tooltip(fmBtn, "Open in File Manager");
+				if (cqb && cqb.tooltip) cqb.tooltip(fmBtn, t("cqb_det_open_fm", "Open in File Manager"));
 				fmBtn.addEventListener("click", function () {
 					try {
 						if (fmBtn.disabled) return;
@@ -400,19 +402,19 @@
 			}
 			var diskRow = el("div", "cqb-meta cqb-meta-wide", storage);
 			var diskHead = el("div", "cqb-disk-head", diskRow);
-			el("div", "cqb-meta-label", diskHead).textContent = "Free disk";
+			el("div", "cqb-meta-label", diskHead).textContent = t("cqb_det_free_disk", "Free disk");
 			var diskVal = el("div", "cqb-disk-val", diskHead);
 			diskVal.textContent = "—";
 			var diskTrack = el("div", "cqb-disk-track", diskRow);
 			var diskFill = el("div", "cqb-disk-fill", diskTrack);
 			var hashRow = el("div", "cqb-meta cqb-meta-wide", storage);
-			el("div", "cqb-meta-label", hashRow).textContent = "Hash";
+			el("div", "cqb-meta-label", hashRow).textContent = t("cqb_det_hash", "Hash");
 			var hashWrap = el("div", "cqb-meta-value cqb-trunc-wrap", hashRow);
 			var hashVal = el("div", "cqb-trunc cqb-mono", hashWrap);
 			hashVal.textContent = "—";
 			hashWrap.appendChild(copyButton(function () { return spanText("hs"); }));
 			var cmtRow = el("div", "cqb-meta cqb-meta-wide", storage);
-			el("div", "cqb-meta-label", cmtRow).textContent = "Comment";
+			el("div", "cqb-meta-label", cmtRow).textContent = t("cqb_det_comment", "Comment");
 			var cmtVal = el("div", "cqb-meta-value cqb-comment", cmtRow);
 			cmtVal.textContent = "—";
 
@@ -499,7 +501,8 @@
 			ov.rFill.style.width = (infinite ? 100 : Math.min(100, ratio * 100)) + "%";
 			ov.rFill.setAttribute("data-met", met ? "1" : "0");
 			ov.rVal.setAttribute("data-met", met ? "1" : "0");
-			ov.rSub.textContent = fmtBytes(d.uploaded) + " up / " + fmtBytes(d.downloaded) + " down";
+			ov.rSub.textContent = t("cqb_det_updown", "{up} up / {down} down")
+				.replace("{up}", fmtBytes(d.uploaded)).replace("{down}", fmtBytes(d.downloaded));
 
 			/* Time block: ETA + elapsed from core spans, remaining bytes computed */
 			setText(ov.tEta, spanText("rm"));
@@ -522,7 +525,7 @@
 			/* Tracker */
 			setMidTrunc(ov.trkUrl, spanText("tu"), 0.6);
 			var tsTxt = spanText("ts");
-			var tsTone = "ok", tsLabel = tsTxt || "OK";
+			var tsTone = "ok", tsLabel = tsTxt || t("cqb_det_tracker_ok", "OK");
 			if (/error|fail|denied|unreach|not\s*reg|timeout|refus|invalid|unauth/i.test(tsTxt)) tsTone = "error";
 			else if (/updat|announc|pend|connect|work|request/i.test(tsTxt)) tsTone = "updating";
 			ov.trkStatus.textContent = tsLabel;
@@ -534,7 +537,7 @@
 				var t0 = trks && (trks[0] || trks["0"]);
 				if (t0 && typeof t0.interval === "number" && typeof t0.last === "number" && t0.last >= 0) {
 					var nxt = Math.round(t0.interval - t0.last);
-					nextAnn = nxt > 0 ? fmtTime(nxt) : "due now";
+					nextAnn = nxt > 0 ? fmtTime(nxt) : t("cqb_det_due_now", "due now");
 				}
 			} catch (e) {}
 			setText(ov.trkAnnounce, nextAnn);
@@ -546,7 +549,7 @@
 				var inside = fmInsideHome(saveDir);
 				ov.fmBtn.disabled = !inside;
 				if (cqb && cqb.tooltip) {
-					cqb.tooltip(ov.fmBtn, inside ? "Open in File Manager" : "Outside your File Manager home");
+					cqb.tooltip(ov.fmBtn, inside ? t("cqb_det_open_fm", "Open in File Manager") : t("cqb_det_outside_fm", "Outside your File Manager home"));
 				}
 			}
 			/* Free disk: value plus a meter that mirrors the footer disk meter
@@ -574,7 +577,7 @@
 				cl.removeAttribute("id");
 				ov.cmtVal.appendChild(cl);
 			} else {
-				ov.cmtVal.textContent = "No comment";
+				ov.cmtVal.textContent = t("cqb_det_no_comment", "No comment");
 				ov.cmtVal.classList.add("cqb-muted");
 			}
 		} catch (e) { /* never break the bundle */ }
@@ -594,7 +597,7 @@
 			glyph.className = "cqb-empty-glyph";
 			var text = document.createElement("div");
 			text.className = "cqb-empty-text";
-			text.textContent = "Select a torrent to see its details";
+			text.textContent = t("cqb_det_empty", "Select a torrent to see its details");
 			empty.appendChild(glyph);
 			empty.appendChild(text);
 			drawer.appendChild(empty);
@@ -655,7 +658,7 @@
 			upBtn.type = "button";
 			upBtn.className = "cqb-flm-btn";
 			upBtn.appendChild(maskSpan("fm-dir-up"));
-			if (cqb && cqb.tooltip) cqb.tooltip(upBtn, "Parent directory");
+			if (cqb && cqb.tooltip) cqb.tooltip(upBtn, t("cqb_det_parent_dir", "Parent directory"));
 			upBtn.addEventListener("click", function () {
 				if (!window.flm || !flm.goToPath) return;
 				var cur = navpath.value || "/";
@@ -668,7 +671,7 @@
 			mkBtn.type = "button";
 			mkBtn.className = "cqb-flm-btn";
 			mkBtn.appendChild(maskSpan("fm-mkdir"));
-			if (cqb && cqb.tooltip) cqb.tooltip(mkBtn, "New folder");
+			if (cqb && cqb.tooltip) cqb.tooltip(mkBtn, t("cqb_det_new_folder", "New folder"));
 			mkBtn.addEventListener("click", function () {
 				try { window.flm && flm.ui.getDialogs().showDialog("mkdir"); } catch (e) {}
 			});
@@ -677,7 +680,7 @@
 			/* Breadcrumb replaces the stock <select> (kept, screen-reader only). */
 			var crumbs = document.createElement("nav");
 			crumbs.className = "cqb-breadcrumb";
-			crumbs.setAttribute("aria-label", "Path");
+			crumbs.setAttribute("aria-label", t("cqb_det_path", "Path"));
 			navpath.classList.add("cqb-sr");
 
 			group.insertBefore(tools, group.firstChild);
@@ -737,8 +740,8 @@
 				/* The value label is display:none, so give the combobox an
 				 * explicit accessible name (cqb.tooltip skips aria-label when
 				 * textContent is non-empty). */
-				trig.setAttribute("aria-label", "Recent folders");
-				if (cqb && cqb.tooltip) cqb.tooltip(trig, "Recent folders");
+				trig.setAttribute("aria-label", t("cqb_det_recent_folders", "Recent folders"));
+				if (cqb && cqb.tooltip) cqb.tooltip(trig, t("cqb_det_recent_folders", "Recent folders"));
 				return true;
 			};
 			if (!tagRecent()) {
@@ -862,7 +865,7 @@
 			btn.setAttribute("aria-pressed", on ? "true" : "false");
 			toggleSeries(labels, on);
 		});
-		if (cqb && cqb.tooltip) cqb.tooltip(btn, "Toggle " + labelText);
+		if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_det_toggle", "Toggle {name}").replace("{name}", labelText));
 		return btn;
 	}
 
@@ -893,15 +896,15 @@
 		}
 		var toggles = document.createElement("div");
 		toggles.className = "cqb-traf-toggles";
-		var tgDown = seriesChip(TRAF_SERIES.down, "cqb-dir-down", "Downloaded");
-		var tgUp = seriesChip(TRAF_SERIES.up, "cqb-dir-up", "Uploaded");
+		var tgDown = seriesChip(TRAF_SERIES.down, "cqb-dir-down", t("cqb_det_downloaded", "Downloaded"));
+		var tgUp = seriesChip(TRAF_SERIES.up, "cqb-dir-up", t("cqb_det_uploaded", "Uploaded"));
 		toggles.appendChild(tgDown);
 		toggles.appendChild(tgUp);
 
 		traf = {
-			kpiDown: chip("statusbar-download", "Downloaded", "cqb-dir-down"),
-			kpiUp: chip("statusbar-upload", "Uploaded", "cqb-dir-up"),
-			kpiRatio: chip("tab-traffic", "Ratio", "")
+			kpiDown: chip("statusbar-download", t("cqb_det_downloaded", "Downloaded"), "cqb-dir-down"),
+			kpiUp: chip("statusbar-upload", t("cqb_det_uploaded", "Uploaded"), "cqb-dir-up"),
+			kpiRatio: chip("tab-traffic", t("cqb_det_ratio", "Ratio"), "")
 		};
 		ctrl.insertBefore(kpi, ctrl.firstChild);
 		/* Toggles sit just before the selects (which carry ms-auto). */
@@ -934,7 +937,7 @@
 				btn.textContent = "";
 				btn.className = "cqb-flm-btn cqb-traf-clear";
 				btn.appendChild(maskSpan("log-clear"));
-				if (cqb && cqb.tooltip) cqb.tooltip(btn, "Clear statistics");
+				if (cqb && cqb.tooltip) cqb.tooltip(btn, t("cqb_det_clear_stats", "Clear statistics"));
 			}
 			buildTrafChrome(ctrl);
 			/* Keep Clear in the right-hand group next to the selects. */
@@ -1045,8 +1048,8 @@
 			bar.className = "cqb-speed-toolbar";
 			var toggles = document.createElement("div");
 			toggles.className = "cqb-traf-toggles";
-			toggles.appendChild(seriesChip(SPEED_SERIES.down, "cqb-dir-down", "Download"));
-			toggles.appendChild(seriesChip(SPEED_SERIES.up, "cqb-dir-up", "Upload"));
+			toggles.appendChild(seriesChip(SPEED_SERIES.down, "cqb-dir-down", t("cqb_det_download", "Download")));
+			toggles.appendChild(seriesChip(SPEED_SERIES.up, "cqb-dir-up", t("cqb_det_upload", "Upload")));
 			bar.appendChild(toggles);
 			host.insertBefore(bar, speed);
 			speed.setAttribute("data-cqb-tb", "1");
@@ -1107,7 +1110,7 @@
 			var group = np && (np.closest(".input-group") || np.parentNode);
 			if (!group || btn.parentNode === group) return;
 			btn.classList.add("cqb-flm-console");
-			if (cqb && cqb.tooltip) cqb.tooltip(btn, (btn.value || "Console"));
+			if (cqb && cqb.tooltip) cqb.tooltip(btn, (btn.value || t("cqb_det_console", "Console")));
 			group.insertBefore(btn, group.querySelector(".cqb-flm-recent") || null);
 		} catch (e) {}
 	}
@@ -1121,10 +1124,10 @@
 		btn.className = "nav-link cqb-tab-more";
 		btn.setAttribute("aria-haspopup", "listbox");
 		btn.setAttribute("aria-expanded", "false");
-		btn.setAttribute("aria-label", "More tabs");
+		btn.setAttribute("aria-label", t("cqb_det_more_tabs", "More tabs"));
 		var lbl = document.createElement("span");
 		lbl.className = "cqb-tab-more-label";
-		lbl.textContent = "More";
+		lbl.textContent = t("cqb_det_more", "More");
 		var chev = document.createElement("span");
 		chev.className = "cqb-select-chevron";
 		chev.setAttribute("aria-hidden", "true");
@@ -1172,7 +1175,7 @@
 			var list = document.createElement("div");
 			list.className = "cqb-select-list";
 			list.setAttribute("role", "listbox");
-			list.setAttribute("aria-label", "More tabs");
+			list.setAttribute("aria-label", t("cqb_det_more_tabs", "More tabs"));
 			parked().forEach(function (li) {
 				var a = li.querySelector("a.nav-link");
 				var row = document.createElement("button");
