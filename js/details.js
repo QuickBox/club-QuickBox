@@ -979,9 +979,11 @@
 					var bar = document.getElementById("cqb-speed-toolbar");
 					var tdc = document.getElementById("tdcont");
 					if (bar && bar.offsetParent !== null && tdc) {
-						if (!w) w = tdc.clientWidth;
+						var tdcs = getComputedStyle(tdc);
+						var padV = (parseFloat(tdcs.paddingTop) || 0) + (parseFloat(tdcs.paddingBottom) || 0);
 						var mb = parseFloat(getComputedStyle(bar).marginBottom) || 0;
-						h = Math.max(1, tdc.clientHeight - bar.offsetHeight - mb - 22);
+						if (!w) w = tdc.clientWidth - (parseFloat(tdcs.paddingLeft) || 0) - (parseFloat(tdcs.paddingRight) || 0);
+						h = Math.max(1, tdc.clientHeight - padV - bar.offsetHeight - mb - 6);
 					}
 				} catch (e) {}
 				return orig(w, h);
