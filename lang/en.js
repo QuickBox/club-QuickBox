@@ -12,3 +12,9 @@ theUILang.qbVariantSpectre  = "Spectre";
 theUILang.qbVariantSmoked   = "Smoked";
 theUILang.qbVariantReel     = "Reel";
 theUILang.qbVariantLight    = "Light";
+
+theUILang.cqb_zero_unlimited = "Set 0 for unlimited.";
+theUILang.cqb_decimals_hint  = "Leave a cell blank to inherit the default.";
+theUILang.cqb_filter_trackers = "Filter trackers";
+theUILang.cqb_tracker        = "Tracker";
+theUILang.cqb_enabled        = "Enabled";

@@ -13,6 +13,16 @@
 	if (!cqb || window.cqbSettingsReady) return;
 	window.cqbSettingsReady = true;
 
+	/* Helper strings (the skin's lang/en.js is not auto-loaded, so register the
+	 * English defaults here the way init.js does; keep lang/en.js as the ref). */
+	if (window.theUILang) {
+		theUILang.cqb_zero_unlimited = theUILang.cqb_zero_unlimited || "Set 0 for unlimited.";
+		theUILang.cqb_decimals_hint = theUILang.cqb_decimals_hint || "Leave a cell blank to inherit the default.";
+		theUILang.cqb_filter_trackers = theUILang.cqb_filter_trackers || "Filter trackers";
+		theUILang.cqb_tracker = theUILang.cqb_tracker || "Tracker";
+		theUILang.cqb_enabled = theUILang.cqb_enabled || "Enabled";
+	}
+
 	/* Pages that belong to the "ruTorrent" group; everything else is a plugin. */
 	var RUTORRENT = ["st_gl", "st_dl", "st_con", "st_bt", "st_fmt", "st_ao", "st_dev", "st_loginmgr"];
 
@@ -198,20 +208,173 @@
 		}
 		pane.insertBefore(head, pane.firstChild);
 		pane.dataset.cqbHead = "1";
+		layoutPane(pane);
 	}
 
-	/* Language, Theme and Appearance ship as quarter-width columns that crowd
-	 * onto shared rows; normalize them to full label/field rows like the rest. */
-	function fixGeneralRows() {
-		["webui.lang", "webui.theme", "qb.variant"].forEach(function (id) {
-			var sel = document.getElementById(id);
-			if (!sel) return;
-			var selCol = sel.closest("[class*=col]");
-			var lab = document.querySelector('label[for="' + id + '"]');
-			var labCol = lab ? lab.closest("[class*=col]") : null;
-			if (selCol) selCol.className = "col-12 col-md-6 cqb-stg-fullrow";
-			if (labCol) labCol.className = "col-12 col-md-6 cqb-stg-fullrow";
+	/* ---- Layout engine: rebuild pages into the shared primitives ---------
+	 * Live control nodes are MOVED (never cloned), so ids and handlers survive;
+	 * the old Bootstrap-grid scaffolding is dropped once its controls are out. */
+	function cleanLabel(t) { return (t || "").replace(/[:：]\s*$/, "").trim(); }
+
+	function labelTextFor(id) {
+		var l = document.querySelector('label[for="' + id + '"]');
+		return l ? cleanLabel(l.textContent) : id;
+	}
+
+	function helpLine(text) {
+		var h = document.createElement("div");
+		h.className = "cqb-help";
+		h.textContent = text;
+		return h;
+	}
+
+	function fieldTile(id, opts) {
+		opts = opts || {};
+		var ctrl = document.getElementById(id);
+		if (!ctrl) return null;
+		var tile = document.createElement("div");
+		tile.className = "cqb-field";
+		var lab = document.createElement("label");
+		lab.setAttribute("for", id);
+		lab.textContent = opts.label != null ? opts.label : labelTextFor(id);
+		tile.appendChild(lab);
+		var wrap = document.createElement("div");
+		wrap.className = "cqb-control";
+		wrap.appendChild(ctrl);
+		if (opts.unit) {
+			wrap.classList.add("cqb-has-unit");
+			var u = document.createElement("span");
+			u.className = "cqb-unit";
+			u.textContent = opts.unit;
+			wrap.appendChild(u);
+		}
+		tile.appendChild(wrap);
+		if (opts.help) tile.appendChild(helpLine(opts.help));
+		return tile;
+	}
+
+	function fieldGrid(specs) {
+		var grid = document.createElement("div");
+		grid.className = "cqb-field-grid";
+		specs.forEach(function (s) {
+			var t = fieldTile(s.id, s);
+			if (t) grid.appendChild(t);
 		});
+		return grid.children.length ? grid : null;
+	}
+
+	function wideField(id, opts) {
+		opts = opts || {};
+		var ctrl = document.getElementById(id);
+		if (!ctrl) return null;
+		var w = document.createElement("div");
+		w.className = "cqb-field-wide";
+		var lab = document.createElement("label");
+		lab.setAttribute("for", id);
+		lab.textContent = opts.label != null ? opts.label : labelTextFor(id);
+		w.appendChild(lab);
+		w.appendChild(ctrl);
+		if (opts.help) w.appendChild(helpLine(opts.help));
+		return w;
+	}
+
+	function checkGridFrom(scope) {
+		var grid = document.createElement("div");
+		grid.className = "cqb-check-grid";
+		var boxes = scope.querySelectorAll('input[type="checkbox"]');
+		for (var i = 0; i < boxes.length; i++) {
+			var cb = boxes[i];
+			var lab = cb.id ? document.querySelector('label[for="' + cb.id + '"]') : null;
+			if (!lab && cb.nextElementSibling && cb.nextElementSibling.tagName === "LABEL") lab = cb.nextElementSibling;
+			var w = document.createElement("div");
+			w.className = "cqb-check";
+			w.appendChild(cb);
+			if (lab) w.appendChild(lab);
+			grid.appendChild(w);
+		}
+		return grid.children.length ? grid : null;
+	}
+
+	/* Keep the legend, drop the old scaffolding, append the rebuilt nodes. */
+	function rebuildFieldset(fieldset, nodes) {
+		var legend = fieldset.querySelector("legend");
+		var kids = [].slice.call(fieldset.children);
+		kids.forEach(function (c) { if (c !== legend) c.remove(); });
+		nodes.forEach(function (n) { if (n) fieldset.appendChild(n); });
+	}
+
+	function L(key, dflt) { return (window.theUILang && theUILang[key]) || dflt; }
+	function unitKbs() { return L("KB", "KiB") + "/" + L("s", "s"); }
+
+	var LAYOUTS = {
+		st_gl: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) {
+				var checks = checkGridFrom(fs[0]);
+				var grid = fieldGrid([
+					{ id: "webui.update_interval", unit: L("ms", "ms") },
+					{ id: "webui.reqtimeout", unit: L("ms", "ms") },
+					{ id: "webui.speedgraph.max_seconds" },
+					{ id: "webui.retry_on_error" },
+					{ id: "webui.lang" },
+					{ id: "webui.theme" },
+					{ id: "qb.variant" }
+				]);
+				if (grid && checks) grid.style.marginTop = "16px";
+				rebuildFieldset(fs[0], [checks, grid]);
+			}
+			if (fs[1]) rebuildFieldset(fs[1], [fieldGrid([{ id: "webui.speedlistul" }, { id: "webui.speedlistdl" }])]);
+		},
+		st_dl: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) rebuildFieldset(fs[0], [fieldGrid([
+				{ id: "max_uploads" }, { id: "min_peers" }, { id: "max_peers" },
+				{ id: "min_peers_seed" }, { id: "max_peers_seed" }, { id: "tracker_numwant" }
+			])]);
+			if (fs[1]) rebuildFieldset(fs[1], [checkGridFrom(fs[1]), wideField("directory")]);
+		},
+		st_con: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) rebuildFieldset(fs[0], [checkGridFrom(fs[0]), wideField("port_range")]);
+			if (fs[1]) {
+				var grid = fieldGrid([
+					{ id: "upload_rate", label: cleanLabel(L("Global_max_upl", "Upload rate")), unit: unitKbs() },
+					{ id: "download_rate", label: cleanLabel(L("Glob_max_downl", "Download rate")), unit: unitKbs() }
+				]);
+				rebuildFieldset(fs[1], [grid, helpLine(L("cqb_zero_unlimited", "Set 0 for unlimited."))]);
+			}
+			if (fs[2]) {
+				var grid2 = fieldGrid([
+					{ id: "max_uploads_global" }, { id: "max_downloads_global" },
+					{ id: "max_memory_usage", unit: L("MB", "MB") },
+					{ id: "max_open_files" }, { id: "max_open_http" }
+				]);
+				var budget = document.getElementById("socket_alloc_budget");
+				var nodes = [grid2];
+				if (budget) { budget.classList.add("cqb-help"); nodes.push(budget); }
+				rebuildFieldset(fs[2], nodes);
+			}
+		},
+		st_bt: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) rebuildFieldset(fs[0], [checkGridFrom(fs[0]), fieldGrid([{ id: "dht_port" }, { id: "ip" }])]);
+		},
+		st_dev: function (pane) {
+			var fs = pane.querySelectorAll("fieldset");
+			if (fs[0]) rebuildFieldset(fs[0], [fieldGrid([
+				{ id: "webui.side_panel_min_width", unit: L("Pixel", "px") },
+				{ id: "webui.side_panel_max_width_percent", unit: "%" },
+				{ id: "webui.list_table_min_height", unit: L("Pixel", "px") }
+			])]);
+		}
+	};
+
+	function layoutPane(pane) {
+		if (pane.dataset.cqbLaid) return;
+		var fn = LAYOUTS[pane.id];
+		if (!fn) return;
+		try { fn(pane); } catch (e) { /* a layout error must never break the dialog */ }
+		pane.dataset.cqbLaid = "1";
 	}
 
 	/* Relabel the dialog's confirm button to "Save" (keeps its click handler). */
@@ -242,7 +405,6 @@
 				for (var j = 0; j < panes.length; j++) decoratePane(panes[j]);
 			}
 			relabelSave();
-			fixGeneralRows();
 			var inp = navEl.querySelector(".cqb-stg-filter input");
 			if (inp) applyFilter(navEl, inp.value);
 		} finally {
