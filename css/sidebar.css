@@ -56,8 +56,8 @@ panel-label:hover {
 panel-label[selected] {
 	background-color: color-mix(in srgb, var(--qb-primary) 12%, transparent);
 	color: var(--qb-primary-text);
+	font-weight: 500;
 	text-shadow: none;
-	box-shadow: inset 2px 0 0 var(--qb-primary);
 	--badge-color: var(--qb-primary-text);
 }
 
