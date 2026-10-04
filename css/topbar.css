@@ -530,7 +530,7 @@
 	align-items: center;
 	justify-content: center;
 	border: 0;
-	border-radius: var(--qb-radius-lg);
+	border-radius: 8px;
 	background-color: transparent;
 	cursor: pointer;
 	transition: background-color 0.15s ease;

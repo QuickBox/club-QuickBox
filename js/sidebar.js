@@ -53,6 +53,7 @@
 	function applyRowTips() {
 		var sp = sidebar();
 		if (!sp) return;
+		var rail = !!collapsed;
 		var rows = sp.querySelectorAll("panel-label");
 		for (var i = 0; i < rows.length; i++) {
 			var pl = rows[i];
@@ -63,7 +64,11 @@
 			if (count != null && count !== "") parts.push(count);
 			var size = (pl.getAttribute("size") || "").trim();
 			if (size) parts.push(size);
-			cqb.tooltip(pl, parts.join(" · "));
+			/* Rail mode: open the tip to the right of the collapsed rail so it
+			 * never drops below the row and covers the next item. Expanded mode
+			 * keeps the default placement; clear the side flag on the way back. */
+			cqb.tooltip(pl, parts.join(" · "), rail ? { side: "right" } : undefined);
+			if (!rail) pl.removeAttribute("data-cqb-tip-side");
 		}
 	}
 
