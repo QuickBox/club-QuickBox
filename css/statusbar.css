@@ -130,9 +130,36 @@
 
 #stup_speed,
 #stdown_speed {
+	display: inline-block;
+	min-width: 10ch;
+	text-align: right;
 	font-size: 13px;
 	font-weight: 600;
+	font-variant-numeric: tabular-nums;
 	color: var(--qb-foreground);
+}
+
+/* Reserve a fixed width for every changing value so the footer never shifts as
+ * numbers grow or shrink; tabular-nums keeps digits aligned. */
+#stup_total,
+#stdown_total {
+	display: inline-block;
+	min-width: 10ch;
+	text-align: right;
+}
+
+#stopen_http_count,
+#stopen_sock_count,
+#stopen_fd_count {
+	display: inline-block;
+	min-width: 3ch;
+	text-align: right;
+}
+
+#viewrows {
+	display: inline-block;
+	min-width: 7ch;
+	text-align: right;
 }
 
 /* "limit" and "Total" labels (each sits right after a value): muted, offset. */
