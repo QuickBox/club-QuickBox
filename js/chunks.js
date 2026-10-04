@@ -218,16 +218,16 @@
 		var label = state.mode
 			? (range + " · " + t("cqb_chunks_seen_count", "{n}× seen").replace("{n}", (parseInt((state.seen || "").substr(2 * i, 2), 16) || 0)))
 			: (range + " · " + pct + "%");
-		var t = ensureTip();
-		t.textContent = label;
-		t.style.display = "block";
-		var tw = t.offsetWidth, th = t.offsetHeight;
+		var tip = ensureTip();
+		tip.textContent = label;
+		tip.style.display = "block";
+		var tw = tip.offsetWidth, th = tip.offsetHeight;
 		var left = Math.max(4, Math.min(e.clientX - tw / 2, window.innerWidth - tw - 4));
 		var top = r.top + rowN * (CELL + GAP) - th - 8;
 		if (top < 4) top = r.top + rowN * (CELL + GAP) + CELL + 8;
-		t.style.left = left + "px";
-		t.style.top = top + "px";
-		t.style.opacity = "1";
+		tip.style.left = left + "px";
+		tip.style.top = top + "px";
+		tip.style.opacity = "1";
 	}
 
 	/* ---- paint ----------------------------------------------------------- */
