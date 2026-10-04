@@ -112,7 +112,7 @@ category-list {
 .label-icon {
 	min-width: 16px;
 	min-height: 16px;
-	background-image: url('images/status_icons.png');
+	background-image: url('../images/status_icons.png');
 	background-repeat: no-repeat;
 }
 
@@ -127,7 +127,7 @@ category-list {
 
 .label-icon img[id^="lbl_"] {
 	width: 16px;
-	background-image: url('images/status_icons.png');
+	background-image: url('../images/status_icons.png');
 	background-repeat: no-repeat;
 }
 
@@ -168,13 +168,13 @@ div[part=heading]::before {
 	width: 16px;
 	height: 28px !important;
 	background-color: var(--qb-icon);
-	-webkit-mask: url(images/icons/panel-expanded.svg) center / 14px no-repeat;
-	mask: url(images/icons/panel-expanded.svg) center / 14px no-repeat;
+	-webkit-mask: url(../images/icons/panel-expanded.svg) center / 14px no-repeat;
+	mask: url(../images/icons/panel-expanded.svg) center / 14px no-repeat;
 }
 
 :host([closed]) div[part="heading"]::before {
-	-webkit-mask-image: url(images/icons/panel-collapsed.svg);
-	mask-image: url(images/icons/panel-collapsed.svg);
+	-webkit-mask-image: url(../images/icons/panel-collapsed.svg);
+	mask-image: url(../images/icons/panel-collapsed.svg);
 }
 
 [part="count"],

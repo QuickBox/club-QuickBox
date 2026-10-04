@@ -41,9 +41,9 @@
 	mask-size: 14px;
 }
 
-#st_up .icon { -webkit-mask-image: url(images/icons/statusbar-upload.svg); mask-image: url(images/icons/statusbar-upload.svg); background-color: var(--qb-speed-up); }
+#st_up .icon { -webkit-mask-image: url(../images/icons/statusbar-upload.svg); mask-image: url(../images/icons/statusbar-upload.svg); background-color: var(--qb-speed-up); }
 
-#st_down .icon { -webkit-mask-image: url(images/icons/statusbar-download.svg); mask-image: url(images/icons/statusbar-download.svg); background-color: var(--qb-speed-down); }
+#st_down .icon { -webkit-mask-image: url(../images/icons/statusbar-download.svg); mask-image: url(../images/icons/statusbar-download.svg); background-color: var(--qb-speed-down); }
 
 #stup_speed { color: var(--qb-speed-up) !important; }
 

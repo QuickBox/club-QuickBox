@@ -39,9 +39,9 @@
 	mask-size: contain;
 }
 
-.Icon_Dir { -webkit-mask-image: url(images/icons/file-folder.svg); mask-image: url(images/icons/file-folder.svg); }
+.Icon_Dir { -webkit-mask-image: url(../images/icons/file-folder.svg); mask-image: url(../images/icons/file-folder.svg); }
 
-.Icon_File { -webkit-mask-image: url(images/icons/file-generic.svg); mask-image: url(images/icons/file-generic.svg); }
+.Icon_File { -webkit-mask-image: url(../images/icons/file-generic.svg); mask-image: url(../images/icons/file-generic.svg); }
 
 /* Lists / torrent table shell */
 #list-table {
@@ -125,39 +125,39 @@ div#gcont table tr td {
 	mask-size: 14px;
 }
 
-.Icon_Torrent { -webkit-mask-image: url(images/icons/file-torrent.svg); mask-image: url(images/icons/file-torrent.svg); }
+.Icon_Torrent { -webkit-mask-image: url(../images/icons/file-torrent.svg); mask-image: url(../images/icons/file-torrent.svg); }
 
-.Icon_Vid { -webkit-mask-image: url(images/icons/file-video.svg); mask-image: url(images/icons/file-video.svg); }
+.Icon_Vid { -webkit-mask-image: url(../images/icons/file-video.svg); mask-image: url(../images/icons/file-video.svg); }
 
-.Icon_Mp3 { -webkit-mask-image: url(images/icons/file-audio.svg); mask-image: url(images/icons/file-audio.svg); }
+.Icon_Mp3 { -webkit-mask-image: url(../images/icons/file-audio.svg); mask-image: url(../images/icons/file-audio.svg); }
 
-.Icon_Img { -webkit-mask-image: url(images/icons/file-image.svg); mask-image: url(images/icons/file-image.svg); }
+.Icon_Img { -webkit-mask-image: url(../images/icons/file-image.svg); mask-image: url(../images/icons/file-image.svg); }
 
-.Icon_Nfo { -webkit-mask-image: url(images/icons/file-nfo.svg); mask-image: url(images/icons/file-nfo.svg); }
+.Icon_Nfo { -webkit-mask-image: url(../images/icons/file-nfo.svg); mask-image: url(../images/icons/file-nfo.svg); }
 
-.Icon_Sfv { -webkit-mask-image: url(images/icons/file-sfv.svg); mask-image: url(images/icons/file-sfv.svg); }
+.Icon_Sfv { -webkit-mask-image: url(../images/icons/file-sfv.svg); mask-image: url(../images/icons/file-sfv.svg); }
 
-.Icon_UpD { -webkit-mask-image: url(images/icons/fm-dir-up.svg); mask-image: url(images/icons/fm-dir-up.svg); }
+.Icon_UpD { -webkit-mask-image: url(../images/icons/fm-dir-up.svg); mask-image: url(../images/icons/fm-dir-up.svg); }
 
-.Icon_Rar, .Icon_Zip { -webkit-mask-image: url(images/icons/file-archive.svg); mask-image: url(images/icons/file-archive.svg); }
+.Icon_Rar, .Icon_Zip { -webkit-mask-image: url(../images/icons/file-archive.svg); mask-image: url(../images/icons/file-archive.svg); }
 
 /* Torrent status glyph + per-state token color (set on the .stable-icon cell) */
-.Status_Down { -webkit-mask-image: url(images/icons/toolbar-move-down.svg); mask-image: url(images/icons/toolbar-move-down.svg); background-color: var(--qb-state-downloading); }
+.Status_Down { -webkit-mask-image: url(../images/icons/toolbar-move-down.svg); mask-image: url(../images/icons/toolbar-move-down.svg); background-color: var(--qb-state-downloading); }
 
-.Status_Up { -webkit-mask-image: url(images/icons/toolbar-move-up.svg); mask-image: url(images/icons/toolbar-move-up.svg); background-color: var(--qb-state-seeding); }
+.Status_Up { -webkit-mask-image: url(../images/icons/toolbar-move-up.svg); mask-image: url(../images/icons/toolbar-move-up.svg); background-color: var(--qb-state-seeding); }
 
-.Status_Up_Down { -webkit-mask-image: url(images/icons/state-active.svg); mask-image: url(images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
+.Status_Up_Down { -webkit-mask-image: url(../images/icons/state-active.svg); mask-image: url(../images/icons/state-active.svg); background-color: var(--qb-state-downloading); }
 
-.Status_Incompleted { -webkit-mask-image: url(images/icons/toolbar-stop.svg); mask-image: url(images/icons/toolbar-stop.svg); background-color: var(--qb-state-stopped); }
+.Status_Incompleted { -webkit-mask-image: url(../images/icons/toolbar-stop.svg); mask-image: url(../images/icons/toolbar-stop.svg); background-color: var(--qb-state-stopped); }
 
-.Status_Paused { -webkit-mask-image: url(images/icons/toolbar-pause.svg); mask-image: url(images/icons/toolbar-pause.svg); background-color: var(--qb-state-paused); }
+.Status_Paused { -webkit-mask-image: url(../images/icons/toolbar-pause.svg); mask-image: url(../images/icons/toolbar-pause.svg); background-color: var(--qb-state-paused); }
 
-.Status_Error, .Status_Error_Up, .Status_Error_Down { -webkit-mask-image: url(images/icons/state-error.svg); mask-image: url(images/icons/state-error.svg); background-color: var(--qb-state-error); }
+.Status_Error, .Status_Error_Up, .Status_Error_Down { -webkit-mask-image: url(../images/icons/state-error.svg); mask-image: url(../images/icons/state-error.svg); background-color: var(--qb-state-error); }
 
-.Status_Completed { -webkit-mask-image: url(images/icons/state-finished.svg); mask-image: url(images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
+.Status_Completed { -webkit-mask-image: url(../images/icons/state-finished.svg); mask-image: url(../images/icons/state-finished.svg); background-color: var(--qb-state-seeding); }
 
-.Status_Queued_Up, .Status_Queued_Down { -webkit-mask-image: url(images/icons/state-queued.svg); mask-image: url(images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
+.Status_Queued_Up, .Status_Queued_Down { -webkit-mask-image: url(../images/icons/state-queued.svg); mask-image: url(../images/icons/state-queued.svg); background-color: var(--qb-state-stopped); }
 
-.Status_Checking { -webkit-mask-image: url(images/icons/state-checking.svg); mask-image: url(images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
+.Status_Checking { -webkit-mask-image: url(../images/icons/state-checking.svg); mask-image: url(../images/icons/state-checking.svg); background-color: var(--qb-state-downloading); }
 
-.Status_RSS { -webkit-mask-image: url(images/icons/toolbar-rss.svg); mask-image: url(images/icons/toolbar-rss.svg); background-color: var(--qb-accent-text); }
+.Status_RSS { -webkit-mask-image: url(../images/icons/toolbar-rss.svg); mask-image: url(../images/icons/toolbar-rss.svg); background-color: var(--qb-accent-text); }

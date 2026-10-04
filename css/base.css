@@ -17,7 +17,7 @@ html {
 /* Preload Images */
 #preload {
 	display: none;
-	background-image: url('images/status_icons.png'), url('images/headers.png');
+	background-image: url('../images/status_icons.png'), url('../images/headers.png');
 	background-repeat: no-repeat;
 }
 

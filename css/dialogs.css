@@ -6,8 +6,8 @@
 /* Dialog Close Button */
 a.dlg-close {
 	background: var(--qb-icon);
-	-webkit-mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
-	mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
 	border: none;
 	float: right;
 	height: 14px;
@@ -17,8 +17,8 @@ a.dlg-close {
 
 a.dlg-close:hover {
 	background: var(--qb-icon-hover);
-	-webkit-mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
-	mask: url(images/icons/menu-close.svg) center / 14px no-repeat;
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 14px no-repeat;
 }
 
 /* Context Menu */
@@ -88,8 +88,8 @@ ul.CMenu li a.exp::after {
 	width: 0.9rem;
 	margin-left: auto;
 	background-color: var(--qb-fg-muted);
-	-webkit-mask-image: url(images/icons/menu-expand.svg);
-	mask-image: url(images/icons/menu-expand.svg);
+	-webkit-mask-image: url(../images/icons/menu-expand.svg);
+	mask-image: url(../images/icons/menu-expand.svg);
 }
 
 ul.CMenu li a.exp:hover::after { background-color: var(--qb-primary-fg); }
@@ -97,8 +97,8 @@ ul.CMenu li a.exp:hover::after { background-color: var(--qb-primary-fg); }
 ul.CMenu li a.sel::before {
 	width: 0.9rem;
 	background-color: var(--qb-primary);
-	-webkit-mask-image: url(images/icons/menu-check.svg);
-	mask-image: url(images/icons/menu-check.svg);
+	-webkit-mask-image: url(../images/icons/menu-check.svg);
+	mask-image: url(../images/icons/menu-check.svg);
 }
 
 ul.CMenu li a.sel:hover::before { background-color: var(--qb-primary-fg); }

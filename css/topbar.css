@@ -85,35 +85,35 @@ div#t {
 	background-color: var(--qb-icon-hover);
 }
 
-#t div#add { -webkit-mask-image: url(images/icons/toolbar-add.svg); mask-image: url(images/icons/toolbar-add.svg); }
+#t div#add { -webkit-mask-image: url(../images/icons/toolbar-add.svg); mask-image: url(../images/icons/toolbar-add.svg); }
 
-#t div#create { -webkit-mask-image: url(images/icons/toolbar-create.svg); mask-image: url(images/icons/toolbar-create.svg); }
+#t div#create { -webkit-mask-image: url(../images/icons/toolbar-create.svg); mask-image: url(../images/icons/toolbar-create.svg); }
 
-#t div#remove { -webkit-mask-image: url(images/icons/toolbar-remove.svg); mask-image: url(images/icons/toolbar-remove.svg); }
+#t div#remove { -webkit-mask-image: url(../images/icons/toolbar-remove.svg); mask-image: url(../images/icons/toolbar-remove.svg); }
 
-#t div#start { -webkit-mask-image: url(images/icons/toolbar-start.svg); mask-image: url(images/icons/toolbar-start.svg); }
+#t div#start { -webkit-mask-image: url(../images/icons/toolbar-start.svg); mask-image: url(../images/icons/toolbar-start.svg); }
 
-#t div#pause { -webkit-mask-image: url(images/icons/toolbar-pause.svg); mask-image: url(images/icons/toolbar-pause.svg); }
+#t div#pause { -webkit-mask-image: url(../images/icons/toolbar-pause.svg); mask-image: url(../images/icons/toolbar-pause.svg); }
 
-#t div#stop { -webkit-mask-image: url(images/icons/toolbar-stop.svg); mask-image: url(images/icons/toolbar-stop.svg); }
+#t div#stop { -webkit-mask-image: url(../images/icons/toolbar-stop.svg); mask-image: url(../images/icons/toolbar-stop.svg); }
 
-#t div#moveu { -webkit-mask-image: url(images/icons/toolbar-move-up.svg); mask-image: url(images/icons/toolbar-move-up.svg); }
+#t div#moveu { -webkit-mask-image: url(../images/icons/toolbar-move-up.svg); mask-image: url(../images/icons/toolbar-move-up.svg); }
 
-#t div#moved { -webkit-mask-image: url(images/icons/toolbar-move-down.svg); mask-image: url(images/icons/toolbar-move-down.svg); }
+#t div#moved { -webkit-mask-image: url(../images/icons/toolbar-move-down.svg); mask-image: url(../images/icons/toolbar-move-down.svg); }
 
-#t div#search { -webkit-mask-image: url(images/icons/toolbar-search.svg); mask-image: url(images/icons/toolbar-search.svg); }
+#t div#search { -webkit-mask-image: url(../images/icons/toolbar-search.svg); mask-image: url(../images/icons/toolbar-search.svg); }
 
-#t div#rss { -webkit-mask-image: url(images/icons/toolbar-rss.svg); mask-image: url(images/icons/toolbar-rss.svg); }
+#t div#rss { -webkit-mask-image: url(../images/icons/toolbar-rss.svg); mask-image: url(../images/icons/toolbar-rss.svg); }
 
-#t div#setting { -webkit-mask-image: url(images/icons/toolbar-settings.svg); mask-image: url(images/icons/toolbar-settings.svg); }
+#t div#setting { -webkit-mask-image: url(../images/icons/toolbar-settings.svg); mask-image: url(../images/icons/toolbar-settings.svg); }
 
-#t div#help { -webkit-mask-image: url(images/icons/toolbar-help.svg); mask-image: url(images/icons/toolbar-help.svg); }
+#t div#help { -webkit-mask-image: url(../images/icons/toolbar-help.svg); mask-image: url(../images/icons/toolbar-help.svg); }
 
-#t div#plugins { -webkit-mask-image: url(images/icons/toolbar-plugins.svg); mask-image: url(images/icons/toolbar-plugins.svg); }
+#t div#plugins { -webkit-mask-image: url(../images/icons/toolbar-plugins.svg); mask-image: url(../images/icons/toolbar-plugins.svg); }
 
-#t div#chat { -webkit-mask-image: url(images/icons/toolbar-chat.svg); mask-image: url(images/icons/toolbar-chat.svg); }
+#t div#chat { -webkit-mask-image: url(../images/icons/toolbar-chat.svg); mask-image: url(../images/icons/toolbar-chat.svg); }
 
-#t div#logoff { -webkit-mask-image: url(images/icons/logoff.svg); mask-image: url(images/icons/logoff.svg); }
+#t div#logoff { -webkit-mask-image: url(../images/icons/logoff.svg); mask-image: url(../images/icons/logoff.svg); }
 
 /* GO button: variant gradient, the toolbar's signature action */
 @media (min-width: 769px) {
