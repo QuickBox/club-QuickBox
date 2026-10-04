@@ -66,8 +66,14 @@
 	height: 26px;
 	flex: none;
 	background-color: var(--qb-primary);
+	background-image: var(--qb-header-gradient);
 	-webkit-mask: url(../images/brand/qb-mark.svg) center / contain no-repeat;
 	mask: url(../images/brand/qb-mark.svg) center / contain no-repeat;
+}
+
+/* Light variant: a solid primary mark, no gradient. */
+:root[data-qb-variant="defaulted"] .cqb-brand-mark {
+	background-image: none;
 }
 
 .cqb-brand-word {
