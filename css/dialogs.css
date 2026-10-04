@@ -249,10 +249,12 @@ div.dlg-window > .cont {
 	margin-bottom: 0;
 }
 
+/* legend renders as a normal in-card heading, never interrupting the border */
 .dlg-window legend {
+	display: block;
 	float: none;
-	width: auto;
-	margin: 0 0 4px 0;
+	width: 100%;
+	margin: 0 0 10px 0;
 	padding: 0;
 	color: var(--qb-fg-muted);
 	font-family: var(--qb-font);
@@ -296,7 +298,7 @@ div.dlg-window > .cont {
 	border: 1px solid var(--qb-border);
 	border-radius: 8px;
 	color: var(--qb-foreground);
-	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-family: var(--qb-font);
 	font-size: 13px;
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
@@ -498,6 +500,57 @@ dialog.browseFrame .rmenuitem.active {
 /* ============================================================
  * Add Torrent (defect 8): drop-zone card, file chips, label select
  * ============================================================ */
+
+/* Stack each field: top-aligned muted label above a full-width control. */
+#addtorrent .row,
+#addtorrenturl .row {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+	margin: 0 0 12px 0;
+}
+
+#addtorrent .row:last-child,
+#addtorrenturl .row:last-child {
+	margin-bottom: 0;
+}
+
+#addtorrent .row > div,
+#addtorrenturl .row > div {
+	width: 100%;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
+	justify-content: flex-start;
+}
+
+/* Reveal the label column (Bootstrap hides it on small) and left-align it. */
+#addtorrent .row > .d-none,
+#addtorrenturl .row > .d-none {
+	display: flex !important;
+	justify-content: flex-start !important;
+}
+
+#addtorrent .row label,
+#addtorrenturl .row label {
+	display: block;
+	margin: 0 0 2px 0;
+	color: var(--qb-fg-muted);
+	font-size: 12px;
+	text-align: left;
+}
+
+/* The label + select row holds two controls side by side under one label. */
+#addtorrent #tadd_label,
+#addtorrent #tadd_label_select {
+	width: 100%;
+}
+
+/* Core forces the URL field to monospace via a two-id rule; use the UI font. */
+.dlg-window #addtorrenturl #url {
+	font-family: var(--qb-font);
+}
+
 .cqb-dropzone {
 	display: flex;
 	flex-direction: column;
@@ -530,12 +583,6 @@ dialog.browseFrame .rmenuitem.active {
 	background-color: var(--qb-primary-text, var(--qb-primary));
 	-webkit-mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
 	mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
-}
-
-.cqb-dropzone .cqb-dropzone-title {
-	font-size: 13px;
-	font-weight: 600;
-	color: var(--qb-foreground);
 }
 
 .cqb-dropzone .cqb-dropzone-hint {

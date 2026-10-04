@@ -31,6 +31,11 @@
 		var fieldset = fileInput.closest("fieldset");
 		if (!fieldset) return;
 
+		/* Drop the trailing colons from the stacked field labels. */
+		dlg.querySelectorAll(".row label").forEach(function (l) {
+			l.textContent = l.textContent.replace(/\s*:\s*$/, "");
+		});
+
 		/* 1. Drop-zone card. A <label for> natively opens the file picker, so
 		 * browsing needs no JS. The native input is tucked but left wired. */
 		var zone = document.createElement("label");
@@ -41,10 +46,6 @@
 		zi.className = "cqb-dropzone-icon";
 		zi.setAttribute("aria-hidden", "true");
 
-		var zt = document.createElement("span");
-		zt.className = "cqb-dropzone-title";
-		zt.textContent = t("Add_from_file", "Add torrent files");
-
 		var zh = document.createElement("span");
 		zh.className = "cqb-dropzone-hint";
 		var browse = document.createElement("span");
@@ -54,7 +55,6 @@
 		zh.appendChild(browse);
 
 		zone.appendChild(zi);
-		zone.appendChild(zt);
 		zone.appendChild(zh);
 
 		var chips = document.createElement("div");
@@ -158,7 +158,7 @@
 		var add = document.createElement("button");
 		add.type = "button";
 		add.className = "cqb-primary";
-		add.textContent = t("add_button", "Add");
+		add.textContent = t("torrent_add", "Add torrent");
 		add.addEventListener("click", function () {
 			var hasFiles = fileInput.files && fileInput.files.length > 0;
 			if (hasFiles && addFileBtn) {
