@@ -747,6 +747,9 @@
 				});
 				recentMo.observe(group, { childList: true });
 			}
+
+			relocateConsole();
+			scheduleFit();
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -1065,6 +1068,196 @@
 		} catch (e) { /* never break the bundle */ }
 	}
 
+	/* ------------------------------------------------------------
+	 * 6. Detail tab strip -- fit the 12 tabs to the available width:
+	 *    labels when they fit, icon-only below that (the active tab
+	 *    keeps its label + underline), and a "More" popover for any
+	 *    that still will not fit. Never a horizontal scrollbar. The
+	 *    File Manager console toggle is moved out of the strip into
+	 *    the FM toolbar so it never competes for tab room.
+	 * ---------------------------------------------------------- */
+	var tabMore = null;
+	var fitScheduled = false;
+
+	function tabBar() { return document.getElementById("tabbar"); }
+
+	function tabItems(bar) {
+		var out = [];
+		var kids = bar.children;
+		for (var i = 0; i < kids.length; i++) {
+			if (kids[i].tagName === "LI" && kids[i].id && kids[i].id.indexOf("tab_") === 0) out.push(kids[i]);
+		}
+		return out;
+	}
+
+	function setTabTip(li, on) {
+		var a = li.querySelector("a.nav-link");
+		if (!a) return;
+		if (on && cqb && cqb.tooltip) cqb.tooltip(a, (a.textContent || "").trim());
+		else a.removeAttribute("data-cqb-tip");
+	}
+
+	/* Move the FM console toggle (#fMan_showconsole, which core appends to
+	 * #tabbar) into the FM toolbar, on the right before the Recent trigger. */
+	function relocateConsole() {
+		try {
+			var btn = document.getElementById("fMan_showconsole");
+			if (!btn) return;
+			var np = document.getElementById("flm-navpath");
+			var group = np && (np.closest(".input-group") || np.parentNode);
+			if (!group || btn.parentNode === group) return;
+			btn.classList.add("cqb-flm-console");
+			if (cqb && cqb.tooltip) cqb.tooltip(btn, (btn.value || "Console"));
+			group.insertBefore(btn, group.querySelector(".cqb-flm-recent") || null);
+		} catch (e) {}
+	}
+
+	function ensureMore(bar) {
+		if (tabMore && tabMore.parentNode === bar) return tabMore;
+		var li = document.createElement("li");
+		li.className = "nav-item cqb-tab-more-item";
+		var btn = document.createElement("button");
+		btn.type = "button";
+		btn.className = "nav-link cqb-tab-more";
+		btn.setAttribute("aria-haspopup", "listbox");
+		btn.setAttribute("aria-expanded", "false");
+		btn.setAttribute("aria-label", "More tabs");
+		var lbl = document.createElement("span");
+		lbl.className = "cqb-tab-more-label";
+		lbl.textContent = "More";
+		var chev = document.createElement("span");
+		chev.className = "cqb-select-chevron";
+		chev.setAttribute("aria-hidden", "true");
+		btn.appendChild(lbl);
+		btn.appendChild(chev);
+		li.appendChild(btn);
+		wireMore(btn);
+		bar.appendChild(li);
+		tabMore = li;
+		return li;
+	}
+
+	function wireMore(btn) {
+		var panel = null;
+		function parked() {
+			var bar = tabBar(), out = [];
+			if (bar) tabItems(bar).forEach(function (li) { if (li.classList.contains("cqb-tab-parked")) out.push(li); });
+			return out;
+		}
+		function close(refocus) {
+			if (!panel) return;
+			document.removeEventListener("mousedown", onDown, true);
+			window.removeEventListener("resize", onMove);
+			window.removeEventListener("scroll", onMove, true);
+			if (panel.parentNode) panel.parentNode.removeChild(panel);
+			panel = null;
+			btn.setAttribute("aria-expanded", "false");
+			if (refocus) btn.focus();
+		}
+		function onDown(e) { if (btn.contains(e.target) || (panel && panel.contains(e.target))) return; close(false); }
+		function onMove() { if (panel) place(); }
+		function place() {
+			var r = btn.getBoundingClientRect();
+			var vw = document.documentElement.clientWidth, vh = document.documentElement.clientHeight, pad = 8, gap = 4;
+			panel.querySelector(".cqb-select-list").style.maxHeight = Math.min(320, Math.floor(vh * 0.7), vh - r.bottom - pad) + "px";
+			var pw = panel.offsetWidth;
+			panel.style.top = Math.max(pad, r.bottom + gap) + "px";
+			panel.style.left = Math.min(Math.max(pad, r.right - pw), Math.max(pad, vw - pw - pad)) + "px";
+		}
+		function open() {
+			panel = document.createElement("div");
+			panel.className = "cqb-select-panel cqb-tab-more-panel";
+			panel.setAttribute("role", "presentation");
+			panel.addEventListener("mousedown", function (e) { e.preventDefault(); });
+			var list = document.createElement("div");
+			list.className = "cqb-select-list";
+			list.setAttribute("role", "listbox");
+			list.setAttribute("aria-label", "More tabs");
+			parked().forEach(function (li) {
+				var a = li.querySelector("a.nav-link");
+				var row = document.createElement("button");
+				row.type = "button";
+				row.className = "cqb-select-option cqb-tab-more-opt";
+				row.setAttribute("role", "option");
+				var glyph = document.createElement("span");
+				glyph.className = "cqb-tab-more-glyph";
+				glyph.setAttribute("aria-hidden", "true");
+				if (a) {
+					var m = getComputedStyle(a, "::before");
+					glyph.style.webkitMaskImage = m.webkitMaskImage || m.maskImage;
+					glyph.style.maskImage = m.maskImage || m.webkitMaskImage;
+				}
+				var lbl = document.createElement("span");
+				lbl.className = "cqb-select-option-label";
+				lbl.textContent = (a ? a.textContent : "").trim();
+				row.appendChild(glyph);
+				row.appendChild(lbl);
+				row.addEventListener("click", function (e) {
+					e.preventDefault();
+					try { if (window.theTabs) theTabs.show(li.id.slice(4)); } catch (ex) {}
+					close(true);
+				});
+				list.appendChild(row);
+			});
+			panel.appendChild(list);
+			document.body.appendChild(panel);
+			btn.setAttribute("aria-expanded", "true");
+			place();
+			panel.classList.add("cqb-open");
+			document.addEventListener("mousedown", onDown, true);
+			window.addEventListener("resize", onMove);
+			window.addEventListener("scroll", onMove, true);
+		}
+		btn.addEventListener("click", function () { if (panel) close(true); else open(); });
+		btn.addEventListener("keydown", function (e) {
+			if (!panel && (e.key === "Enter" || e.key === " " || e.key === "Spacebar" || e.key === "ArrowDown")) { e.preventDefault(); open(); }
+			else if (panel && e.key === "Escape") { e.preventDefault(); close(true); }
+		});
+	}
+
+	function fitTabs() {
+		try {
+			var bar = tabBar();
+			if (!bar) return;
+			relocateConsole();
+			var items = tabItems(bar);
+			if (!items.length) return;
+			/* Reset to the widest (labelled, nothing parked) state first. */
+			items.forEach(function (li) { li.classList.remove("cqb-tab-parked"); setTabTip(li, false); });
+			bar.classList.remove("cqb-tabs-icononly");
+			if (tabMore) tabMore.style.display = "none";
+			if (bar.scrollWidth <= bar.clientWidth + 1) return;
+			/* Labels do not fit -- go icon-only, the active tab keeps its label. */
+			bar.classList.add("cqb-tabs-icononly");
+			items.forEach(function (li) { if (!li.classList.contains("selected")) setTabTip(li, true); });
+			if (bar.scrollWidth <= bar.clientWidth + 1) return;
+			/* Still too wide -- park trailing non-active tabs into a More menu. */
+			var more = ensureMore(bar);
+			more.style.display = "";
+			items = tabItems(bar);
+			for (var i = items.length - 1; i >= 0 && bar.scrollWidth > bar.clientWidth + 1; i--) {
+				if (!items[i].classList.contains("selected")) items[i].classList.add("cqb-tab-parked");
+			}
+		} catch (e) { /* never break the bundle */ }
+	}
+
+	function scheduleFit() {
+		if (fitScheduled) return;
+		fitScheduled = true;
+		var run = function () { fitScheduled = false; fitTabs(); };
+		if (window.requestAnimationFrame) requestAnimationFrame(run);
+		else setTimeout(run, 16);
+	}
+
+	function watchTabStrip() {
+		try {
+			fitTabs();
+			window.addEventListener("resize", scheduleFit);
+			var bar = tabBar();
+			if (bar && window.ResizeObserver) new ResizeObserver(scheduleFit).observe(bar);
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	/* Re-apply chart/toolbar work when the relevant tab is shown, so a
 	 * lazily-built graph or toolbar is caught the first time it appears. */
 	function hookTabShow() {
@@ -1079,6 +1272,7 @@
 				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); updateTrafKpi(); }
 				if (id === "Speed") { enhanceSpeedToolbar(); styleCharts(); resizeSpeed(); }
 				syncSpeedToolbar();
+				scheduleFit();
 				return r;
 			};
 			theTabs.__cqbWrapped = true;
@@ -1092,8 +1286,9 @@
 	enhanceSpeedToolbar();
 	styleCharts();
 	hookTabShow();
+	watchTabStrip();
 	if (cqb && cqb.onVariant) cqb.onVariant(styleCharts);
 	/* One delayed pass -- the traffic and speed graphs are built during
 	 * lang-load, which may land just after this module runs. */
-	setTimeout(function () { enhanceTrafToolbar(); enhanceSpeedToolbar(); styleCharts(); updateTrafKpi(); }, 1500);
+	setTimeout(function () { enhanceTrafToolbar(); enhanceSpeedToolbar(); styleCharts(); updateTrafKpi(); scheduleFit(); }, 1500);
 })(window.cqb);

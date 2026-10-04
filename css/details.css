@@ -24,7 +24,9 @@ div#tdcont {
 
 /* ============================================================
  * Underline tab strip (v4 Tabs idiom) -- 40px, 13px, SVG glyph,
- * active = 2px primary underline + foreground; scrolls horizontally.
+ * active = 2px primary underline + foreground. details.js fits the
+ * strip to the width (labels -> icon-only -> "More" menu) so it
+ * never scrolls horizontally.
  * ============================================================ */
 .nav-tabs,
 .tabbar.nav-tabs {
@@ -112,6 +114,80 @@ div#tdcont {
 li#tab_lcont {
 	width: auto;
 	display: inline-flex;
+}
+
+/* Never scroll the strip; details.js keeps it within the width. */
+.tabbar.nav-tabs { overflow: hidden; flex-wrap: nowrap; }
+
+/* Icon-only mode (narrow): non-active tabs drop their label to the glyph;
+ * the active tab keeps its label and its underline. The glyph is a fixed
+ * 16px mask, so font-size:0 hides only the text. */
+.tabbar.cqb-tabs-icononly li.nav-item:not(.selected) a.nav-link {
+	font-size: 0;
+	gap: 0;
+	padding: 0 10px;
+}
+
+/* Tabs parked into the "More" menu are out of the strip (and its width). */
+.tabbar li.nav-item.cqb-tab-parked { display: none; }
+
+/* "More" overflow trigger -- matches the tab idiom, opens the shared popover. */
+.tabbar .cqb-tab-more-item { margin: 0; display: inline-flex; flex: none; }
+.tabbar .cqb-tab-more {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	height: 40px;
+	margin: 0;
+	padding: 0 10px;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 13px;
+	font-weight: 500;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: color 0.15s ease;
+}
+.tabbar .cqb-tab-more:hover,
+.tabbar .cqb-tab-more[aria-expanded="true"] { color: var(--qb-foreground); }
+.cqb-tab-more .cqb-select-chevron { width: 14px; height: 14px; }
+
+/* Tab glyph inside a "More" popover row (mask-image set inline from the tab). */
+.cqb-tab-more-glyph {
+	width: 16px;
+	height: 16px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: center / contain no-repeat;
+	mask: center / contain no-repeat;
+}
+
+/* FM console toggle, relocated from the strip into the FM toolbar. */
+input.cqb-flm-console.Button,
+.cqb-flm-console {
+	flex: none;
+	min-height: 30px;
+	height: 30px;
+	margin: 0;
+	padding: 0 10px;
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+	background: transparent;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	cursor: pointer;
+	transition: background-color 0.15s ease, color 0.15s ease;
+}
+input.cqb-flm-console.Button:hover,
+.cqb-flm-console:hover {
+	background: var(--qb-surface-3);
+	color: var(--qb-foreground);
 }
 
 /* ============================================================
