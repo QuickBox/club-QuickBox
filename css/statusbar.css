@@ -1,55 +1,179 @@
 /*
- *  club-QuickBox skin for ruTorrent -- statusbar surface -- the footer status cells and speed arrows.
- *  Moved out of style.css; every color reads from a --qb-* token.
+ *  club-QuickBox skin for ruTorrent -- statusbar surface.
+ *  The footer status bar: 32px token chips separated by hairlines, SVG mask
+ *  glyphs tinted per state, tabular numerals. Every masked element clears its
+ *  background-image so no core raster bleeds through the glyph.
  */
 
-/* Status Bar */
+/* ============================================================
+ * Bar shell -- 32px flex strip of chips on the surface.
+ * ============================================================ */
 #StatusBar {
+	display: flex;
+	align-items: stretch;
+	min-height: 32px;
+	padding: 0 4px;
+	margin-top: 0;
 	background-color: var(--qb-surface);
 	border-top: 1px solid var(--qb-border);
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-variant-numeric: tabular-nums;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+/* Each cell is a chip; hairlines divide them. */
+#StatusBar .status-cell {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+	padding: 0 12px;
+	border-right: 1px solid var(--qb-border);
+}
+
+#StatusBar .status-cell:first-child {
+	padding-left: 8px;
+}
+
+/* The clock is pushed to the far right; give it a leading rule, not a trailing one. */
+#StatusBar .status-cell.ms-auto {
+	border-right: 0;
+	border-left: 1px solid var(--qb-border);
+}
+
+#StatusBar .status-cell:last-child {
+	border-right: 0;
+}
+
+/* Labels muted and light; values take the foreground. */
+#StatusBar .sthdr {
+	padding-right: 0;
+	font-weight: 500;
+	color: var(--qb-fg-muted);
+	text-align: left;
+}
+
+#StatusBar .stval {
+	padding-right: 0;
+	min-width: 0;
+	overflow: visible;
 	color: var(--qb-foreground);
-	font-family: inherit;
-	padding: 0px 10px;
-	margin-top: 0px;
 }
 
-#StatusBar table {
-	width: 100%;
-	border-collapse: collapse;
-}
-
-#StatusBar table tr td {
-	background-color: var(--qb-surface);
-	border: none;
-	padding-right: 5px;
-}
-
-.statuscell td:not(:last-child) {
-	padding-right: 5px;
-}
-
-#st_up .icon,
-#st_down .icon {
-	height: 21px;
-	width: 21px;
+/* ============================================================
+ * Mask glyphs -- one SVG per cell, tinted by token. background-image:none
+ * is mandatory: the core sets a base64 raster on #st_up/.icon et al and a
+ * mask reveals whatever background-color sits under it, so the raster must go.
+ * ============================================================ */
+#StatusBar .icon {
+	width: 16px;
+	height: 16px;
+	margin: 0 2px 0 0;
+	flex: none;
+	background-image: none;
 	background-color: var(--qb-icon);
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
-	-webkit-mask-position: 6px center;
-	mask-position: 6px center;
+	-webkit-mask-position: center;
+	mask-position: center;
 	-webkit-mask-size: 14px;
 	mask-size: 14px;
 }
 
-#st_up .icon { -webkit-mask-image: url(../images/icons/statusbar-upload.svg); mask-image: url(../images/icons/statusbar-upload.svg); background-color: var(--qb-speed-up); }
+#st_up .icon {
+	-webkit-mask-image: url(../images/icons/statusbar-upload.svg);
+	mask-image: url(../images/icons/statusbar-upload.svg);
+	background-color: var(--qb-speed-up);
+}
 
-#st_down .icon { -webkit-mask-image: url(../images/icons/statusbar-download.svg); mask-image: url(../images/icons/statusbar-download.svg); background-color: var(--qb-speed-down); }
+#st_down .icon {
+	-webkit-mask-image: url(../images/icons/statusbar-download.svg);
+	mask-image: url(../images/icons/statusbar-download.svg);
+	background-color: var(--qb-speed-down);
+}
 
-#stup_speed { color: var(--qb-speed-up) !important; }
+#stup_speed { color: var(--qb-speed-up); }
 
-#stdown_speed { color: var(--qb-speed-down) !important; }
+#stdown_speed { color: var(--qb-speed-down); }
 
 #stup_total,
 #stdown_total {
 	color: var(--qb-speed-total);
+}
+
+/* ============================================================
+ * Connections cell -- a leading network glyph before the counts.
+ * ============================================================ */
+#st_fd::before {
+	content: "";
+	width: 14px;
+	height: 14px;
+	margin-right: 4px;
+	flex: none;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
+	mask: url(../images/icons/statusbar-connections.svg) center / 13px no-repeat;
+}
+
+/* ============================================================
+ * rTorrent version -- muted, secondary.
+ * ============================================================ */
+#rtorrentv { color: var(--qb-fg-muted); }
+
+/* ============================================================
+ * Port + connectable status -- the warning-triangle raster becomes one SVG
+ * mask tinted by state: unknown (muted), closed (destructive), open (primary).
+ * ============================================================ */
+#StatusBar #port-pane .icon {
+	width: 14px;
+	height: 14px;
+	-webkit-mask-image: url(../images/icons/statusbar-port.svg);
+	mask-image: url(../images/icons/statusbar-port.svg);
+	-webkit-mask-size: 13px;
+	mask-size: 13px;
+}
+
+#StatusBar #port-pane .icon.pstatus0 { background-color: var(--qb-state-stopped); }
+
+#StatusBar #port-pane .icon.pstatus1 { background-color: var(--qb-destructive); }
+
+#StatusBar #port-pane .icon.pstatus2 { background-color: var(--qb-primary); }
+
+.port-ip-text-segment { color: var(--qb-foreground); }
+
+/* ============================================================
+ * CPU + disk meter panes -- the chip glyph (the meter band fill lives in
+ * plugins.css). Both clear the core raster via the shared .icon rule above.
+ * ============================================================ */
+#StatusBar #meter-cpu-pane .icon {
+	-webkit-mask-image: url(../images/icons/meter-cpu.svg);
+	mask-image: url(../images/icons/meter-cpu.svg);
+}
+
+#StatusBar #meter-disk-pane .icon {
+	-webkit-mask-image: url(../images/icons/meter-disk.svg);
+	mask-image: url(../images/icons/meter-disk.svg);
+}
+
+/* ============================================================
+ * Clock -- a leading clock glyph on the right-aligned time cell.
+ * ============================================================ */
+#StatusBar .status-cell.ms-auto::before {
+	content: "";
+	width: 14px;
+	height: 14px;
+	margin-right: 4px;
+	flex: none;
+	background-color: var(--qb-icon);
+	-webkit-mask: url(../images/icons/statusbar-clock.svg) center / 13px no-repeat;
+	mask: url(../images/icons/statusbar-clock.svg) center / 13px no-repeat;
+}
+
+#servertime {
+	text-align: center;
+	color: var(--qb-foreground);
 }
