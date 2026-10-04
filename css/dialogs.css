@@ -548,15 +548,128 @@ dialog.browseFrame .rmenuitem.active {
 	text-align: left;
 }
 
-/* The label + select row holds two controls side by side under one label. */
-#addtorrent #tadd_label,
-#addtorrent #tadd_label_select {
-	width: 100%;
-}
-
 /* Core forces the URL field to monospace via a two-id rule; use the UI font. */
 .dlg-window #addtorrenturl #url {
 	font-family: var(--qb-font);
+}
+
+/* ============================================================
+ * Add Torrent (#tadd): Source card + Options card (rev30)
+ * ============================================================ */
+.dlg-window#tadd { width: min(620px, 94vw); max-height: 80vh; }
+
+/* A v4 panel card: 20px padding, 16px between cards, 12px field gap. */
+.dlg-window#tadd .cqb-card {
+	container-type: inline-size;
+	padding: 20px;
+	border: 1px solid var(--qb-border);
+	border-radius: 12px;
+	background-color: var(--qb-surface);
+}
+
+.dlg-window#tadd .cqb-card + .cqb-card { margin-top: 16px; }
+
+.dlg-window#tadd .cqb-card-head {
+	margin: 0 0 12px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.dlg-window#tadd .cqb-opt-card .cqb-field-v + .cqb-field-v,
+.dlg-window#tadd .cqb-opt-card .cqb-field-v + .cqb-opts-grid { margin-top: 12px; }
+
+/* File | URL segmented control (two equal halves, v4 SegmentedControl). */
+.dlg-window#tadd .cqb-seg {
+	display: flex;
+	gap: 2px;
+	margin-bottom: 14px;
+	padding: 2px;
+	background: var(--qb-muted);
+	border: 1px solid var(--qb-border);
+	border-radius: 8px;
+}
+
+.dlg-window#tadd .cqb-seg-btn {
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 5px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.dlg-window#tadd .cqb-seg-btn:not(:disabled):hover {
+	background: transparent;
+	color: var(--qb-foreground);
+}
+
+.dlg-window#tadd .cqb-seg-btn.is-active {
+	background: var(--qb-surface);
+	border-color: var(--qb-border);
+	color: var(--qb-foreground);
+	box-shadow: var(--qb-shadow-soft);
+}
+
+.dlg-window#tadd .cqb-seg-btn:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+/* One panel visible at a time; the hidden one keeps its value. */
+.dlg-window#tadd .cqb-src[data-src="file"] .cqb-src-url { display: none; }
+.dlg-window#tadd .cqb-src[data-src="url"] .cqb-src-file { display: none; }
+
+.dlg-window#tadd .cqb-src-url #url {
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 112px;
+	resize: vertical;
+}
+
+/* Label control: the select, or (New label...) an input group in the SAME row. */
+.dlg-window#tadd .cqb-label-ctl {
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.dlg-window#tadd .cqb-label-ctl .cqb-select-trigger {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto;
+}
+
+.dlg-window#tadd .cqb-label-ctl .cqb-label-group { flex: 1 1 auto; }
+
+.dlg-window#tadd .cqb-label-ctl[data-mode="list"] .cqb-label-group { display: none; }
+.dlg-window#tadd .cqb-label-ctl[data-mode="new"] .cqb-select-trigger { display: none; }
+
+/* The back-to-list button carries the label glyph, not the folder default. */
+.dlg-window#tadd .cqb-label-back::before {
+	-webkit-mask-image: url(../images/icons/header-label.svg);
+	mask-image: url(../images/icons/header-label.svg);
+}
+
+/* The four add options as switch rows, two columns when there is room. */
+.dlg-window#tadd .cqb-opts-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px 16px;
+}
+
+@container (max-width: 440px) {
+	.dlg-window#tadd .cqb-opts-grid { grid-template-columns: 1fr; }
 }
 
 .cqb-dropzone {
@@ -589,8 +702,8 @@ dialog.browseFrame .rmenuitem.active {
 	width: 32px;
 	height: 32px;
 	background-color: var(--qb-primary-text, var(--qb-primary));
-	-webkit-mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
-	mask: url(../images/icons/header-add-torrent.svg) center / contain no-repeat;
+	-webkit-mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
+	mask: url(../images/icons/drop-zone.svg) center / contain no-repeat;
 }
 
 .cqb-dropzone .cqb-dropzone-hint {
@@ -1106,22 +1219,22 @@ ul.CMenu li ul li a.dis:hover {
 	opacity: 0;
 }
 
-/* A field with its label stacked above it. */
-#tcreate .cqb-field-v {
+/* A field with its label stacked above it (shared by #tcreate and #tadd). */
+.dlg-window .cqb-field-v {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 	min-width: 0;
 }
 
-#tcreate .cqb-field-v > label {
+.dlg-window .cqb-field-v > label {
 	font-size: 12px;
 	font-weight: 500;
 	color: var(--qb-fg-muted);
 }
 
-#tcreate .cqb-field-v > input,
-#tcreate .cqb-field-v > textarea {
+.dlg-window .cqb-field-v > input,
+.dlg-window .cqb-field-v > textarea {
 	box-sizing: border-box;
 	width: 100%;
 }
@@ -1223,21 +1336,21 @@ ul.CMenu li ul li a.dis:hover {
 	gap: 6px;
 }
 
-#tcreate .cqb-opt {
+.dlg-window .cqb-opt {
 	display: flex;
 	align-items: flex-start;
 	gap: 10px;
 	padding: 4px 0;
 }
 
-#tcreate .cqb-opt-text {
+.dlg-window .cqb-opt-text {
 	display: flex;
 	flex-direction: column;
 	gap: 1px;
 	min-width: 0;
 }
 
-#tcreate .cqb-opt-text > label {
+.dlg-window .cqb-opt-text > label {
 	font-size: 13px;
 	font-weight: 500;
 	color: var(--qb-foreground);
@@ -1251,7 +1364,7 @@ ul.CMenu li ul li a.dis:hover {
 	line-height: 1.4;
 }
 
-#tcreate .cqb-opt .cqb-help { margin: 0; }
+.dlg-window .cqb-opt .cqb-help { margin: 0; }
 
 /* ============================================================
  * One field layout (defect 1): left-aligned label column, no
@@ -1418,14 +1531,31 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 /* ============================================================
- * Help (defect 7): shortcut keys as kbd chips, matching the
- * top-bar Ctrl K chip (token surface, hairline, muted mono-ish).
+ * Help (defect 7): a compact shortcuts card -- an explicit
+ * content-sized width (NOT a bare max-width: the full-width
+ * .container-fluid would otherwise expand to 95vw), with the
+ * shortcut keys as kbd chips in a two-column kbd | action grid.
  * ============================================================ */
-.dlg-window#dlgHelp { max-width: 95vw; }
+.dlg-window#dlgHelp { width: min(420px, 94vw); }
+
+#dlgHelp .container-fluid { padding: 8px 16px 12px; }
 
 #dlgHelp .container-fluid .row {
-	row-gap: 6px;
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 0 22px;
 	align-items: center;
+	margin: 0;
+}
+
+#dlgHelp .container-fluid .row > [class*="col-"] {
+	display: flex;
+	align-items: center;
+	flex: none;
+	width: auto;
+	max-width: none;
+	min-height: 30px;
+	padding: 0;
 }
 
 #dlgHelp .col-4 .fw-bold {

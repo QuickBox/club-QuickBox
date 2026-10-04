@@ -86,8 +86,14 @@
 		return { setFiles: setFiles, renderChips: renderChips };
 	}
 
-	/* Enhance the Add Torrent dialog once. It is preloaded hidden in the DOM,
-	 * so it exists by the time this module runs; a guard makes it idempotent. */
+	/* Rebuild the Add Torrent dialog as two v4 cards -- Source first (WHAT you
+	 * add: a File/URL segmented control over the drop-zone or the URL field),
+	 * Options second (HOW: directory, label, the four switches). Every core id
+	 * and handler stays live: the directory, label and option controls are read
+	 * by global id in content.js makeAddRequest(), so they move out of the two
+	 * forms freely; #torrent_file/#add_button stay inside #addtorrent (tucked)
+	 * and #url/#add_url inside #addtorrenturl (the whole form is relocated into
+	 * the URL panel so #url keeps submitting). Preloaded, so run once. */
 	function enhanceAddTorrent() {
 		var dlg = document.getElementById("tadd");
 		var fileInput = document.getElementById("torrent_file");
@@ -95,26 +101,61 @@
 		var addFileBtn = document.getElementById("add_button");
 		var addUrlBtn = document.getElementById("add_url");
 		if (!dlg || !fileInput || dlg.getAttribute("data-cqb-add") === "1") return;
+
+		var cont = dlg.querySelector(".cont");
+		var formFile = document.getElementById("addtorrent");
+		var formUrl = document.getElementById("addtorrenturl");
+		if (!cont || !formFile) return;
 		dlg.setAttribute("data-cqb-add", "1");
 
-		var fieldset = fileInput.closest("fieldset");
-		if (!fieldset) return;
-
-		/* Drop the trailing colons from the stacked field labels. */
-		dlg.querySelectorAll(".row label").forEach(function (l) {
+		/* Drop the trailing colons from every stacked field label. */
+		dlg.querySelectorAll("label").forEach(function (l) {
+			if (l.children.length) return;
 			l.textContent = l.textContent.replace(/\s*:\s*$/, "");
 		});
 
-		/* 1. Drop-zone card. A <label for> natively opens the file picker, so
-		 * browsing needs no JS. The native input is tucked but left wired. */
+		/* ---- Card 1: Source ---- */
+		var srcCard = document.createElement("div");
+		srcCard.className = "cqb-card cqb-src";
+		srcCard.setAttribute("data-src", "file");
+		var srcHead = document.createElement("div");
+		srcHead.className = "cqb-card-head";
+		srcHead.textContent = t("cqb_add_source", "Source");
+		srcCard.appendChild(srcHead);
+
+		/* File | URL segmented control (the v4 SegmentedControl idiom). */
+		var seg = document.createElement("div");
+		seg.className = "cqb-seg";
+		seg.setAttribute("role", "tablist");
+		var segFile = document.createElement("button");
+		segFile.type = "button";
+		segFile.className = "cqb-seg-btn is-active";
+		segFile.setAttribute("role", "tab");
+		segFile.setAttribute("aria-selected", "true");
+		segFile.textContent = t("cqb_add_file", "File");
+		var segUrl = document.createElement("button");
+		segUrl.type = "button";
+		segUrl.className = "cqb-seg-btn";
+		segUrl.setAttribute("role", "tab");
+		segUrl.setAttribute("aria-selected", "false");
+		segUrl.textContent = t("cqb_add_url", "URL");
+		seg.appendChild(segFile);
+		seg.appendChild(segUrl);
+		srcCard.appendChild(seg);
+
+		var panels = document.createElement("div");
+		panels.className = "cqb-src-panels";
+
+		/* File panel: drop-zone + chips. The <label for> opens the picker; the
+		 * native #torrent_file stays tucked inside #addtorrent. */
+		var filePanel = document.createElement("div");
+		filePanel.className = "cqb-src-panel cqb-src-file";
 		var zone = document.createElement("label");
 		zone.className = "cqb-dropzone";
 		zone.setAttribute("for", "torrent_file");
-
 		var zi = document.createElement("span");
 		zi.className = "cqb-dropzone-icon";
 		zi.setAttribute("aria-hidden", "true");
-
 		var zh = document.createElement("span");
 		zh.className = "cqb-dropzone-hint";
 		var browse = document.createElement("span");
@@ -124,42 +165,155 @@
 		zh.appendChild(document.createTextNode(dropHint[0]));
 		zh.appendChild(browse);
 		if (dropHint[1]) zh.appendChild(document.createTextNode(dropHint[1]));
-
 		zone.appendChild(zi);
 		zone.appendChild(zh);
-
 		var chips = document.createElement("div");
 		chips.className = "cqb-chips";
+		filePanel.appendChild(zone);
+		filePanel.appendChild(chips);
 
-		/* Insert the zone + chips at the top of the "Add from file" card and
-		 * tuck the native control there so change events still bubble. */
-		var legend = fieldset.querySelector("legend");
-		if (legend && legend.nextSibling) fieldset.insertBefore(zone, legend.nextSibling);
-		else fieldset.appendChild(zone);
-		fieldset.insertBefore(chips, zone.nextSibling);
-
-		/* Tuck the original file row (label + native input + inline submit) out
-		 * of view; it stays in the DOM and fully wired behind the card. */
-		var fileRow = fileInput.closest(".row") || fileInput;
-		fileRow.classList.add("cqb-file-tucked");
-		fileInput.classList.add("cqb-file-tucked");
-
-		/* 2 + 3. Drag/drop feeds the native FileList and chips reflect the
-		 * selection (shared helper, multiple files); Add re-syncs on change. */
-		wireDropzone(zone, chips, fileInput, { multiple: true, onChange: function () { syncAdd(); } });
-
-		/* 4. One primary Add in a footer; the two native submits stay wired but
-		 * hidden, and Add proxies a click to whichever input is filled. */
-		addFileBtn && addFileBtn.classList.add("cqb-file-tucked");
-		if (addUrlBtn) {
-			var urlBtnCol = addUrlBtn.closest(".col-md-3") || addUrlBtn;
-			urlBtnCol.classList.add("cqb-file-tucked");
+		/* URL panel: relocate the whole #addtorrenturl form so #url keeps
+		 * submitting, lift #url out of its fieldset and tuck the rest. */
+		var urlPanel = document.createElement("div");
+		urlPanel.className = "cqb-src-panel cqb-src-url";
+		if (formUrl) {
+			urlPanel.appendChild(formUrl);
+			var urlFs = formUrl.querySelector("fieldset");
+			if (urlArea && urlFs) formUrl.insertBefore(urlArea, urlFs);
+			if (urlFs) urlFs.classList.add("cqb-file-tucked");
 		}
 
-		var cont = dlg.querySelector(".cont");
+		panels.appendChild(filePanel);
+		panels.appendChild(urlPanel);
+		srcCard.appendChild(panels);
+
+		/* ---- Card 2: Options ---- */
+		var optCard = document.createElement("div");
+		optCard.className = "cqb-card cqb-opt-card";
+		var optHead = document.createElement("div");
+		optHead.className = "cqb-card-head";
+		optHead.textContent = t("Torrent_options", "Options");
+		optCard.appendChild(optHead);
+
+		/* Directory: stacked label + input-group (field + square browse). */
+		var dirEdit = document.getElementById("dir_edit");
+		if (dirEdit) {
+			var dirField = document.createElement("div");
+			dirField.className = "cqb-field-v";
+			var dirLbl = dlg.querySelector('label[for="dir_edit"]');
+			if (dirLbl) dirField.appendChild(dirLbl);
+			var s = window.theWebUI && theWebUI.settings;
+			var defDir = (s && (s["dir.default"] || s["directory.default"])) || "";
+			dirEdit.setAttribute("placeholder", defDir || t("cqb_add_dir_ph", "Default download directory"));
+			/* Attach the core directory browser (same class Create/Settings use),
+			 * then fuse the field + its button into one input group. */
+			try {
+				if (!document.getElementById("dir_edit_btn") && window.theWebUI && typeof theWebUI.rDirBrowser === "function") {
+					new theWebUI.rDirBrowser("dir_edit", false);
+				}
+			} catch (e) { /* no browser plugin: field stays plain */ }
+			var dirBtn = document.getElementById("dir_edit_btn");
+			if (dirBtn) {
+				var grp = document.createElement("div");
+				grp.className = "cqb-input-group";
+				dirEdit.parentNode.insertBefore(grp, dirEdit);
+				grp.appendChild(dirEdit);
+				grp.appendChild(dirBtn);
+				dirBtn.classList.add("cqb-browse");
+				dirBtn.textContent = "";
+				if (cqb && cqb.tooltip) cqb.tooltip(dirBtn, t("cqb_browse", t("Browse", "Browse")));
+				dirField.appendChild(grp);
+			} else {
+				dirField.appendChild(dirEdit);
+			}
+			optCard.appendChild(dirField);
+		}
+
+		/* Label: one control row -- the select, or (on "New label...") the same
+		 * row becomes an input group (text field + a square back-to-list button
+		 * inside the group). data-mode toggles which is shown, driven by core's
+		 * own select events; the custom trigger is left to the select lane. */
+		var labelSel = document.getElementById("tadd_label_select");
+		var labelTxt = document.getElementById("tadd_label");
+		var labelBack = document.getElementById("tadd-return-select");
+		if (labelSel && labelTxt && labelBack) {
+			var lblField = document.createElement("div");
+			lblField.className = "cqb-field-v";
+			var lblLbl = dlg.querySelector('label[for="tadd_label"]');
+			if (lblLbl) lblField.appendChild(lblLbl);
+			var lblRow = document.createElement("div");
+			lblRow.className = "cqb-label-ctl";
+			lblRow.setAttribute("data-mode", "list");
+			var trig = labelSel.nextElementSibling;
+			lblRow.appendChild(labelSel);
+			if (trig && trig.classList && trig.classList.contains("cqb-select-trigger")) lblRow.appendChild(trig);
+			var lblGrp = document.createElement("div");
+			lblGrp.className = "cqb-input-group cqb-label-group";
+			lblGrp.appendChild(labelTxt);
+			lblGrp.appendChild(labelBack);
+			labelBack.classList.add("cqb-browse", "cqb-label-back");
+			labelBack.textContent = "";
+			if (cqb && cqb.tooltip) cqb.tooltip(labelBack, t("cqb_label_to_list", "Choose an existing label"));
+			lblRow.appendChild(lblGrp);
+			lblField.appendChild(lblRow);
+			optCard.appendChild(lblField);
+			var syncLabelMode = function () {
+				lblRow.setAttribute("data-mode", labelSel.selectedIndex === 1 ? "new" : "list");
+			};
+			labelSel.addEventListener("change", syncLabelMode);
+			labelBack.addEventListener("click", function () { lblRow.setAttribute("data-mode", "list"); });
+			syncLabelMode();
+		}
+
+		/* The four add options as switch rows in a two-column grid. */
+		var optsGrid = document.createElement("div");
+		optsGrid.className = "cqb-opts-grid";
+		["not_add_path", "torrents_start_stopped", "fast_resume", "randomize_hash"].forEach(function (id) {
+			var cb = document.getElementById(id);
+			if (!cb) return;
+			var lbl = dlg.querySelector('label[for="' + id + '"]');
+			var opt = document.createElement("div");
+			opt.className = "cqb-opt";
+			var sw = document.createElement("label");
+			sw.className = "cqb-switch";
+			sw.appendChild(cb);
+			var track = document.createElement("span");
+			track.className = "cqb-switch-track";
+			sw.appendChild(track);
+			var txt = document.createElement("div");
+			txt.className = "cqb-opt-text";
+			if (lbl) txt.appendChild(lbl);
+			opt.appendChild(sw);
+			opt.appendChild(txt);
+			optsGrid.appendChild(opt);
+		});
+		if (optsGrid.children.length) optCard.appendChild(optsGrid);
+
+		/* Place Source first, Options second, then tuck the (now emptied) file
+		 * form -- it still holds #torrent_file + #add_button behind the cards. */
+		cont.insertBefore(optCard, cont.firstChild);
+		cont.insertBefore(srcCard, cont.firstChild);
+		formFile.classList.add("cqb-file-tucked");
+
+		/* Drag/drop feeds the native FileList; chips reflect it; Add re-syncs. */
+		wireDropzone(zone, chips, fileInput, { multiple: true, onChange: function () { syncAdd(); } });
+
+		/* Segmented toggle: show one panel at a time, keeping the other's value. */
+		function setSrc(mode) {
+			srcCard.setAttribute("data-src", mode);
+			var isFile = mode === "file";
+			segFile.classList.toggle("is-active", isFile);
+			segUrl.classList.toggle("is-active", !isFile);
+			segFile.setAttribute("aria-selected", isFile ? "true" : "false");
+			segUrl.setAttribute("aria-selected", isFile ? "false" : "true");
+		}
+		segFile.addEventListener("click", function () { setSrc("file"); });
+		segUrl.addEventListener("click", function () { setSrc("url"); });
+
+		/* One primary Add: submit the active source if filled, else the other;
+		 * both native submits stay wired behind the cards. */
 		var footer = document.createElement("div");
 		footer.className = "buttons-list";
-
 		var cancel = document.createElement("button");
 		cancel.type = "button";
 		cancel.className = "cqb-secondary";
@@ -167,25 +321,24 @@
 		cancel.addEventListener("click", function () {
 			if (window.theDialogManager) theDialogManager.hide("tadd");
 		});
-
 		var add = document.createElement("button");
 		add.type = "button";
 		add.className = "cqb-primary";
 		add.textContent = t("torrent_add", "Add torrent");
 		add.addEventListener("click", function () {
 			var hasFiles = fileInput.files && fileInput.files.length > 0;
-			if (hasFiles && addFileBtn) {
-				addFileBtn.disabled = false;
-				addFileBtn.click();
-			} else if (urlArea && urlArea.value.trim() && addUrlBtn) {
-				addUrlBtn.disabled = false;
-				addUrlBtn.click();
+			var hasUrl = !!(urlArea && urlArea.value.trim());
+			var submitFile = function () { if (addFileBtn) { addFileBtn.disabled = false; addFileBtn.click(); } };
+			var submitUrl = function () { if (addUrlBtn) { addUrlBtn.disabled = false; addUrlBtn.click(); } };
+			if (srcCard.getAttribute("data-src") === "url") {
+				if (hasUrl) submitUrl(); else if (hasFiles) submitFile();
+			} else {
+				if (hasFiles) submitFile(); else if (hasUrl) submitUrl();
 			}
 		});
-
 		footer.appendChild(cancel);
 		footer.appendChild(add);
-		if (cont && cont.parentNode === dlg) dlg.insertBefore(footer, cont.nextSibling);
+		if (cont.parentNode === dlg) dlg.insertBefore(footer, cont.nextSibling);
 		else dlg.appendChild(footer);
 
 		function syncAdd() {
