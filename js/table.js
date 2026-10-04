@@ -104,18 +104,27 @@
 	 * "DD.MM.YYYY HH:MM:SS" stamp. Lift each to a fit floor (by stable column
 	 * id, only when narrower, so a user who widened it keeps their width). */
 	var WIDTH_FLOOR = { size: 84, status: 156, created: 180 };
+	/* The History table (hst) shares those same formatted date/size values but
+	 * kept the plugin's narrower defaults (date 110, size 70). Once the body
+	 * font moved to the wider Inter face, "DD.MM.YYYY HH:MM:SS" and "388.00 MiB"
+	 * no longer fit those defaults and ellipsized. Floor the History date/size
+	 * columns by id, the same way: only a column left at its narrow default is
+	 * lifted, a hand-widened one is kept, and it is immune to hide/reorder. */
+	var HST_WIDTH_FLOOR = { time: 132, created: 132, seedingtime: 132, addtime: 132, size: 84, label: 72 };
+	function floorColumns(key, floors) {
+		var t = window.theWebUI && theWebUI.tables ? theWebUI.tables[key] : null;
+		var obj = t && t.obj;
+		if (!obj || !obj.colsdata) return;
+		var changed = false;
+		obj.colsdata.forEach(function (c) {
+			var floor = floors[c.id];
+			if (floor && (parseInt(c.width, 10) || 0) < floor) { c.width = floor; changed = true; }
+		});
+		if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn();
+	}
 	function enforceColumnWidths() {
-		try {
-			var t = window.theWebUI && theWebUI.tables ? theWebUI.tables.trt : null;
-			var obj = t && t.obj;
-			if (!obj || !obj.colsdata) return;
-			var changed = false;
-			obj.colsdata.forEach(function (c) {
-				var floor = WIDTH_FLOOR[c.id];
-				if (floor && (parseInt(c.width, 10) || 0) < floor) { c.width = floor; changed = true; }
-			});
-			if (changed && typeof obj.resizeColumn === "function") obj.resizeColumn();
-		} catch (e) { /* never break the bundle */ }
+		try { floorColumns("trt", WIDTH_FLOOR); } catch (e) { /* never break the bundle */ }
+		try { floorColumns("hst", HST_WIDTH_FLOOR); } catch (e) { /* never break the bundle */ }
 	}
 
 	init();

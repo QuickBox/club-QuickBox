@@ -902,12 +902,30 @@
 		wireDropzone(zone, chips, fileInput, { multiple: false });
 	}
 
-	/* An empty-state card shown only while a list has no rows, via a CSS
-	 * `:empty + .cqb-empty` sibling toggle. Text comes from theUILang. */
+	/* CSS :empty misses a list that still holds a whitespace text node (the core
+	 * markup indents its empty containers, so the box is never truly :empty), and
+	 * that hid the empty-state sibling even with no rows. Drive it from the
+	 * element-child count instead: toggle .cqb-list-empty on the list now and on
+	 * every childList change, and the sibling card keys off that class. */
+	function watchListEmpty(list) {
+		if (!list || list.getAttribute("data-cqb-empty-watch") === "1") return;
+		list.setAttribute("data-cqb-empty-watch", "1");
+		function sync() { list.classList.toggle("cqb-list-empty", list.children.length === 0); }
+		sync();
+		if (window.MutationObserver) {
+			new MutationObserver(sync).observe(list, { childList: true });
+		}
+	}
+
+	/* An empty-state card shown only while a list has no rows, via the
+	 * .cqb-list-empty + .cqb-empty sibling toggle. Text comes from theUILang. */
 	function addEmptyState(listId, key, fallback) {
 		var list = document.getElementById(listId);
 		if (!list || !list.parentNode) return;
-		if (list.nextElementSibling && list.nextElementSibling.classList.contains("cqb-empty")) return;
+		if (list.nextElementSibling && list.nextElementSibling.classList.contains("cqb-empty")) {
+			watchListEmpty(list);
+			return;
+		}
 		var box = document.createElement("div");
 		box.className = "cqb-empty";
 		var glyph = document.createElement("span");
@@ -918,6 +936,7 @@
 		box.appendChild(glyph);
 		box.appendChild(txt);
 		list.insertAdjacentElement("afterend", box);
+		watchListEmpty(list);
 	}
 
 	function enhanceEmptyStates() {
@@ -981,6 +1000,7 @@
 			ce.appendChild(ct);
 			checklist.insertAdjacentElement("afterend", ce);
 		}
+		if (checklist) watchListEmpty(checklist);
 		var start = dlg.querySelector(".flm-diag-start");
 		if (start) start.classList.add("cqb-primary");
 		dlg.querySelectorAll(".buttons-list").forEach(function (f) {
@@ -1012,6 +1032,78 @@
 		obs.observe(container, { childList: true });
 	}
 
+	/* Edit Torrent (Torrent Properties): each row ships a "change this field"
+	 * checkbox beside a value control, and the plugin submits set_<field>=<cb>
+	 * with the value applied only when the box is on. With nothing disabling the
+	 * value while the box is off, "Private [off] | Yes" read as a contradiction.
+	 * Present the checkbox as a compact Change switch (the checkbox stays the
+	 * submitted source of truth) and disable the value control while it is off. */
+	var EDIT_FIELDS = [
+		{ set: "eset_trackers", val: "etrackers" },
+		{ set: "eset_comment", val: "ecomment" },
+		{ set: "eset_private", val: "eprivate" }
+	];
+	function enhanceEditTorrent() {
+		var dlg = document.getElementById("tedit");
+		if (!dlg || dlg.getAttribute("data-cqb-edit") === "1") return;
+		if (!document.getElementById("eset_trackers")) return; /* markup not ready */
+		dlg.setAttribute("data-cqb-edit", "1");
+
+		/* Private shows capitalized Yes/No; the submitted 0/1 values are untouched. */
+		var priv = document.getElementById("eprivate");
+		if (priv) {
+			for (var o = 0; o < priv.options.length; o++) {
+				var op = priv.options[o];
+				if (op.value === "0") op.text = t("cqb_edit_no", "No");
+				else if (op.value === "1") op.text = t("cqb_edit_yes", "Yes");
+			}
+			var vspan = priv.parentNode && priv.parentNode.querySelector(".cqb-select-value");
+			var sel = priv.options[priv.selectedIndex];
+			if (vspan && sel) vspan.textContent = sel.text;
+		}
+
+		EDIT_FIELDS.forEach(function (f) {
+			var cb = document.getElementById(f.set);
+			var val = document.getElementById(f.val);
+			if (!cb || !val) return;
+			var head = cb.closest("[class*='col-']") || cb.parentNode;
+			head.classList.add("cqb-edit-head");
+			var sw = document.createElement("label");
+			sw.className = "cqb-switch cqb-edit-switch";
+			sw.appendChild(cb);
+			var track = document.createElement("span");
+			track.className = "cqb-switch-track";
+			sw.appendChild(track);
+			var change = document.createElement("span");
+			change.className = "cqb-edit-change";
+			change.textContent = t("cqb_edit_change", "Change");
+			var grp = document.createElement("span");
+			grp.className = "cqb-edit-toggle";
+			grp.appendChild(sw);
+			grp.appendChild(change);
+			head.appendChild(grp);
+			var valCol = val.closest("[class*='col-']") || val.parentNode;
+			function syncField() {
+				var on = cb.checked;
+				val.disabled = !on;
+				valCol.classList.toggle("cqb-edit-off", !on);
+			}
+			cb.addEventListener("change", syncField);
+			syncField();
+		});
+
+		/* The plugin repopulates checkboxes + values from the picked torrent on
+		 * each open; re-gate the value controls after it does. */
+		if (window.theDialogManager && theDialogManager.addHandler) {
+			theDialogManager.addHandler("tedit", "afterShow", function () {
+				EDIT_FIELDS.forEach(function (f) {
+					var cb = document.getElementById(f.set);
+					if (cb) cb.dispatchEvent(new Event("change"));
+				});
+			});
+		}
+	}
+
 	/* Both dialogs are preloaded, but the task console is built a little after
 	 * the add dialog; retry (idempotently) until both are decorated. */
 	function run() {
@@ -1021,6 +1113,7 @@
 		try { enhanceFieldForms(); } catch (e) { /* never break the dialog */ }
 		try { enhanceUnpack(); } catch (e) { /* never break the dialog */ }
 		try { enhanceTrackLabels(); } catch (e) { /* never break the dialog */ }
+		try { enhanceEditTorrent(); } catch (e) { /* never break the dialog */ }
 		try { enhanceEmptyStates(); } catch (e) { /* never break the dialog */ }
 		try { decorateConfirms(); normalizeFooters(); } catch (e) { /* never break the dialog */ }
 		try { observeFileManager(); } catch (e) { /* never break the dialog */ }

@@ -1408,9 +1408,9 @@ ul.CMenu li ul li a.dis:hover {
 	text-align: center;
 }
 
-#rlsul:empty + .cqb-empty,
-#fltlist:empty + .cqb-empty,
-#rssGroupSet:empty + .cqb-empty {
+#rlsul.cqb-list-empty + .cqb-empty,
+#fltlist.cqb-list-empty + .cqb-empty,
+#rssGroupSet.cqb-list-empty + .cqb-empty {
 	display: flex;
 }
 
@@ -1424,8 +1424,8 @@ ul.CMenu li ul li a.dis:hover {
 	mask: url(../images/icons/header-ratio-rules.svg) center / contain no-repeat;
 }
 
-#fltlist:empty + .cqb-empty .cqb-empty-icon,
-#rssGroupSet:empty + .cqb-empty .cqb-empty-icon {
+#fltlist.cqb-list-empty + .cqb-empty .cqb-empty-icon,
+#rssGroupSet.cqb-list-empty + .cqb-empty .cqb-empty-icon {
 	-webkit-mask-image: url(../images/icons/toolbar-rss.svg);
 	mask-image: url(../images/icons/toolbar-rss.svg);
 }
@@ -1876,6 +1876,13 @@ div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
 	text-transform: uppercase;
 }
 
+/* Header row shares one baseline: the Who cell keeps the 13px first-column
+ * scale on data rows, but in the header it drops to the 11px of its siblings
+ * so Who / Write / Read / Execute sit on the same line. */
+[id^="flm_popup_"] table tr:first-child td:first-child {
+	font-size: 11px;
+}
+
 [id^="flm_popup_"] table td:not(:first-child) {
 	text-align: center;
 }
@@ -1912,11 +1919,11 @@ div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
 	border: 0;
 }
 
-.dlg-window .checklist:empty + .cqb-empty {
+.dlg-window .checklist.cqb-list-empty + .cqb-empty {
 	display: flex;
 }
 
-.dlg-window .checklist:empty + .cqb-empty .cqb-empty-icon {
+.dlg-window .checklist.cqb-list-empty + .cqb-empty .cqb-empty-icon {
 	-webkit-mask-image: url(../images/icons/fm-delete.svg);
 	mask-image: url(../images/icons/fm-delete.svg);
 }
@@ -1933,4 +1940,45 @@ div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
 	width: 36px;
 	height: 36px;
 	padding: 0;
+}
+
+/* ============================================================
+ * Edit Torrent (Torrent Properties): each field pairs a "change
+ * this field" switch with its value control. The head column
+ * stacks the field label over a compact Change switch; the value
+ * control dims and goes inert while the switch is off, so an
+ * off row never reads as a live value.
+ * ============================================================ */
+#tedit .cqb-edit-head {
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+}
+
+#tedit .cqb-edit-head > label {
+	margin: 0;
+	font-size: 13px;
+	color: var(--qb-foreground);
+}
+
+#tedit .cqb-edit-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+}
+
+#tedit .cqb-edit-change {
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+#tedit .cqb-edit-off {
+	opacity: 0.45;
+}
+
+#tedit .cqb-edit-off .cqb-select-trigger {
+	cursor: not-allowed;
 }
