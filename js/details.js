@@ -15,6 +15,23 @@
 ;(function (cqb) {
 	"use strict";
 
+	/* Only these detail tabs are scoped to a single torrent; the rest
+	 * (Plugins, File Manager, Speed, History, Tasks, Traffic, Log) always
+	 * render their own global content and never show the empty state. */
+	var TORRENT_TABS = { gcont: 1, FileList: 1, TrackerList: 1, PeerList: 1, Chunks: 1 };
+	var noSelection = true;
+	var currentTab = "gcont";
+	var drawerEl = null;
+
+	function refreshEmpty() {
+		try {
+			if (!drawerEl) drawerEl = document.getElementById("tdetails");
+			if (!drawerEl) return;
+			var show = noSelection && !!TORRENT_TABS[currentTab];
+			drawerEl.classList.toggle("cqb-empty", show);
+		} catch (e) { /* never break the bundle */ }
+	}
+
 	function maskSpan(name) {
 		var s = document.createElement("span");
 		s.className = "cqb-icon";
@@ -96,26 +113,28 @@
 			empty.appendChild(glyph);
 			empty.appendChild(text);
 			drawer.appendChild(empty);
-
-			var setEmpty = function (on) { drawer.classList.toggle("cqb-empty", !!on); };
+			drawerEl = drawer;
 
 			if (window.theWebUI) {
 				var showDetails = theWebUI.showDetails;
 				if (typeof showDetails === "function") {
 					theWebUI.showDetails = function (hash, noSwitch) {
-						setEmpty(!hash);
+						noSelection = !hash;
+						refreshEmpty();
 						return showDetails.call(this, hash, noSwitch);
 					};
 				}
 				var clearDetails = theWebUI.clearDetails;
 				if (typeof clearDetails === "function") {
 					theWebUI.clearDetails = function () {
-						setEmpty(true);
+						noSelection = true;
+						refreshEmpty();
 						return clearDetails.apply(this, arguments);
 					};
 				}
-				setEmpty(!theWebUI.dID);
+				noSelection = !theWebUI.dID;
 			}
+			refreshEmpty();
 		} catch (e) { /* never break the bundle */ }
 	}
 
@@ -294,6 +313,8 @@
 			var show = theTabs.show;
 			theTabs.show = function (id) {
 				var r = show.apply(this, arguments);
+				currentTab = id;
+				refreshEmpty();
 				if (id === "traf") { enhanceTrafToolbar(); styleCharts(); }
 				if (id === "Speed") styleCharts();
 				return r;

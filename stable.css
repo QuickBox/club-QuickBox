@@ -142,6 +142,9 @@
 	font-size: 12px;
 	line-height: 16px;
 	height: 20px !important;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
 .stable-body tr {
@@ -225,17 +228,18 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 .stable-body td[rawvalue],
 .stable tbody td[rawvalue] {
 	position: relative;
+	padding: 0 10px !important;
 }
 
-/* Rounded track behind the fill. */
+/* Fixed 120px rounded track; the fill width is a pixel value (table.js). */
 .stable-body td[rawvalue]::before,
 .stable tbody td[rawvalue]::before {
 	content: "";
 	position: absolute;
-	left: 4px;
-	right: 4px;
+	left: 10px;
 	top: 50%;
 	transform: translateY(-50%);
+	width: 120px;
 	height: 8px;
 	border-radius: 999px;
 	background: var(--qb-surface-2);
@@ -243,35 +247,39 @@ div.stable-body table tbody tr.even td:nth-child(2n+1) {
 }
 
 .meter-value {
-	position: relative;
-	display: block;
-	float: left;
+	position: absolute;
+	left: 10px;
+	top: 50%;
+	transform: translateY(-50%);
 	z-index: 1;
+	float: none;
 	border: 0 !important;
 	background-color: var(--qb-primary);
 	border-radius: 999px;
 	height: 8px !important;
-	margin: 12px 4px !important;
-	max-width: calc(100% - 8px);
+	margin: 0 !important;
+	max-width: 120px;
 	min-width: 2px;
 }
 
+/* The figure sits to the RIGHT of the track, never over it. */
 .meter-text {
 	position: absolute;
-	inset: 0;
-	left: auto;
-	right: 12px;
+	left: 138px;
+	top: 0;
+	bottom: 0;
+	right: 6px;
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: flex-start;
 	float: none;
 	color: var(--qb-foreground);
 	font-family: var(--qb-font);
-	font-size: 10px;
+	font-size: 11px;
 	font-weight: 600;
 	font-variant-numeric: tabular-nums;
-	text-align: right;
-	text-shadow: 0 1px 2px var(--qb-overlay);
+	text-align: left;
+	text-shadow: none;
 	z-index: 1;
 	pointer-events: none;
 }
