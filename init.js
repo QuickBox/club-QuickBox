@@ -19,7 +19,7 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "39801126fe";
+	var CQB_REV = "47837eafc1";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
@@ -55,21 +55,37 @@
 
 	/* ============================================================
 	 * Skin string catalog: load lang/<code>.js for the active ruTorrent
-	 * language before any string is rendered.
+	 * language, then gate the feature modules on it (see allDone below).
 	 * ============================================================
 	 * The theme plugin loads its OWN localization, never the skin's, so the
 	 * skin ships lang/en.js (the full catalog) plus one file per supported
-	 * language. English is loaded first as the base, so every key resolves
-	 * even when a translation is partial; the active language is then layered
-	 * on top. injectScript is the same synchronous, ordered loader the CSS and
-	 * feature modules use, so the keys are in place before the rest of this
-	 * file runs (the Settings Appearance select below) and before allDone
-	 * injects the feature modules -- no module reads a string before its
-	 * catalog entry exists. A lang file only ASSIGNS theUILang keys; an
-	 * unsupported language is never requested (no 404), and a failed load
-	 * leaves the English base and the inline fallbacks intact. */
+	 * language. English loads FIRST as the base (every key resolves even when a
+	 * translation is partial), then the active language is layered on top -- so
+	 * they must load IN ORDER, en before the override. ruTorrent's injectScript
+	 * appends a <script src> that executes ASYNCHRONOUSLY and carries no error
+	 * handler, so this uses the theme's own loader: a <script> with both onload
+	 * and onerror, chained en -> active -> ready. The wrapped allDone holds the
+	 * feature-module injection until this ready signal fires, so no module can
+	 * render a string before its catalog entry exists. A safety timer fires
+	 * ready regardless, so a hung request never blocks the theme; a lang file
+	 * only ASSIGNS theUILang keys; an unsupported language is never requested
+	 * (no 404); and a failed/absent file degrades to the English base + the
+	 * modules' inline fallbacks -- never to no theme. */
 	var LANG_SUPPORTED = ["en", "da", "de", "es", "fr", "pt-br", "zh-cn"];
 	var LANG_ALIAS = { "pt-pt": "pt-br" };
+	var LANG_READY_TIMEOUT = 3000;
+	var langReady = false;
+	var langReadyCbs = [];
+	function onLangReady(fn) {
+		if (langReady) { try { fn(); } catch (e) { /* a listener must not break the engine */ } return; }
+		langReadyCbs.push(fn);
+	}
+	function signalLangReady() {
+		if (langReady) return;
+		langReady = true;
+		var cbs = langReadyCbs; langReadyCbs = [];
+		for (var i = 0; i < cbs.length; i++) { try { cbs[i](); } catch (e) { /* ditto */ } }
+	}
 	function activeLang() {
 		var code = "";
 		try {
@@ -78,14 +94,27 @@
 		if (LANG_ALIAS[code]) code = LANG_ALIAS[code];
 		return LANG_SUPPORTED.indexOf(code) !== -1 ? code : "en";
 	}
-	function loadLang(code) {
+	/* Load one lang/<code>.js and call done() once it has executed OR failed.
+	 * The ?cqb=<stamp> key busts the browser cache on any catalog change. */
+	function loadLangFile(code, done) {
+		var called = false;
+		function settle() { if (!called) { called = true; done(); } }
 		try {
-			injectScript(plugin.path + "lang/" + code + ".js?cqb=" + CQB_REV);
-		} catch (e) { /* keep the English base + the modules' inline fallbacks */ }
+			var s = document.createElement("script");
+			s.type = "text/javascript";
+			s.onload = settle;
+			s.onerror = settle;
+			s.src = plugin.path + "lang/" + code + ".js?cqb=" + CQB_REV;
+			(document.head || root).appendChild(s);
+		} catch (e) { settle(); }
 	}
-	loadLang("en");
-	var activeLangCode = activeLang();
-	if (activeLangCode !== "en") loadLang(activeLangCode);
+	/* English base first, the active language on top, then ready. */
+	loadLangFile("en", function () {
+		var code = activeLang();
+		if (code === "en") { signalLangReady(); return; }
+		loadLangFile(code, signalLangReady);
+	});
+	setTimeout(signalLangReady, LANG_READY_TIMEOUT);
 
 	/* Re-key the three sheets the theme plugin loads itself (style.css,
 	 * stable.css, plugins.css at the skin root). Each already carries ruTorrent's
@@ -525,6 +554,23 @@
 		);
 	};
 
+	/* The Settings Appearance select may be built (in onLangLoaded) before the
+	 * language catalog is ready; if so, relabel its options and caption when the
+	 * catalog lands. A no-op when the select does not exist yet (it builds with
+	 * the ready values) or when it is already current. */
+	function relabelVariantSelect() {
+		var sel = document.getElementById("qb.variant");
+		if (sel && sel.options) {
+			for (var i = 0; i < sel.options.length; i++) {
+				var v = sel.options[i].value;
+				if (VARIANT_LABELS[v]) sel.options[i].text = theUILang[VARIANT_LABELS[v]] || VARIANT_LABEL_FALLBACK[v];
+			}
+		}
+		var lab = document.querySelector && document.querySelector('label[for="qb.variant"]');
+		if (lab) lab.textContent = (theUILang.qbAppearance || "Appearance") + ": ";
+	}
+	onLangReady(relabelVariantSelect);
+
 	/* ============================================================
 	 * Table completion bars + capacity meters + JS modules.
 	 * ============================================================ */
@@ -544,8 +590,13 @@
 		paintMeters();
 		if (!jsModulesLoaded) {
 			jsModulesLoaded = true;
-			JS_MODULES.forEach(function (name) {
-				injectScript(plugin.path + "js/" + name + ".js?cqb=" + CQB_REV);
+			/* Hold the feature modules until the language catalog is ready
+			 * (loaded, failed, or timed out) so none renders a string before
+			 * its translation lands. */
+			onLangReady(function () {
+				JS_MODULES.forEach(function (name) {
+					injectScript(plugin.path + "js/" + name + ".js?cqb=" + CQB_REV);
+				});
 			});
 		}
 	};
