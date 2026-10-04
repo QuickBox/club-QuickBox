@@ -443,6 +443,12 @@ div#gcont.tab {
 	box-shadow: 0 0 0 2px var(--qb-focus);
 }
 .cqb-copy-btn.cqb-copied { color: var(--qb-primary-text); }
+.cqb-copy-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+	background: transparent;
+	border-color: transparent;
+}
 
 .cqb-comment {
 	text-align: left;

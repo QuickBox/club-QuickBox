@@ -138,6 +138,25 @@
 		return btn;
 	}
 
+	/* File Manager jail helpers: the FM browser works in paths relative to
+	 * its jail root (flm.config.homedir), so an absolute save dir has to be
+	 * stripped before goToPath; a path outside the jail cannot be opened. */
+	function fmParentDir(path) {
+		if (!path) return "";
+		return path.replace(/\/+$/, "").replace(/\/[^/]*$/, "") || "/";
+	}
+	function fmHomeNorm() {
+		try {
+			var h = window.flm && flm.config && flm.config.homedir;
+			return h ? h.replace(/\/+$/, "") : "";
+		} catch (e) { return ""; }
+	}
+	function fmInsideHome(dir) {
+		var home = fmHomeNorm();
+		if (!home || !dir) return false;
+		return (dir + "/").indexOf(home + "/") === 0;
+	}
+
 	/* ------------------------------------------------------------
 	 * 1. General pane -> torrent overview.
 	 * ---------------------------------------------------------- */
@@ -340,11 +359,16 @@
 				if (cqb && cqb.tooltip) cqb.tooltip(fmBtn, "Open in File Manager");
 				fmBtn.addEventListener("click", function () {
 					try {
-						var p = spanText("bf");
-						if (!p) return;
-						var dir = p.replace(/\/+$/, "").replace(/\/[^/]*$/, "") || "/";
+						if (fmBtn.disabled) return;
+						var dir = fmParentDir(spanText("bf"));
+						if (!dir || !window.flm || !flm.goToPath) return;
+						/* Convert the absolute save dir to a jail-relative path
+						 * via the plugin's own helper, with a trailing slash so
+						 * getDir treats it as a directory listing. */
+						var rel = flm.stripJailPath ? flm.stripJailPath(dir) : dir;
+						if (rel && rel.charAt(rel.length - 1) !== "/") rel += "/";
 						if (window.theTabs) theTabs.show("flm-browser");
-						if (window.flm && flm.goToPath) flm.goToPath(dir);
+						flm.goToPath(rel);
 					} catch (e) {}
 				});
 			}
@@ -374,7 +398,7 @@
 				wasted: wastedMeta.value,
 				trkUrl: trkUrl, trkStatus: trkStatusMeta.value, trkAnnounce: trkAnnounceMeta.value,
 				pathVal: pathVal, disk: diskMeta.value, created: createdMeta.value,
-				hashVal: hashVal, cmtVal: cmtVal
+				hashVal: hashVal, cmtVal: cmtVal, fmBtn: fmBtn
 			};
 		} catch (e) { /* never break the bundle */ }
 	}
@@ -470,6 +494,14 @@
 
 			/* Storage */
 			setMidTrunc(ov.pathVal, spanText("bf"), 0.7);
+			if (ov.fmBtn) {
+				var saveDir = fmParentDir(spanText("bf"));
+				var inside = fmInsideHome(saveDir);
+				ov.fmBtn.disabled = !inside;
+				if (cqb && cqb.tooltip) {
+					cqb.tooltip(ov.fmBtn, inside ? "Open in File Manager" : "Outside your File Manager home");
+				}
+			}
 			setText(ov.disk, spanText("dsk"));
 			setText(ov.created, spanText("co"));
 			setMidTrunc(ov.hashVal, (dID || "").substring(0, 40).toUpperCase(), 0.5);
