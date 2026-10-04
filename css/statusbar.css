@@ -130,36 +130,45 @@
 
 #stup_speed,
 #stdown_speed {
-	display: inline-block;
-	min-width: 10ch;
-	text-align: right;
 	font-size: 13px;
 	font-weight: 600;
-	font-variant-numeric: tabular-nums;
 	color: var(--qb-foreground);
 }
 
 /* Reserve a fixed width for every changing value so the footer never shifts as
- * numbers grow or shrink; tabular-nums keeps digits aligned. */
-#stup_total,
-#stdown_total {
+ * numbers grow or shrink; tabular-nums keeps digits aligned. The two-id prefix
+ * is required to beat `#StatusBar .stval { min-width: 0 }` on specificity. The
+ * rate reserve fits the widest realistic "999.9 MiB/s". */
+#StatusBar #stup_speed,
+#StatusBar #stdown_speed {
+	display: inline-block;
+	min-width: 12ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#StatusBar #stup_total,
+#StatusBar #stdown_total {
 	display: inline-block;
 	min-width: 10ch;
 	text-align: right;
+	font-variant-numeric: tabular-nums;
 }
 
-#stopen_http_count,
-#stopen_sock_count,
-#stopen_fd_count {
-	display: inline-block;
-	min-width: 3ch;
-	text-align: right;
-}
-
-#viewrows {
+#StatusBar #stopen_http_count,
+#StatusBar #stopen_sock_count,
+#StatusBar #stopen_fd_count {
 	display: inline-block;
 	min-width: 7ch;
 	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+#StatusBar #viewrows {
+	display: inline-block;
+	min-width: 7ch;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
 }
 
 /* "limit" and "Total" labels (each sits right after a value): muted, offset. */

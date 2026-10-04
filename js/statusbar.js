@@ -16,25 +16,21 @@
 	if (window.cqbStatusBackfill) return;
 	window.cqbStatusBackfill = true;
 
-	/* The core blanks the rate cell at zero. Watch each cell and, the instant it
-	 * goes empty, render the rate from the core's NUMERIC total (not its DOM
-	 * text) so the chip always shows the current rate as its primary value. The
-	 * observer runs before paint, so the blank the core writes is never visible;
-	 * writing a non-empty value does not re-trigger (the value is not empty). */
-	function fmtSpeed(bytes) {
-		var s = (window.theConverter && theConverter.speed) ? theConverter.speed(bytes) : "";
-		return (s && s.trim()) ? s : "0 B/s";
-	}
+	/* The core blanks the rate cell at zero. Watch each cell on EVERY write: when
+	 * the core writes a value, remember it; when the core writes an empty string,
+	 * restore the last non-empty value so the chip is never blank. The observer
+	 * runs before paint, so the blank is never visible, and restoring a value
+	 * does not loop (the restored value is not empty). */
+	var lastRate = { stup_speed: "0 B/s", stdown_speed: "0 B/s" };
 	["stup_speed", "stdown_speed"].forEach(function (id) {
 		var el = document.getElementById(id);
 		if (!el) return;
-		var key = (id === "stup_speed") ? "speedUL" : "speedDL";
-		function fill() {
-			if (el.textContent.trim()) return;
-			var bytes = (window.theWebUI && theWebUI.total) ? (theWebUI.total[key] || 0) : 0;
-			el.textContent = fmtSpeed(bytes);
-		}
-		fill();
-		new MutationObserver(fill).observe(el, { childList: true, characterData: true, subtree: true });
+		if (el.textContent.trim()) lastRate[id] = el.textContent;
+		else el.textContent = lastRate[id];
+		new MutationObserver(function () {
+			var text = el.textContent;
+			if (text.trim()) lastRate[id] = text;
+			else el.textContent = lastRate[id];
+		}).observe(el, { childList: true, characterData: true, subtree: true });
 	});
 })(window.cqb);
