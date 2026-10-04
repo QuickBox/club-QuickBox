@@ -165,7 +165,7 @@
 	var SPARK_MAX = 30;         /* ~60s of samples at the 2.5s refresh */
 	var sparkDown = [];
 	var sparkUp = [];
-	var RING_R = 30;            /* ring radius; circumference below */
+	var RING_R = 38;            /* ring radius; circumference below */
 	var RING_C = 2 * Math.PI * RING_R;
 
 	function el(tag, cls, parent) {
@@ -179,9 +179,9 @@
 		var NS = "http://www.w3.org/2000/svg";
 		var svg = document.createElementNS(NS, "svg");
 		svg.setAttribute("class", "cqb-ring");
-		svg.setAttribute("viewBox", "0 0 72 72");
-		svg.setAttribute("width", "72");
-		svg.setAttribute("height", "72");
+		svg.setAttribute("viewBox", "0 0 88 88");
+		svg.setAttribute("width", "88");
+		svg.setAttribute("height", "88");
 		var defs = document.createElementNS(NS, "defs");
 		var grad = document.createElementNS(NS, "linearGradient");
 		grad.setAttribute("id", "cqb-ring-grad");
@@ -195,20 +195,20 @@
 		svg.appendChild(defs);
 		var track = document.createElementNS(NS, "circle");
 		track.setAttribute("class", "cqb-ring-track");
-		track.setAttribute("cx", "36"); track.setAttribute("cy", "36");
+		track.setAttribute("cx", "44"); track.setAttribute("cy", "44");
 		track.setAttribute("r", String(RING_R));
 		svg.appendChild(track);
 		var arc = document.createElementNS(NS, "circle");
 		arc.setAttribute("class", "cqb-ring-arc");
-		arc.setAttribute("cx", "36"); arc.setAttribute("cy", "36");
+		arc.setAttribute("cx", "44"); arc.setAttribute("cy", "44");
 		arc.setAttribute("r", String(RING_R));
 		arc.setAttribute("stroke-dasharray", RING_C.toFixed(2));
 		arc.setAttribute("stroke-dashoffset", RING_C.toFixed(2));
-		arc.setAttribute("transform", "rotate(-90 36 36)");
+		arc.setAttribute("transform", "rotate(-90 44 44)");
 		svg.appendChild(arc);
 		var label = document.createElementNS(NS, "text");
 		label.setAttribute("class", "cqb-ring-label");
-		label.setAttribute("x", "36"); label.setAttribute("y", "36");
+		label.setAttribute("x", "44"); label.setAttribute("y", "44");
 		label.setAttribute("text-anchor", "middle");
 		label.setAttribute("dominant-baseline", "central");
 		label.textContent = "0%";
@@ -276,6 +276,16 @@
 		return { row: row, value: v };
 	}
 
+	/* A stacked mini-stat: an 11px uppercase label above a 16px value. */
+	function miniStat(parent, label) {
+		var cell = el("div", "cqb-ministat", parent);
+		var l = el("div", "cqb-ministat-label", cell);
+		l.textContent = label;
+		var v = el("div", "cqb-ministat-value", cell);
+		v.textContent = "—";
+		return v;
+	}
+
 	function buildGeneralOverview() {
 		try {
 			var layout = document.getElementById("mainlayout");
@@ -291,9 +301,16 @@
 			/* ---- Hero row ---- */
 			var hero = el("div", "cqb-ov-hero", root);
 
-			var ringCell = el("div", "cqb-hero-cell cqb-hero-ring", hero);
+			/* Composed overview card: ring on the left, torrent identity on
+			 * the right (name, size + created, state pill). */
+			var ringCell = el("div", "cqb-hero-cell cqb-hero-overview", hero);
 			var ring = buildRing(ringCell);
-			var statePill = el("div", "cqb-state-pill", ringCell);
+			var ovInfo = el("div", "cqb-overview-info", ringCell);
+			var nameEl = el("div", "cqb-ov-name", ovInfo);
+			nameEl.textContent = "—";
+			var metaLine = el("div", "cqb-ov-metaline", ovInfo);
+			metaLine.textContent = "—";
+			var statePill = el("div", "cqb-state-pill", ovInfo);
 			statePill.textContent = "—";
 
 			var speedCell = el("div", "cqb-hero-cell cqb-hero-speed", hero);
@@ -312,9 +329,10 @@
 			rSub.textContent = "—";
 
 			var timeCell = el("div", "cqb-hero-cell cqb-hero-time", hero);
-			var tEta = metaRow(timeCell, "ETA");
-			var tEl = metaRow(timeCell, "Elapsed");
-			var tRem = metaRow(timeCell, "Remaining");
+			var tStats = el("div", "cqb-ministats", timeCell);
+			var tEta = { value: miniStat(tStats, "ETA") };
+			var tEl = { value: miniStat(tStats, "Elapsed") };
+			var tRem = { value: miniStat(tStats, "Remaining") };
 
 			/* ---- Cards ---- */
 			var cards = el("div", "cqb-ov-cards", root);
@@ -341,7 +359,11 @@
 			var trkUrl = el("div", "cqb-trunc", trkUrlWrap);
 			trkUrl.textContent = "—";
 			trkUrlWrap.appendChild(copyButton(function () { return spanText("tu"); }));
-			var trkStatusMeta = metaRow(tracker, "Status");
+			var trkStatusRow = el("div", "cqb-meta", tracker);
+			el("div", "cqb-meta-label", trkStatusRow).textContent = "Status";
+			var trkStatusVal = el("div", "cqb-meta-value cqb-status-cell", trkStatusRow);
+			var trkStatusPill = el("span", "cqb-status-pill", trkStatusVal);
+			trkStatusPill.textContent = "—";
 			var trkAnnounceMeta = metaRow(tracker, "Next announce");
 
 			var storage = buildCard(cards, "tab-filemanager", "Storage");
@@ -376,8 +398,13 @@
 					} catch (e) {}
 				});
 			}
-			var diskMeta = metaRow(storage, "Free disk");
-			var createdMeta = metaRow(storage, "Created");
+			var diskRow = el("div", "cqb-meta cqb-meta-wide", storage);
+			var diskHead = el("div", "cqb-disk-head", diskRow);
+			el("div", "cqb-meta-label", diskHead).textContent = "Free disk";
+			var diskVal = el("div", "cqb-disk-val", diskHead);
+			diskVal.textContent = "—";
+			var diskTrack = el("div", "cqb-disk-track", diskRow);
+			var diskFill = el("div", "cqb-disk-fill", diskTrack);
 			var hashRow = el("div", "cqb-meta cqb-meta-wide", storage);
 			el("div", "cqb-meta-label", hashRow).textContent = "Hash";
 			var hashWrap = el("div", "cqb-meta-value cqb-trunc-wrap", hashRow);
@@ -394,14 +421,15 @@
 
 			ov = {
 				ringArc: ring.arc, ringLabel: ring.label, statePill: statePill,
+				nameEl: nameEl, metaLine: metaLine,
 				spDownNum: spDown.num, spDownArea: spDown.area, spDownLine: spDown.line,
 				spUpNum: spUp.num, spUpArea: spUp.area, spUpLine: spUp.line,
 				rVal: rVal, rFill: rFill, rSub: rSub,
 				tEta: tEta.value, tEl: tEl.value, tRem: tRem.value,
 				seedVal: seedVal, seedFill: seedFill, peerVal: peerVal, peerFill: peerFill,
 				wasted: wastedMeta.value,
-				trkUrl: trkUrl, trkStatus: trkStatusMeta.value, trkAnnounce: trkAnnounceMeta.value,
-				pathVal: pathVal, disk: diskMeta.value, created: createdMeta.value,
+				trkUrl: trkUrl, trkStatus: trkStatusPill, trkAnnounce: trkAnnounceMeta.value,
+				pathVal: pathVal, diskVal: diskVal, diskFill: diskFill, diskTrack: diskTrack,
 				hashVal: hashVal, cmtVal: cmtVal, fmBtn: fmBtn
 			};
 		} catch (e) { /* never break the bundle */ }
@@ -439,6 +467,15 @@
 				ov.statePill.textContent = (si && si[1]) ? si[1] : "—";
 				ov.statePill.setAttribute("data-tone", stateTone(si && si[0]));
 			} catch (e) {}
+
+			/* Torrent identity: name (middle-truncated) + size and created date */
+			setMidTrunc(ov.nameEl, d.name || "", 0.7);
+			var createdTxt = spanText("co");
+			var sizeTxt = (typeof d.size === "number") ? fmtBytes(d.size) : "";
+			var metaBits = [];
+			if (sizeTxt) metaBits.push(sizeTxt);
+			if (createdTxt) metaBits.push(createdTxt);
+			setText(ov.metaLine, metaBits.join("  ·  "));
 
 			/* Live speeds + 60s sparklines */
 			ov.spDownNum.textContent = fmtSpeed(d.dl);
@@ -484,7 +521,13 @@
 
 			/* Tracker */
 			setMidTrunc(ov.trkUrl, spanText("tu"), 0.6);
-			setText(ov.trkStatus, spanText("ts") || "OK");
+			var tsTxt = spanText("ts");
+			var tsTone = "ok", tsLabel = tsTxt || "OK";
+			if (/error|fail|denied|unreach|not\s*reg|timeout|refus|invalid|unauth/i.test(tsTxt)) tsTone = "error";
+			else if (/updat|announc|pend|connect|work|request/i.test(tsTxt)) tsTone = "updating";
+			ov.trkStatus.textContent = tsLabel;
+			ov.trkStatus.setAttribute("data-tone", tsTone);
+			ov.trkStatus.classList.remove("cqb-muted");
 			var nextAnn = "";
 			try {
 				var trks = theWebUI.trackers && theWebUI.trackers[dID];
@@ -506,8 +549,21 @@
 					cqb.tooltip(ov.fmBtn, inside ? "Open in File Manager" : "Outside your File Manager home");
 				}
 			}
-			setText(ov.disk, spanText("dsk"));
-			setText(ov.created, spanText("co"));
+			/* Free disk: value plus a meter that mirrors the footer disk meter
+			 * (same source, same threshold tint); hidden if that bar is absent. */
+			setText(ov.diskVal, spanText("dsk"));
+			try {
+				var mv = document.getElementById("meter-disk-value");
+				if (mv && mv.style.width) {
+					var w = parseFloat(mv.style.width) || 0;
+					ov.diskFill.style.width = Math.max(0, Math.min(100, w)) + "%";
+					var c = mv.style.backgroundColor || getComputedStyle(mv).backgroundColor;
+					if (c) ov.diskFill.style.backgroundColor = c;
+					ov.diskTrack.style.display = "";
+				} else {
+					ov.diskTrack.style.display = "none";
+				}
+			} catch (e) { ov.diskTrack.style.display = "none"; }
 			setMidTrunc(ov.hashVal, (dID || "").substring(0, 40).toUpperCase(), 0.5);
 			var cmtSrc = document.getElementById("cmt");
 			var cmtTxt = cmtSrc ? (cmtSrc.textContent || "").trim() : "";
@@ -743,7 +799,9 @@
 	function toggleSeries(dir, on) {
 		try {
 			var labels = TRAF_SERIES[dir];
-			if (!labels || !window.rGraph) return;
+			/* rGraph is a global class binding (not a window property), so it
+			 * is referenced directly; typeof guards against it being absent. */
+			if (!labels || typeof rGraph === "undefined" || !rGraph.legendCheckboxChanged) return;
 			labels.forEach(function (lbl) {
 				rGraph.legendCheckboxChanged(lbl, { checked: on });
 			});
@@ -846,10 +904,27 @@
 			if (btn) ctrl.appendChild(btn);
 			ctrl.setAttribute("data-cqb-tb", "1");
 
-			/* The toolbar just grew to its final height; let the plugin
-			 * recompute the plot size against it and redraw. */
+			/* The plugin sizes the plot as #traf height minus the toolbar's
+			 * CONTENT height, which ignores the toolbar's border/padding/margin
+			 * and leaves no room for the x-axis labels (the bottom tick clips).
+			 * Wrap resize to subtract the full toolbar box plus a label inset. */
 			try {
 				var tg = window.theWebUI && theWebUI.trafGraph;
+				if (tg && tg.resize && !tg.__cqbResize) {
+					tg.__cqbResize = true;
+					var origResize = tg.resize.bind(tg);
+					tg.resize = function (w, h) {
+						try {
+							var $traf = window.$ && $("#traf");
+							var $ctrl = window.$ && $("#traf_graph_ctrl");
+							if (!w && $traf) w = $traf.width();
+							if (!h && $traf && $ctrl) {
+								h = $traf.height() - ($ctrl.length ? $ctrl.outerHeight(true) : 0) - 22;
+							}
+						} catch (e) {}
+						return origResize(w, h);
+					};
+				}
 				if (tg && tg.resize) { tg.resize(); tg.draw && tg.draw(true); }
 			} catch (e) {}
 

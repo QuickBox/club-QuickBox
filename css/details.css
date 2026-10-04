@@ -124,16 +124,23 @@ div#gcont.tab {
 .cqb-muted { color: var(--qb-fg-muted) !important; }
 .cqb-mono { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; }
 
+/* The General pane scrolls within the drawer so a card is never cut mid-row. */
+div#gcont.tab {
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+}
+
 .cqb-ov {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 12px;
 }
 
 /* ---- Hero row ---- */
 .cqb-ov-hero {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	display: flex;
+	flex-wrap: wrap;
 	gap: 12px;
 }
 
@@ -143,10 +150,80 @@ div#gcont.tab {
 	justify-content: center;
 	gap: 8px;
 	min-width: 0;
+	flex: 1 1 220px;
 	padding: 14px 16px;
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius-lg);
 	background: var(--qb-surface-2);
+}
+
+/* The composed overview card (ring + identity) gets the most room. */
+.cqb-hero-overview {
+	flex: 2.2 1 340px;
+	flex-direction: row;
+	align-items: center;
+	gap: 16px;
+}
+.cqb-overview-info {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 6px;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+.cqb-ov-name {
+	display: flex;
+	min-width: 0;
+	width: 100%;
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--qb-foreground);
+}
+.cqb-ov-name .cqb-mid-a {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 0 1 auto;
+	min-width: 0;
+}
+.cqb-ov-name .cqb-mid-b { white-space: nowrap; flex: none; }
+.cqb-ov-metaline {
+	font-size: 11.5px;
+	color: var(--qb-fg-muted);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+/* Stacked time mini-stats (label over value, side by side). */
+.cqb-ministats {
+	display: flex;
+	gap: 16px;
+	flex-wrap: wrap;
+}
+.cqb-ministat {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.cqb-ministat-label {
+	color: var(--qb-fg-muted);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+.cqb-ministat-value {
+	color: var(--qb-foreground);
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.1;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }
 
 .cqb-hero-label {
@@ -167,13 +244,7 @@ div#gcont.tab {
 }
 
 /* Completion ring */
-.cqb-hero-ring {
-	align-items: center;
-	text-align: center;
-	gap: 10px;
-}
-
-.cqb-ring { display: block; }
+.cqb-ring { display: block; flex: none; }
 .cqb-ring-track {
 	fill: none;
 	stroke: var(--qb-border);
@@ -191,7 +262,7 @@ div#gcont.tab {
 .cqb-ring-label {
 	fill: var(--qb-foreground);
 	font-family: var(--qb-font);
-	font-size: 16px;
+	font-size: 19px;
 	font-weight: 700;
 	font-variant-numeric: tabular-nums;
 }
@@ -335,9 +406,9 @@ div#gcont.tab {
 .cqb-card {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 7px;
 	min-width: 0;
-	padding: 14px 16px;
+	padding: 12px 14px;
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius-lg);
 	background: var(--qb-surface);
@@ -347,7 +418,7 @@ div#gcont.tab {
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding-bottom: 8px;
+	padding-bottom: 7px;
 	border-bottom: 1px solid var(--qb-border-soft);
 }
 .cqb-card-icon { width: 16px; height: 16px; flex: none; background-color: var(--qb-primary-text); }
@@ -459,6 +530,61 @@ div#gcont.tab {
 	overflow-wrap: anywhere;
 }
 .cqb-comment a { color: var(--qb-accent-text); }
+
+/* Free-disk meter (mirrors the footer disk meter + its threshold tint). */
+.cqb-disk-head {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 10px;
+}
+.cqb-disk-val {
+	color: var(--qb-foreground);
+	font-size: 13px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+.cqb-disk-track {
+	height: 4px;
+	border-radius: 999px;
+	background: var(--qb-border-soft);
+	overflow: hidden;
+}
+.cqb-disk-fill {
+	height: 100%;
+	border-radius: 999px;
+	background: var(--qb-primary);
+	transition: width 0.4s ease;
+}
+
+/* Tracker status pill: dot + label, toned by state. */
+.cqb-status-cell { display: flex; justify-content: flex-end; }
+.cqb-status-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 2px 9px;
+	border-radius: 999px;
+	font-size: 11.5px;
+	font-weight: 600;
+	background: var(--qb-pill-bg);
+	color: var(--qb-fg-muted);
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.cqb-status-pill::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	flex: none;
+	background: currentColor;
+}
+.cqb-status-pill[data-tone="ok"] { color: var(--qb-primary-text); }
+.cqb-status-pill[data-tone="updating"] { color: var(--qb-fg-muted); }
+.cqb-status-pill[data-tone="error"] { color: var(--qb-destructive-text); }
 
 /* ============================================================
  * Table / graph panes
@@ -778,24 +904,22 @@ button#flm-nav-refresh .sprite-refresh {
  * math (#traf height minus #traf_graph_ctrl height) stays deterministic.
  * ============================================================ */
 #traf_graph_ctrl,
-#Chunks > div.d-flex.flex-row,
 .cqb-pane-toolbar {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	flex-wrap: wrap;
+	gap: 8px 10px;
 	box-sizing: border-box;
-	height: 50px;
+	min-height: 50px;
 	padding: 6px 12px;
 	margin-bottom: 10px;
 	background: var(--qb-surface-2);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius-lg);
-	overflow-x: auto;
-	scrollbar-width: thin;
+	overflow: visible;
 }
 
 #traf_graph_ctrl select,
-#Chunks > div.d-flex.flex-row select,
 .cqb-pane-toolbar select {
 	height: 32px;
 	padding: 0 8px;
@@ -854,6 +978,8 @@ button#flm-nav-refresh .sprite-refresh {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+	flex: none;
+	width: auto;
 	padding: 4px 10px;
 	border: 1px solid var(--qb-border);
 	border-radius: 999px;
@@ -866,6 +992,7 @@ button#flm-nav-refresh .sprite-refresh {
 	white-space: nowrap;
 	transition: opacity 0.12s ease, background-color 0.12s ease;
 }
+.cqb-traf-toggle-lab { white-space: nowrap; }
 .cqb-traf-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .cqb-traf-toggle.cqb-dir-down .cqb-traf-dot { background: var(--qb-speed-down); }
 .cqb-traf-toggle.cqb-dir-up .cqb-traf-dot { background: var(--qb-speed-up); }
@@ -883,23 +1010,3 @@ button#flm-nav-refresh .sprite-refresh {
 
 /* The tracker/period selects keep their stock push to the right. */
 #traf_graph_ctrl select.ms-auto { margin-left: auto; }
-
-/* Chunks stat chips in the toolbar row. */
-#Chunks > div.d-flex.flex-row .sthdr {
-	flex: none;
-	color: var(--qb-fg-muted);
-	font-size: 11px;
-	font-weight: 600;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	white-space: nowrap;
-}
-
-#Chunks > div.d-flex.flex-row .stval {
-	flex: none;
-	color: var(--qb-foreground);
-	font-size: 12px;
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
-	margin-right: 4px;
-}
