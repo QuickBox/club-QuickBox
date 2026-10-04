@@ -80,12 +80,13 @@
  * Equal-width segments sized by the longer label, with a 3px inset track so
  * the active pill never meets the track edge. */
 .qb-seg {
-	display: inline-flex;
+	display: flex;
 	align-items: stretch;
 	gap: 2px;
 	flex: none;
 	height: 32px;
 	padding: 3px;
+	box-sizing: border-box;
 	background: var(--qb-input);
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
@@ -94,11 +95,15 @@
 .qb-seg-btn {
 	flex: 1 1 0;
 	min-width: 114px;
-	display: inline-flex;
+	height: 100%;
+	min-height: 0;
+	box-sizing: border-box;
+	display: flex;
 	align-items: center;
 	justify-content: center;
 	appearance: none;
-	border: 1px solid transparent;
+	border: 0;
+	margin: 0;
 	background: transparent;
 	color: var(--qb-fg-muted);
 	font-family: var(--qb-font);
@@ -109,17 +114,18 @@
 	padding: 0 14px;
 	border-radius: 6px;
 	cursor: pointer;
-	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+	transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .qb-seg-btn:hover { color: var(--qb-foreground); }
 
+/* Active pill: a raised surface fill with a tight shadow only -- no border, and
+ * not the large drop shadow, so it stays centered inside the 3px track inset. */
 .qb-seg-btn.is-active {
 	background: var(--qb-surface);
 	color: var(--qb-foreground);
-	border-color: var(--qb-border);
 	font-weight: 600;
-	box-shadow: var(--qb-shadow-soft);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .qb-seg-btn:focus-visible {
