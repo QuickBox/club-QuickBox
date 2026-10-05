@@ -5,37 +5,85 @@ on:
     branches:
       - latest
 
-permissions:
-  contents: write
+concurrency:
+  group: release-latest
+  cancel-in-progress: false
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
-      - name: Publish a release when the version is new
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Compute, write, tag and publish the release
         run: |
           set -eu
-          version=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
-          tag="v$version"
-          notes="changelogs/$tag.md"
-          if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
-            echo "tag $tag already exists; nothing to publish"
+
+          # The release commit this job makes must not trigger another release.
+          if [ "$(git log -1 --format='%an')" = "github-actions[bot]" ] \
+             && git log -1 --format='%s' | grep -q '^chore(release):'; then
+            echo "head is the release commit; nothing to do"
             exit 0
           fi
-          if [ ! -f "$notes" ]; then
-            echo "no $notes for version $version; nothing to publish"
+
+          tag_exists() { git ls-remote --tags origin "refs/tags/v$1" | grep -q .; }
+
+          V=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
+
+          if [ -n "$V" ] && [ -f "changelogs/v$V.md" ] && ! tag_exists "$V"; then
+            # Prepared: a curated version is staged, just tag and publish it.
+            if ! bash bin/stamp.sh --check; then
+              echo "asset cache stamp is stale; not publishing v$V"
+              exit 0
+            fi
+            ver="$V"
+            sha="$GITHUB_SHA"
+            gh release create "v$ver" --target "$sha" \
+              --title "club-QuickBox v$ver" --notes-file "changelogs/v$ver.md"
+          else
+            # Generated: derive the version and changelog from the commits.
+            hl=""
+            [ -f release-notes/next.md ] && hl="--highlights release-notes/next.md"
+            set +e
+            # shellcheck disable=SC2086
+            bash bin/release.sh --ci $hl
+            rc=$?
+            set -e
+            if [ "$rc" = 3 ]; then
+              echo "nothing to release"
+              exit 0
+            fi
+            [ "$rc" = 0 ] || { echo "release generation failed (rc=$rc)"; exit 1; }
+            ver=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            [ -f release-notes/next.md ] && git rm -q release-notes/next.md
+            git add plugin.info init.js changelogs CHANGELOG.md
+            git commit -q -m "chore(release): v$ver"
+            git push origin "HEAD:latest"
+            sha=$(git rev-parse HEAD)
+            gh release create "v$ver" --target "$sha" \
+              --title "club-QuickBox v$ver" --notes-file "changelogs/v$ver.md"
+          fi
+
+          # Carry the released state back to the working branch.
+          git fetch origin development
+          git checkout -B development origin/development
+          if git merge --no-ff -m "Merge branch 'latest' into development" "$sha"; then
+            git push origin development
+            echo "back-merged v$ver into development"
+          else
+            conflicts=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
+            git merge --abort
+            echo "WARNING: back-merge of v$ver conflicts on: $conflicts"
+            echo "the release shipped; resolve the back-merge by hand"
             exit 0
           fi
-          if ! bash bin/stamp.sh --check; then
-            echo "asset cache stamp is stale; not publishing $tag"
-            exit 0
-          fi
-          gh release create "$tag" \
-            --target "$GITHUB_SHA" \
-            --title "club-QuickBox $tag" \
-            --notes-file "$notes"

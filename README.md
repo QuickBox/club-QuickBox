@@ -108,6 +108,16 @@ club-QuickBox ships in English, Danish, German, Spanish, French, Portuguese and 
 
 Want your language too? See [TRANSLATING.md](TRANSLATING.md) for how to add one and send it in.
 
+## Releases
+
+Versions are derived from the commit history and follow SemVer. A `feat` commit raises the minor version, a `fix`, `perf` or `refactor` raises the patch version, and a `!` marker or a `BREAKING CHANGE` body raises the major version.
+
+Every release has a dated note under `changelogs/`, and `CHANGELOG.md` is the aggregate of them all, newest first.
+
+To add a headline paragraph to the next release, write it to `release-notes/next.md`; it is folded into that version's note and removed when the release is cut.
+
+A push to the `latest` branch cuts the release automatically: it computes the version, writes the changelog, tags the commit and publishes the GitHub Release. The release commit is added to `latest` by the automation, so pull `latest` after a release before starting new work.
+
 ## Credits
 
 The icon glyphs are from [Material Design Icons](https://pictogrammers.com/library/mdi/), used under the Apache License 2.0. club-QuickBox itself is released into the public domain, so you are free to copy, modify and use it anywhere. See [LICENSE](LICENSE).

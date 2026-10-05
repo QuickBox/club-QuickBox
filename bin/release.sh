@@ -5,6 +5,7 @@
 #
 #   bash bin/release.sh                      # compute + write for the next version
 #   bash bin/release.sh --dry-run            # compute + print, write nothing
+#   bash bin/release.sh --ci                 # non-interactive write; exit 3 when nothing to release
 #   bash bin/release.sh --version X.Y.Z      # seed/override the version
 #   bash bin/release.sh --since <ref>        # override the changelog range base
 #   bash bin/release.sh --highlights <file>  # prepend a highlights paragraph
@@ -14,17 +15,19 @@
 # subjects since it: feat -> minor; fix/perf/refactor -> patch; a `!` subject or
 # a BREAKING CHANGE body -> major; docs/chore/test/style/ci only -> nothing to
 # release (refused unless --version). The changelog range is that same tag, or
-# --since when the reachable tag predates the line being released.
+# --since when the reachable tag predates the line being released. Bot release
+# commits, stamp-only commits and merges never drive a bump or reach a changelog.
 set -Eeuo pipefail
 
 self_dir=$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)
 default_repo=$(dirname -- "$self_dir")
 repo="${CLUB_QB_REPO:-$default_repo}"
 
-dry_run=0 version_override="" since_ref="" highlights_file="" do_selftest=0
+dry_run=0 version_override="" since_ref="" highlights_file="" do_selftest=0 ci=0
 while [ $# -gt 0 ]; do
 	case "$1" in
 		--dry-run) dry_run=1 ;;
+		--ci) ci=1 ;;
 		--version) version_override="${2:-}"; shift ;;
 		--since) since_ref="${2:-}"; shift ;;
 		--highlights) highlights_file="${2:-}"; shift ;;
@@ -37,6 +40,10 @@ done
 
 die() { echo "release.sh: $*" >&2; exit 1; }
 is_semver() { printf '%s' "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; }
+
+# Bot release commits, stamp-only commits and merges never drive a version bump
+# and never appear in a generated changelog.
+excluded_subject() { printf '%s' "$1" | grep -qE '^(chore\((release|stamp)\)|Merge )'; }
 
 # Highest vX.Y.Z tag that is an ancestor of HEAD. Empty if none.
 highest_reachable_tag() { # <repo>
@@ -55,6 +62,7 @@ bump_kind() { # <repo> <range>
 	fi
 	while IFS= read -r sub; do
 		[ -n "$sub" ] || continue
+		excluded_subject "$sub" && continue
 		if printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then echo major; return; fi
 		if printf '%s' "$sub" | grep -qE '^feat(\([^)]*\))?:'; then kind=minor; continue; fi
 		if printf '%s' "$sub" | grep -qE '^(fix|perf|refactor)(\([^)]*\))?:'; then
@@ -91,6 +99,7 @@ gen_changelog_body() { # <repo> <version> <date> <range> <highlights>
 	local -a added=() fixed=() perf=() changed=() trans=()
 	while IFS=$'\t' read -r sha sub; do
 		printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!?:' || continue
+		excluded_subject "$sub" && continue
 		typ=$(printf '%s' "$sub" | sed -E 's/^([a-z]+).*/\1/')
 		scope=$(printf '%s' "$sub" | sed -nE 's/^[a-z]+\(([^)]*)\)!?:.*/\1/p')
 		desc=$(printf '%s' "$sub" | sed -E 's/^[a-z]+(\([^)]*\))?!?:[[:space:]]*//')
@@ -187,7 +196,10 @@ run_release() {
 	else
 		[ -n "$base_ver" ] || die "no vX.Y.Z tag reachable from HEAD; pass --version to seed"
 		kind=$(bump_kind "$repo" "$range")
-		[ "$kind" != none ] || die "nothing to release: only docs/chore/test/style/ci commits since v$base_ver (pass --version to override)"
+		if [ "$kind" = none ]; then
+			if [ "$ci" = 1 ]; then echo "nothing to release: no feat/fix/perf/refactor commits since v$base_ver"; exit 3; fi
+			die "nothing to release: only docs/chore/test/style/ci commits since v$base_ver (pass --version to override)"
+		fi
 		new_ver=$(apply_bump "$base_ver" "$kind")
 	fi
 
@@ -217,6 +229,10 @@ run_release() {
 	write_init_version "$repo" "$new_ver"
 	if [ -x "$repo/bin/stamp.sh" ]; then bash "$repo/bin/stamp.sh" --write "$repo"; fi
 
+	if [ "$ci" = 1 ]; then
+		echo "ci-version=$new_ver"
+		return 0
+	fi
 	echo
 	echo "Files written: plugin.info init.js changelogs/v$new_ver.md changelogs/index.json CHANGELOG.md"
 	echo "Commit to make (do not tag or push):"
@@ -229,6 +245,7 @@ selftest() {
 	mk() { # <dir> then subjects via stdin
 		d="$tmp/$1"; mkdir -p "$d"; git -C "$d" init -q
 		git -C "$d" config user.email t@t; git -C "$d" config user.name t
+		printf 'version: 1.0.0\n' > "$d/plugin.info"; printf 'var CQB_REV = "dev";\n' > "$d/init.js"
 		echo seed > "$d/f"; git -C "$d" add -A; git -C "$d" commit -qm 'chore: seed'
 		git -C "$d" tag v1.0.0
 		local s n=0
@@ -241,6 +258,15 @@ selftest() {
 	expect_refuse() { # <dir> <label>
 		local ec=0; CLUB_QB_REPO="$tmp/$1" bash "$0" --dry-run >/dev/null 2>&1 || ec=$?
 		if [ "$ec" != 0 ]; then echo "selftest $2: PASS (refused)"; else echo "selftest $2: FAIL (did not refuse)"; fail=1; fi
+	}
+	ci_expect() { # <dir> <expected-version> <label>
+		local out rc got; out=$(CLUB_QB_REPO="$tmp/$1" bash "$0" --ci 2>/dev/null); rc=$?
+		got=$(printf '%s' "$out" | sed -nE 's/^ci-version=//p')
+		if [ "$rc" = 0 ] && [ "$got" = "$2" ]; then echo "selftest $3: PASS ($got)"; else echo "selftest $3: FAIL (rc=$rc got '$got' want '$2')"; fail=1; fi
+	}
+	ci_expect_nothing() { # <dir> <label>
+		local rc=0; CLUB_QB_REPO="$tmp/$1" bash "$0" --ci >/dev/null 2>&1 || rc=$?
+		if [ "$rc" = 3 ]; then echo "selftest $2: PASS (exit 3)"; else echo "selftest $2: FAIL (rc=$rc)"; fail=1; fi
 	}
 	mk feat <<-'EOF'
 	feat(topbar): add a search field
@@ -265,6 +291,36 @@ selftest() {
 	# --version override on a docs-only history still releases
 	ver=$(CLUB_QB_REPO="$tmp/docsonly" bash "$0" --dry-run --version 9.9.9 2>/dev/null | sed -nE 's/^next version:  //p')
 	if [ "$ver" = 9.9.9 ]; then echo "selftest version-override: PASS (9.9.9)"; else echo "selftest version-override: FAIL ($ver)"; fail=1; fi
+
+	# --ci generated path: writes files and reports the version; nothing-to-release exits 3
+	ci_expect feat 1.1.0 "ci-generated-minor"
+	ci_expect_nothing docsonly "ci-nothing-to-release-exit3"
+
+	# --ci must drop bot release commits, stamp commits and merges from the notes
+	d="$tmp/excl"; mkdir -p "$d"; git -C "$d" init -q
+	git -C "$d" config user.email t@t; git -C "$d" config user.name t
+	printf 'version: 1.0.0\n' > "$d/plugin.info"; printf 'var CQB_REV = "dev";\n' > "$d/init.js"
+	echo seed > "$d/f"; git -C "$d" add -A; git -C "$d" commit -qm 'chore: seed'
+	git -C "$d" tag v1.0.0; base=$(git -C "$d" branch --show-current)
+	echo a > "$d/a"; git -C "$d" add -A; git -C "$d" commit -qm 'feat(ui): add a real feature'
+	git -C "$d" checkout -q -b side; echo b > "$d/b"; git -C "$d" add -A; git -C "$d" commit -qm 'fix(side): a side fix'
+	git -C "$d" checkout -q "$base"; git -C "$d" merge -q --no-ff side -m 'Merge branch side'
+	echo c > "$d/c"; git -C "$d" add -A; git -C "$d" commit -qm 'chore(release): v0.0.0'
+	echo e > "$d/e"; git -C "$d" add -A; git -C "$d" commit -qm 'chore(stamp): restamp assets'
+	ci_expect excl 1.1.0 "ci-excludes-noise-version"
+	f="$tmp/excl/changelogs/v1.1.0.md"
+	if [ -f "$f" ] && grep -q 'real feature' "$f" && grep -q 'side fix' "$f" \
+		&& ! grep -qiE 'restamp|Merge branch|chore\(release\)|v0\.0\.0' "$f"; then
+		echo "selftest ci-excludes-noise-notes: PASS"
+	else echo "selftest ci-excludes-noise-notes: FAIL"; fail=1; fi
+
+	# a prepared (pre-curated) per-version changelog survives a --ci run
+	mk prep <<-'EOF'
+	feat(x): a feature
+	EOF
+	mkdir -p "$tmp/prep/changelogs"; printf '## v1.1.0 (2000-01-01)\n\nhand-curated note\n' > "$tmp/prep/changelogs/v1.1.0.md"
+	CLUB_QB_REPO="$tmp/prep" bash "$0" --ci >/dev/null 2>&1
+	if grep -q 'hand-curated note' "$tmp/prep/changelogs/v1.1.0.md"; then echo "selftest ci-preserves-curated: PASS"; else echo "selftest ci-preserves-curated: FAIL"; fail=1; fi
 	return "$fail"
 }
 
