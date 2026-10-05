@@ -20,6 +20,9 @@
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
 	var CQB_REV = "0a787f1708";
+	/* The released theme version (major.minor.patch). The release tool rewrites
+	 * this value; it is surfaced on window.cqb.version for About/diagnostics. */
+	var CQB_VERSION = "2.6.0";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
@@ -279,6 +282,7 @@
 
 	var cqb = {
 		path: plugin.path,
+		version: CQB_VERSION,
 		/* Return a mask <span> that tints the named SVG glyph with --qb-icon.
 		 * Size/color come from inline style so it works without a stylesheet. */
 		icon: function (name) {
