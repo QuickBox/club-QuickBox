@@ -263,11 +263,11 @@ theUILang.cqb_peerFlagEncrypted = "Chiffré";
 theUILang.cqb_peerFlagSnubbed   = "Snobé";
 
 /* About / What's new (js/about.js; the palette command in js/extras.js). */
-theUILang.cqb_wn_title         = "What's new in club-QuickBox";
-theUILang.cqb_wn_link          = "What's new";
+theUILang.cqb_wn_title         = "Nouveautés de club-QuickBox";
+theUILang.cqb_wn_link          = "Nouveautés";
 theUILang.cqb_wn_version       = "club-QuickBox v{version}";
-theUILang.cqb_wn_update        = "Update available: v{version}";
-theUILang.cqb_wn_update_qb     = "QuickBox Pro: run {cmd} as an admin.";
-theUILang.cqb_wn_update_manual = "Manual install: run {cmd} in the theme folder.";
-theUILang.cqb_wn_none          = "No release notes yet.";
-theUILang.qbPalHelp            = "Help";
+theUILang.cqb_wn_update        = "Mise à jour disponible : v{version}";
+theUILang.cqb_wn_update_qb     = "QuickBox Pro : exécutez {cmd} en tant qu'administrateur.";
+theUILang.cqb_wn_update_manual = "Installation manuelle : exécutez {cmd} dans le dossier du thème.";
+theUILang.cqb_wn_none          = "Pas encore de notes de version.";
+theUILang.qbPalHelp            = "Aide";
