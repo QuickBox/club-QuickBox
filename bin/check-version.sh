@@ -10,6 +10,12 @@
 # the newest vX.Y.Z tag while that version is untagged (>= once tagged).
 set -Eeuo pipefail
 
+# Resolve the repo from the script's own location (overridable) so the checks
+# run from any working directory, not only the repo root.
+self_dir=$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)
+default_root=$(dirname -- "$self_dir")
+repo_root() { printf '%s' "${CLUB_QB_REPO:-$default_root}"; }
+
 CONV='^(feat|fix|perf|refactor|docs|chore|test|style)(\([a-z0-9._-]+\))?!?: .+'
 is_semver() { printf '%s' "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; }
 # Highest of two SemVers, by version sort.
@@ -23,13 +29,13 @@ messages() { # <range>
 		if ! printf '%s' "$sub" | grep -qE "$CONV"; then
 			echo "  NONCONFORMING ${sha:0:10}  $sub"; bad=1
 		fi
-	done < <(git log --no-merges --format='%H%x09%s' "$range" 2>/dev/null)
+	done < <(git -C "$(repo_root)" log --no-merges --format='%H%x09%s' "$range" 2>/dev/null)
 	if [ "$bad" = 1 ]; then echo "commit-message gate: FAIL (subjects must be conventional commits)"; return 1; fi
 	echo "commit-message gate: PASS"
 }
 
 consistency() { # [repo]
-	local repo=${1:-.} pv iv jv v newest
+	local repo=${1:-$(repo_root)} pv iv jv v newest
 	pv=$(sed -nE 's/^version:[[:space:]]*//p' "$repo/plugin.info" | head -1)
 	iv=$(sed -nE 's/^[[:space:]]*var CQB_VERSION = "([^"]*)";.*/\1/p' "$repo/init.js" | head -1)
 	jv=$(grep -oE '"version"[[:space:]]*:[[:space:]]*"[0-9]+\.[0-9]+\.[0-9]+"' "$repo/changelogs/index.json" 2>/dev/null \
@@ -57,9 +63,9 @@ selftest() {
 	d=$(mktemp -d); trap 'rm -rf "$d"' RETURN
 	ok() { if "$@" >/dev/null 2>&1; then echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi; }
 	no() { ec=0; "$@" >/dev/null 2>&1 || ec=$?; if [ "$ec" != 0 ]; then echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi; }
-	# the message gate uses cwd-relative git, as it does in CI from the checkout root
+	# point the tool at a repo via CLUB_QB_REPO, proving it does not depend on $PWD
 	# shellcheck disable=SC2317  # invoked indirectly through ok()/no()
-	msg() { ( cd "$1" && bash "$0" messages "$2" ); }
+	msg() { CLUB_QB_REPO="$1" bash "$0" messages "$2"; }
 
 	# --- message gate ---
 	git -C "$d" init -q; git -C "$d" config user.email t@t; git -C "$d" config user.name t
@@ -98,12 +104,21 @@ selftest() {
 	LBL="consistency-nonsemver-rejected"; no bash "$0" consistency "$d/c4"
 	mkver "$d/c5" 2.6.0 2.6.0 2.6.0   # no tag at all -> aligned and ahead of nothing
 	LBL="consistency-untagged-ok"; ok bash "$0" consistency "$d/c5"
+
+	# any-cwd: resolve the repo from CLUB_QB_REPO / the script location, never $PWD
+	mkver "$d/c6" 2.6.0 2.6.0 2.6.0
+	LBL="anycwd-consistency-from-tmp"
+	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$0" consistency ) >/dev/null 2>&1; then
+		echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi
+	LBL="anycwd-messages-from-tmp"
+	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$0" messages HEAD~0..HEAD ) >/dev/null 2>&1; then
+		echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi
 	return "$fail"
 }
 
 case "${1:-}" in
 	--selftest) selftest; exit $? ;;
 	messages) shift; messages "${1:?range required}" ;;
-	consistency) shift; consistency "${1:-.}" ;;
+	consistency) shift; consistency "${1:-}" ;;
 	*) echo "usage: $0 messages <range> | consistency [repo] | --selftest" >&2; exit 2 ;;
 esac
