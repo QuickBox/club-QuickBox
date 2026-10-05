@@ -17,6 +17,8 @@ set -Eeuo pipefail
 
 self_dir=$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)
 default_repo=$(dirname -- "$self_dir")
+# Absolute path to this script, so a re-invocation works from any cwd.
+self="$self_dir/$(basename -- "$0")"
 
 stamp_of() { # <repo>
 	local r=$1
@@ -38,12 +40,12 @@ selftest() {
 	printf '(function(){\n\tvar CQB_REV = "dev";\n})();\n' > "$d/init.js"
 	a=$(stamp_of "$d"); printf 'b{color:red}' > "$d/css/base.css"; b=$(stamp_of "$d")
 	[ "$a" != "$b" ] && echo "selftest change-changes-stamp: PASS" || { echo "selftest change-changes-stamp: FAIL"; fail=1; }
-	ec=0; bash "$0" --check "$d" >/dev/null 2>&1 || ec=$?
+	ec=0; bash "$self" --check "$d" >/dev/null 2>&1 || ec=$?
 	[ "$ec" = 1 ] && echo "selftest check-fails-on-dev: PASS" || { echo "selftest check-fails-on-dev: FAIL ($ec)"; fail=1; }
-	bash "$0" --write "$d" >/dev/null; ec=0; bash "$0" --check "$d" >/dev/null 2>&1 || ec=$?
+	bash "$self" --write "$d" >/dev/null; ec=0; bash "$self" --check "$d" >/dev/null 2>&1 || ec=$?
 	[ "$ec" = 0 ] && echo "selftest write-then-check: PASS" || { echo "selftest write-then-check: FAIL ($ec)"; fail=1; }
 	[ "$(rev_of "$d")" = "$b" ] && echo "selftest written-value: PASS" || { echo "selftest written-value: FAIL"; fail=1; }
-	printf 'x=2' > "$d/js/t.js"; ec=0; bash "$0" --check "$d" >/dev/null 2>&1 || ec=$?
+	printf 'x=2' > "$d/js/t.js"; ec=0; bash "$self" --check "$d" >/dev/null 2>&1 || ec=$?
 	[ "$ec" = 1 ] && echo "selftest stale-after-edit: PASS" || { echo "selftest stale-after-edit: FAIL ($ec)"; fail=1; }
 	return "$fail"
 }

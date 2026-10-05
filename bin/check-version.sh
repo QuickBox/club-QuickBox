@@ -14,6 +14,8 @@ set -Eeuo pipefail
 # run from any working directory, not only the repo root.
 self_dir=$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)
 default_root=$(dirname -- "$self_dir")
+# Absolute path to this script, so a re-invocation works from any cwd (CI runs us by a relative path).
+self="$self_dir/$(basename -- "$0")"
 repo_root() { printf '%s' "${CLUB_QB_REPO:-$default_root}"; }
 
 CONV='^(feat|fix|perf|refactor|docs|chore|test|style)(\([a-z0-9._-]+\))?!?: .+'
@@ -65,7 +67,7 @@ selftest() {
 	no() { ec=0; "$@" >/dev/null 2>&1 || ec=$?; if [ "$ec" != 0 ]; then echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi; }
 	# point the tool at a repo via CLUB_QB_REPO, proving it does not depend on $PWD
 	# shellcheck disable=SC2317  # invoked indirectly through ok()/no()
-	msg() { CLUB_QB_REPO="$1" bash "$0" messages "$2"; }
+	msg() { CLUB_QB_REPO="$1" bash "$self" messages "$2"; }
 
 	# --- message gate ---
 	git -C "$d" init -q; git -C "$d" config user.email t@t; git -C "$d" config user.name t
@@ -95,23 +97,23 @@ selftest() {
 		echo x > "$1/f"; git -C "$1" add -A; git -C "$1" commit -qm 'chore: seed'
 	}
 	mkver "$d/c1" 2.7.0 2.7.0 2.7.0; git -C "$d/c1" tag v2.6.0
-	LBL="consistency-aligned-above-tag"; ok bash "$0" consistency "$d/c1"
+	LBL="consistency-aligned-above-tag"; ok bash "$self" consistency "$d/c1"
 	mkver "$d/c2" 2.7.0 2.5.0 2.7.0; git -C "$d/c2" tag v2.6.0
-	LBL="consistency-mismatch-rejected"; no bash "$0" consistency "$d/c2"
+	LBL="consistency-mismatch-rejected"; no bash "$self" consistency "$d/c2"
 	mkver "$d/c3" 2.0.0 2.0.0 2.0.0; git -C "$d/c3" tag v2.6.0
-	LBL="consistency-below-tag-rejected"; no bash "$0" consistency "$d/c3"
+	LBL="consistency-below-tag-rejected"; no bash "$self" consistency "$d/c3"
 	mkver "$d/c4" 2.7 2.7 2.7
-	LBL="consistency-nonsemver-rejected"; no bash "$0" consistency "$d/c4"
+	LBL="consistency-nonsemver-rejected"; no bash "$self" consistency "$d/c4"
 	mkver "$d/c5" 2.6.0 2.6.0 2.6.0   # no tag at all -> aligned and ahead of nothing
-	LBL="consistency-untagged-ok"; ok bash "$0" consistency "$d/c5"
+	LBL="consistency-untagged-ok"; ok bash "$self" consistency "$d/c5"
 
 	# any-cwd: resolve the repo from CLUB_QB_REPO / the script location, never $PWD
 	mkver "$d/c6" 2.6.0 2.6.0 2.6.0
 	LBL="anycwd-consistency-from-tmp"
-	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$0" consistency ) >/dev/null 2>&1; then
+	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$self" consistency ) >/dev/null 2>&1; then
 		echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi
 	LBL="anycwd-messages-from-tmp"
-	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$0" messages HEAD~0..HEAD ) >/dev/null 2>&1; then
+	if ( cd /tmp && CLUB_QB_REPO="$d/c6" bash "$self" messages HEAD~0..HEAD ) >/dev/null 2>&1; then
 		echo "selftest $LBL: PASS"; else echo "selftest $LBL: FAIL"; fail=1; fi
 	return "$fail"
 }

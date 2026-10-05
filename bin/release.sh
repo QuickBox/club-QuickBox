@@ -21,6 +21,8 @@ set -Eeuo pipefail
 
 self_dir=$(cd -- "$(dirname -- "$0")" >/dev/null 2>&1 && pwd)
 default_repo=$(dirname -- "$self_dir")
+# Absolute path to this script, so a re-invocation works from any cwd.
+self="$self_dir/$(basename -- "$0")"
 repo="${CLUB_QB_REPO:-$default_repo}"
 
 dry_run=0 version_override="" since_ref="" highlights_file="" do_selftest=0 ci=0
@@ -252,20 +254,20 @@ selftest() {
 		while IFS= read -r s; do [ -n "$s" ] || continue; n=$((n+1)); echo "$n" > "$d/f$n"; git -C "$d" add -A; git -C "$d" commit -qm "$s"; done
 	}
 	expect() { # <dir> <expected-version> <label>
-		local got; got=$(CLUB_QB_REPO="$tmp/$1" bash "$0" --dry-run 2>/dev/null | sed -nE 's/^next version:  //p')
+		local got; got=$(CLUB_QB_REPO="$tmp/$1" bash "$self" --dry-run 2>/dev/null | sed -nE 's/^next version:  //p')
 		if [ "$got" = "$2" ]; then echo "selftest $3: PASS ($got)"; else echo "selftest $3: FAIL (got '$got', want '$2')"; fail=1; fi
 	}
 	expect_refuse() { # <dir> <label>
-		local ec=0; CLUB_QB_REPO="$tmp/$1" bash "$0" --dry-run >/dev/null 2>&1 || ec=$?
+		local ec=0; CLUB_QB_REPO="$tmp/$1" bash "$self" --dry-run >/dev/null 2>&1 || ec=$?
 		if [ "$ec" != 0 ]; then echo "selftest $2: PASS (refused)"; else echo "selftest $2: FAIL (did not refuse)"; fail=1; fi
 	}
 	ci_expect() { # <dir> <expected-version> <label>
-		local out rc got; out=$(CLUB_QB_REPO="$tmp/$1" bash "$0" --ci 2>/dev/null); rc=$?
+		local out rc got; out=$(CLUB_QB_REPO="$tmp/$1" bash "$self" --ci 2>/dev/null); rc=$?
 		got=$(printf '%s' "$out" | sed -nE 's/^ci-version=//p')
 		if [ "$rc" = 0 ] && [ "$got" = "$2" ]; then echo "selftest $3: PASS ($got)"; else echo "selftest $3: FAIL (rc=$rc got '$got' want '$2')"; fail=1; fi
 	}
 	ci_expect_nothing() { # <dir> <label>
-		local rc=0; CLUB_QB_REPO="$tmp/$1" bash "$0" --ci >/dev/null 2>&1 || rc=$?
+		local rc=0; CLUB_QB_REPO="$tmp/$1" bash "$self" --ci >/dev/null 2>&1 || rc=$?
 		if [ "$rc" = 3 ]; then echo "selftest $2: PASS (exit 3)"; else echo "selftest $2: FAIL (rc=$rc)"; fail=1; fi
 	}
 	mk feat <<-'EOF'
@@ -289,7 +291,7 @@ selftest() {
 	expect breaking 2.0.0 "breaking-major"
 	expect_refuse docsonly "docs-only-refused"
 	# --version override on a docs-only history still releases
-	ver=$(CLUB_QB_REPO="$tmp/docsonly" bash "$0" --dry-run --version 9.9.9 2>/dev/null | sed -nE 's/^next version:  //p')
+	ver=$(CLUB_QB_REPO="$tmp/docsonly" bash "$self" --dry-run --version 9.9.9 2>/dev/null | sed -nE 's/^next version:  //p')
 	if [ "$ver" = 9.9.9 ]; then echo "selftest version-override: PASS (9.9.9)"; else echo "selftest version-override: FAIL ($ver)"; fail=1; fi
 
 	# --ci generated path: writes files and reports the version; nothing-to-release exits 3
@@ -319,7 +321,7 @@ selftest() {
 	feat(x): a feature
 	EOF
 	mkdir -p "$tmp/prep/changelogs"; printf '## v1.1.0 (2000-01-01)\n\nhand-curated note\n' > "$tmp/prep/changelogs/v1.1.0.md"
-	CLUB_QB_REPO="$tmp/prep" bash "$0" --ci >/dev/null 2>&1
+	CLUB_QB_REPO="$tmp/prep" bash "$self" --ci >/dev/null 2>&1
 	if grep -q 'hand-curated note' "$tmp/prep/changelogs/v1.1.0.md"; then echo "selftest ci-preserves-curated: PASS"; else echo "selftest ci-preserves-curated: FAIL"; fail=1; fi
 	return "$fail"
 }

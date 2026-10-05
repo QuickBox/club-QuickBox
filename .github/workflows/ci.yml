@@ -1,5 +1,8 @@
 name: ci
 
+# KEEP IN SYNC: bin/ci-local.sh runs these same steps in the same order locally.
+# Change one, change the other.
+
 on:
   push:
   pull_request:
