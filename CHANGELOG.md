@@ -18,6 +18,7 @@ club-QuickBox v2.6.0 is a ground-up modernization of the skin, rebuilt around a 
 - Smart label and tracker icons in the sidebar, with a searchable icon picker for labels.
 - A grouped, filterable Settings layout in one scroll region, themed popover dropdowns in place of native selects, and one token-styled tooltip across the whole skin.
 - A Media Info reader that parses task-console output into readable section cards with a Formatted or Raw switch.
+- The installed version in the Help dialog, a What's new viewer with every release's notes (also in the Ctrl K palette), and a once-a-day check that tells you when a newer release is out and how to update.
 - Translations in English, Danish, German, Spanish, French, Portuguese and Chinese (Simplified), following the language you pick in ruTorrent.
 
 ### Changed
