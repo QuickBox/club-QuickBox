@@ -50,9 +50,15 @@
 	mask-image: url(../images/icons/header-about.svg);
 }
 
+/* Cap the body so a long changelog scrolls INSIDE the dialog and the window
+ * never runs past the viewport, whatever the host dialog manager centres on
+ * (the manager sets the window's own display inline, so a flex-column window
+ * cannot be relied on). The header -- with its close button -- sits above the
+ * scroll region and stays visible. ~60px is reserved for the header inside the
+ * 80vh / 760px window cap; the module re-centres the window after content fills. */
 #cqbWhatsNew .cqb-wn-body {
 	width: min(560px, 90vw);
-	max-height: 62vh;
+	max-height: calc(min(80vh, 760px) - 60px);
 	overflow-y: auto;
 	padding: 14px 16px 18px;
 	color: var(--qb-foreground);

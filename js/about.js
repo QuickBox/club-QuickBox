@@ -256,10 +256,28 @@
 		wnBody = document.createElement("div");
 		wnBody.className = "cqb-wn-body";
 		try {
-			/* Non-modal, like the sibling Help/About info dialogs it is reached from. */
+			/* Non-modal, like the sibling Help/About info dialogs it is reached from.
+			 * The core make() adds the close button in the header; dialogs.css styles
+			 * it, and the window cap in about.css keeps the header on screen. */
 			theDialogManager.make("cqbWhatsNew", t("cqb_wn_title", "What's new in club-QuickBox"), wnBody);
 		} catch (e) { return false; }
+		installEsc();
 		return true;
+	}
+
+	/* Escape closes the dialog when it is open (the non-modal core path does not
+	 * bind it); installed once. */
+	function installEsc() {
+		if (window.cqbWnEsc) return;
+		window.cqbWnEsc = true;
+		document.addEventListener("keydown", function (e) {
+			if (e.key !== "Escape" && e.keyCode !== 27) return;
+			var dlg = document.getElementById("cqbWhatsNew");
+			/* Hidden shows as display:none (set by the manager's hide); a fixed-
+			 * positioned window has no offsetParent, so that cannot gate this. */
+			if (!dlg || dlg.style.display === "none") return;
+			try { theDialogManager.hide("cqbWhatsNew"); } catch (ex) { /* hide is best-effort */ }
+		}, true);
 	}
 
 	/* "QuickBox Pro: run <cmd> ..." with the command as inline code, from a
@@ -298,12 +316,25 @@
 		return { sec: sec, slot: slot };
 	}
 
+	/* Re-centre the window after its height changes. The body cap bounds the
+	 * window to the viewport, but the host centres on the size at show() time,
+	 * before the async notes fill; calling the host's own centre after each fill
+	 * keeps the capped window centred without depending on a host ResizeObserver. */
+	function recenter() {
+		try {
+			if (theDialogManager && typeof theDialogManager.center === "function" &&
+				theDialogManager.visible && theDialogManager.visible.indexOf("cqbWhatsNew") >= 0) {
+				theDialogManager.center("cqbWhatsNew");
+			}
+		} catch (e) { /* centre is best-effort */ }
+	}
+
 	/* Fetch the newer release's notes from the same fixed base + the validated
 	 * file path, with no credentials. Silent on any failure. */
 	function fillRemoteNotes(file, slot) {
 		if (!FILE_RE.test(file || "")) return;
 		fetchText(REMOTE_BASE + file, { credentials: "omit", referrerPolicy: "no-referrer" })
-			.then(function (txt) { slot.textContent = ""; renderMarkdown(slot, txt); })
+			.then(function (txt) { slot.textContent = ""; renderMarkdown(slot, txt); recenter(); })
 			.catch(function () { /* offline / any failure: the update note + local notes still show */ });
 	}
 
@@ -323,6 +354,7 @@
 								sec.className = "cqb-wn-entry";
 								renderMarkdown(sec, md);
 								container.appendChild(sec);
+								recenter();
 							}).catch(function () { /* skip one unreadable file */ });
 					});
 				});
@@ -334,6 +366,7 @@
 				empty.className = "cqb-wn-empty";
 				empty.textContent = t("cqb_wn_none", "No release notes yet.");
 				container.appendChild(empty);
+				recenter();
 			});
 	}
 
@@ -358,6 +391,7 @@
 		if (!wnBody) wnBody = document.querySelector("#cqbWhatsNew .cqb-wn-body");
 		renderDialog();
 		try { theDialogManager.show("cqbWhatsNew"); } catch (e) { /* show is best-effort */ }
+		recenter();
 	};
 
 	/* ============================================================
