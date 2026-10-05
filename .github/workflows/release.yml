@@ -35,7 +35,7 @@ jobs:
           publish() { # <ver> <target-sha>
             local ver="$1" target="$2"
             rel_sha="$target"
-            bash bin/check-version.sh consistency || { echo "version mismatch; refusing to tag"; exit 1; }
+            bash bin/check-version.sh consistency || { echo "::error::version mismatch; refusing to tag v$ver"; exit 1; }
             if tag_exists "$ver"; then
               if release_exists "$ver"; then echo "v$ver already released"; return 0; fi
               echo "v$ver is tagged but has no release; creating it"
@@ -61,8 +61,8 @@ jobs:
           if [ -n "$V" ] && [ -f "changelogs/v$V.md" ] && ! { tag_exists "$V" && release_exists "$V"; }; then
             # Prepared or recovery: a staged version that is not fully published.
             if ! bash bin/stamp.sh --check; then
-              echo "asset cache stamp is stale; not publishing v$V"
-              exit 0
+              echo "::error::asset cache stamp is stale; not publishing v$V"
+              exit 1
             fi
             publish "$V" "$GITHUB_SHA"
             ver="$V"; sha="$rel_sha"
@@ -100,7 +100,6 @@ jobs:
           else
             conflicts=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
             git merge --abort
-            echo "WARNING: back-merge of v$ver conflicts on: $conflicts"
-            echo "the release shipped; resolve the back-merge by hand"
+            echo "::warning::back-merge of v$ver conflicts on: $conflicts (the release shipped; resolve the back-merge by hand)"
             exit 0
           fi
