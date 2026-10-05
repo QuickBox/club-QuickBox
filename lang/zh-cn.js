@@ -261,3 +261,13 @@ theUILang.cqb_noPeers           = "没有连接的用户";
 theUILang.cqb_peerFlagIncoming  = "传入连接";
 theUILang.cqb_peerFlagEncrypted = "已加密";
 theUILang.cqb_peerFlagSnubbed   = "已忽略";
+
+/* About / What's new (js/about.js; the palette command in js/extras.js). */
+theUILang.cqb_wn_title         = "club-QuickBox 的新功能";
+theUILang.cqb_wn_link          = "新功能";
+theUILang.cqb_wn_version       = "club-QuickBox v{version}";
+theUILang.cqb_wn_update        = "有可用更新：v{version}";
+theUILang.cqb_wn_update_qb     = "QuickBox Pro：以管理员身份运行 {cmd}。";
+theUILang.cqb_wn_update_manual = "手动安装：在主题文件夹中运行 {cmd}。";
+theUILang.cqb_wn_none          = "暂无发行说明。";
+theUILang.qbPalHelp            = "帮助";

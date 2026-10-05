@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Verify the pushed commit messages are conventional
+        run: |
+          set -eu
+          zero=0000000000000000000000000000000000000000
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.sha }}"
+          elif [ "${{ github.event.before }}" = "$zero" ]; then
+            if git fetch -q origin latest 2>/dev/null; then range="FETCH_HEAD..${{ github.sha }}"; else range="${{ github.sha }}"; fi
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          echo "checking $range"
+          bash bin/check-version.sh messages "$range"
+
+      - name: Verify one consistent version across the sources
+        run: bash bin/check-version.sh consistency
+
+      - name: Syntax-check the theme scripts
+        run: |
+          set -eu
+          for f in init.js js/*.js lang/*.js; do
+            node --check "$f"
+          done
+
+      - name: Verify the string catalog
+        run: sh bin/check-lang.sh
+
+      - name: Verify the asset cache stamp is current
+        run: bash bin/stamp.sh --check
+
+      - name: Self-test the release tool
+        run: bash bin/release.sh --selftest
+
+      - name: Self-test the stamp tool
+        run: bash bin/stamp.sh --selftest
+
+      - name: Self-test the version guards
+        run: bash bin/check-version.sh --selftest

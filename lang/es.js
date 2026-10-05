@@ -261,3 +261,13 @@ theUILang.cqb_noPeers           = "No hay clientes conectados";
 theUILang.cqb_peerFlagIncoming  = "Conexión entrante";
 theUILang.cqb_peerFlagEncrypted = "Cifrado";
 theUILang.cqb_peerFlagSnubbed   = "Ignorado";
+
+/* About / What's new (js/about.js; the palette command in js/extras.js). */
+theUILang.cqb_wn_title         = "Novedades en club-QuickBox";
+theUILang.cqb_wn_link          = "Novedades";
+theUILang.cqb_wn_version       = "club-QuickBox v{version}";
+theUILang.cqb_wn_update        = "Actualización disponible: v{version}";
+theUILang.cqb_wn_update_qb     = "QuickBox Pro: ejecuta {cmd} como administrador.";
+theUILang.cqb_wn_update_manual = "Instalación manual: ejecuta {cmd} en la carpeta del tema.";
+theUILang.cqb_wn_none          = "Aún no hay notas de la versión.";
+theUILang.qbPalHelp            = "Ayuda";

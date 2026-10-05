@@ -1,0 +1,184 @@
+/*
+ *  club-QuickBox skin for ruTorrent -- about / what's new surface.
+ *
+ *  The version line + What's new link appended to the core Help dialog, the
+ *  What's new dialog body (built on the shared .dlg-window chrome in
+ *  dialogs.css), the update-available callout, and the quiet dot on the Help
+ *  button. Every colour is a --qb-* token; radii use the shared tokens. The
+ *  dialog body caps its height and scrolls so a long changelog never pushes the
+ *  window off screen. All relative asset urls are ../images (one dir deeper
+ *  than style.css), per the module convention.
+ */
+
+/* ============================================================
+ * Help-dialog footer: version + What's new link.
+ * ============================================================ */
+#dlgHelp .cqb-about-foot {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-top: 4px;
+	padding: 12px 14px;
+	border-top: 1px solid var(--qb-border);
+}
+
+#dlgHelp .cqb-about-version {
+	color: var(--qb-fg-muted);
+	font-family: var(--qb-font);
+	font-size: 12px;
+}
+
+#dlgHelp .cqb-about-foot a.cqb-about-link {
+	color: var(--qb-primary-text, var(--qb-primary));
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 600;
+	text-decoration: none;
+}
+#dlgHelp .cqb-about-foot a.cqb-about-link:hover,
+#dlgHelp .cqb-about-foot a.cqb-about-link:focus-visible {
+	text-decoration: underline;
+}
+
+/* ============================================================
+ * What's new dialog header glyph + scrollable body.
+ * ============================================================ */
+#cqbWhatsNew-header::after {
+	-webkit-mask-image: url(../images/icons/header-about.svg);
+	mask-image: url(../images/icons/header-about.svg);
+}
+
+/* Cap the body so a long changelog scrolls INSIDE the dialog and the window
+ * never runs past the viewport, whatever the host dialog manager centres on
+ * (the manager sets the window's own display inline, so a flex-column window
+ * cannot be relied on). The header -- with its close button -- sits above the
+ * scroll region and stays visible. ~60px is reserved for the header inside the
+ * 80vh / 760px window cap; the module re-centres the window after content fills. */
+#cqbWhatsNew .cqb-wn-body {
+	width: min(560px, 90vw);
+	max-height: calc(min(80vh, 760px) - 60px);
+	overflow-y: auto;
+	padding: 14px 16px 18px;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+}
+
+/* ============================================================
+ * Rendered changelog: version heads, section subheads, bullets, inline code.
+ * ============================================================ */
+#cqbWhatsNew .cqb-wn-entry + .cqb-wn-entry {
+	margin-top: 10px;
+	padding-top: 14px;
+	border-top: 1px solid var(--qb-border-soft, var(--qb-border));
+}
+
+#cqbWhatsNew .cqb-wn-head {
+	margin: 2px 0 6px;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--qb-foreground);
+}
+
+#cqbWhatsNew .cqb-wn-sub {
+	margin: 12px 0 4px;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--qb-fg-muted);
+}
+
+#cqbWhatsNew .cqb-wn-p {
+	margin: 6px 0;
+	font-size: 12.5px;
+	line-height: 1.55;
+	color: var(--qb-foreground);
+}
+
+#cqbWhatsNew .cqb-wn-list {
+	margin: 4px 0 8px;
+	padding-left: 18px;
+	list-style: disc;
+}
+
+#cqbWhatsNew .cqb-wn-list li {
+	margin: 3px 0;
+	font-size: 12.5px;
+	line-height: 1.5;
+	color: var(--qb-foreground);
+}
+
+#cqbWhatsNew .cqb-wn-code,
+#dlgHelp .cqb-about-foot .cqb-wn-code {
+	font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+	font-size: 11.5px;
+	padding: 1px 5px;
+	border-radius: 5px;
+	background-color: var(--qb-surface-2);
+	border: 1px solid var(--qb-border-soft, var(--qb-border));
+	color: var(--qb-foreground);
+	white-space: nowrap;
+}
+
+#cqbWhatsNew .cqb-wn-empty {
+	margin: 8px 0;
+	font-size: 12.5px;
+	color: var(--qb-fg-muted);
+}
+
+/* ============================================================
+ * Update-available callout -- a primary-tinted card, no edge accent bar.
+ * ============================================================ */
+#cqbWhatsNew .cqb-wn-update {
+	margin-bottom: 14px;
+	padding: 12px 14px;
+	border: 1px solid color-mix(in srgb, var(--qb-primary) 32%, var(--qb-border));
+	border-radius: var(--qb-radius-lg, var(--qb-radius));
+	background-color: color-mix(in srgb, var(--qb-primary) 10%, transparent);
+}
+
+#cqbWhatsNew .cqb-wn-update-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+
+#cqbWhatsNew .cqb-wn-update-dot {
+	width: 8px;
+	height: 8px;
+	flex: none;
+	border-radius: 50%;
+	background-color: var(--qb-primary);
+}
+
+#cqbWhatsNew .cqb-wn-update-label {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--qb-foreground);
+}
+
+/* The remote notes slot sits below the instructions, hairline-separated. */
+#cqbWhatsNew .cqb-wn-remote:not(:empty) {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid color-mix(in srgb, var(--qb-primary) 24%, var(--qb-border));
+}
+
+/* ============================================================
+ * Quiet update dot on the Help button -- a small tint mark, never a bar.
+ * ============================================================ */
+#t a.cqb-btn#mnu_help.cqb-has-update::after {
+	content: "";
+	position: absolute;
+	top: 5px;
+	right: 5px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background-color: var(--qb-primary);
+	box-shadow: 0 0 0 2px var(--qb-surface);
+	pointer-events: none;
+}

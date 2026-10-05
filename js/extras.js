@@ -327,6 +327,11 @@
 			addPanelFilters(list, F, cl, "pstate");
 			addPanelFilters(list, F, cl, "plabel");
 		}
+		/* The about module owns the opener; the command appears only once it has
+		 * registered, and runs lazily so load order between the two never matters. */
+		if (typeof cqb.openWhatsNew === "function") {
+			list.push({ group: lang("qbPalHelp", "Help"), label: lang("cqb_wn_title", "What's new in club-QuickBox"), icon: "toolbar-help", run: function () { cqb.openWhatsNew(); } });
+		}
 		return list;
 	}
 

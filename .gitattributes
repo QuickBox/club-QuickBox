@@ -1,0 +1,7 @@
+# The generated release archive is the install-ready theme folder: the skin
+# assets plus README, LICENSE, TRANSLATING.md, CHANGELOG.md and changelogs/.
+# Development-only trees are left out of the archive.
+.github/ export-ignore
+bin/ export-ignore
+docs/ export-ignore
+.gitattributes export-ignore

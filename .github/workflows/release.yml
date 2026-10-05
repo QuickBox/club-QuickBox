@@ -1,0 +1,105 @@
+name: release
+
+on:
+  push:
+    branches:
+      - latest
+
+concurrency:
+  group: release-latest
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Compute, write, tag and publish the release
+        run: |
+          set -eu
+
+          tag_exists() { git ls-remote --tags origin "refs/tags/v$1" | grep -q .; }
+          release_exists() { gh release view "v$1" >/dev/null 2>&1; }
+
+          # Publish a version idempotently: create the tag and release, or only the
+          # release when the tag already exists from a half-finished earlier run.
+          publish() { # <ver> <target-sha>
+            local ver="$1" target="$2"
+            rel_sha="$target"
+            bash bin/check-version.sh consistency || { echo "::error::version mismatch; refusing to tag v$ver"; exit 1; }
+            if tag_exists "$ver"; then
+              if release_exists "$ver"; then echo "v$ver already released"; return 0; fi
+              echo "v$ver is tagged but has no release; creating it"
+              gh release create "v$ver" --title "club-QuickBox v$ver" --notes-file "changelogs/v$ver.md"
+              rel_sha=$(git rev-list -n1 "v$ver")
+            else
+              gh release create "v$ver" --target "$target" --title "club-QuickBox v$ver" --notes-file "changelogs/v$ver.md"
+            fi
+          }
+
+          V=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
+
+          # Skip only when this is the bot's own release commit AND the version is
+          # fully published. A stranded commit (no tag, or a tag with no release)
+          # falls through and is recovered below.
+          if [ "$(git log -1 --format='%an')" = "github-actions[bot]" ] \
+             && git log -1 --format='%s' | grep -q '^chore(release):' \
+             && tag_exists "$V" && release_exists "$V"; then
+            echo "v$V already tagged and released; nothing to do"
+            exit 0
+          fi
+
+          if [ -n "$V" ] && [ -f "changelogs/v$V.md" ] && ! { tag_exists "$V" && release_exists "$V"; }; then
+            # Prepared or recovery: a staged version that is not fully published.
+            if ! bash bin/stamp.sh --check; then
+              echo "::error::asset cache stamp is stale; not publishing v$V"
+              exit 1
+            fi
+            publish "$V" "$GITHUB_SHA"
+            ver="$V"; sha="$rel_sha"
+          else
+            # Generated: derive the version and changelog from the commits.
+            hl=""
+            [ -f release-notes/next.md ] && hl="--highlights release-notes/next.md"
+            set +e
+            # shellcheck disable=SC2086
+            bash bin/release.sh --ci $hl
+            rc=$?
+            set -e
+            if [ "$rc" = 3 ]; then
+              echo "nothing to release"
+              exit 0
+            fi
+            [ "$rc" = 0 ] || { echo "release generation failed (rc=$rc)"; exit 1; }
+            ver=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            [ -f release-notes/next.md ] && git rm -q release-notes/next.md
+            git add plugin.info init.js changelogs CHANGELOG.md
+            git commit -q -m "chore(release): v$ver"
+            git push origin "HEAD:latest"
+            publish "$ver" "$(git rev-parse HEAD)"
+            sha="$rel_sha"
+          fi
+
+          # Carry the released state back to the working branch.
+          git fetch origin development
+          git checkout -B development origin/development
+          if git merge --no-ff -m "Merge branch 'latest' into development" "$sha"; then
+            git push origin development
+            echo "back-merged v$ver into development"
+          else
+            conflicts=$(git diff --name-only --diff-filter=U | tr '\n' ' ')
+            git merge --abort
+            echo "::warning::back-merge of v$ver conflicts on: $conflicts (the release shipped; resolve the back-merge by hand)"
+            exit 0
+          fi
