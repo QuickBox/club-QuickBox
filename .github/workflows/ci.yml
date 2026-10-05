@@ -13,6 +13,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Verify the pushed commit messages are conventional
+        run: |
+          set -eu
+          zero=0000000000000000000000000000000000000000
+          if [ "${{ github.event_name }}" = pull_request ]; then
+            range="${{ github.event.pull_request.base.sha }}..${{ github.sha }}"
+          elif [ "${{ github.event.before }}" = "$zero" ]; then
+            if git fetch -q origin latest 2>/dev/null; then range="FETCH_HEAD..${{ github.sha }}"; else range="${{ github.sha }}"; fi
+          else
+            range="${{ github.event.before }}..${{ github.sha }}"
+          fi
+          echo "checking $range"
+          bash bin/check-version.sh messages "$range"
+
+      - name: Verify one consistent version across the sources
+        run: bash bin/check-version.sh consistency
 
       - name: Syntax-check the theme scripts
         run: |
@@ -32,3 +52,6 @@ jobs:
 
       - name: Self-test the stamp tool
         run: bash bin/stamp.sh --selftest
+
+      - name: Self-test the version guards
+        run: bash bin/check-version.sh --selftest

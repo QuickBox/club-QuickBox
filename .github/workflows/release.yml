@@ -44,6 +44,7 @@ jobs:
               echo "asset cache stamp is stale; not publishing v$V"
               exit 0
             fi
+            bash bin/check-version.sh consistency || { echo "version mismatch; refusing to tag"; exit 1; }
             ver="$V"
             sha="$GITHUB_SHA"
             gh release create "v$ver" --target "$sha" \
@@ -68,6 +69,7 @@ jobs:
             [ -f release-notes/next.md ] && git rm -q release-notes/next.md
             git add plugin.info init.js changelogs CHANGELOG.md
             git commit -q -m "chore(release): v$ver"
+            bash bin/check-version.sh consistency || { echo "version mismatch; refusing to tag"; exit 1; }
             git push origin "HEAD:latest"
             sha=$(git rev-parse HEAD)
             gh release create "v$ver" --target "$sha" \

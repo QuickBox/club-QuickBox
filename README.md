@@ -112,6 +112,8 @@ Want your language too? See [TRANSLATING.md](TRANSLATING.md) for how to add one 
 
 Versions are derived from the commit history and follow SemVer. A `feat` commit raises the minor version, a `fix`, `perf` or `refactor` raises the patch version, and a `!` marker or a `BREAKING CHANGE` body raises the major version.
 
+Commits must follow the conventional-commits format, because the commit type is what decides the next version.
+
 Every release has a dated note under `changelogs/`, and `CHANGELOG.md` is the aggregate of them all, newest first.
 
 To add a headline paragraph to the next release, write it to `release-notes/next.md`; it is folded into that version's note and removed when the release is cut.
