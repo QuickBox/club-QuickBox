@@ -19,14 +19,14 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "0a787f1708";
+	var CQB_REV = "6785d41ab2";
 	/* The released theme version (major.minor.patch). The release tool rewrites
 	 * this value; it is surfaced on window.cqb.version for About/diagnostics. */
 	var CQB_VERSION = "2.6.0";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
-	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
-	var JS_MODULES = ["topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "icons"];
+	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "about", "icons"];
+	var JS_MODULES = ["topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "about", "icons"];
 	var root = document.documentElement;
 	var variantListeners = [];
 	var jsModulesLoaded = false;
@@ -283,6 +283,10 @@
 	var cqb = {
 		path: plugin.path,
 		version: CQB_VERSION,
+		/* The content cache key for the theme's own asset URLs, so a module can
+		 * key its own same-origin fetches (e.g. the changelog files) the same way
+		 * the loader keys CSS/JS, and an update never serves a stale file. */
+		rev: CQB_REV,
 		/* Return a mask <span> that tints the named SVG glyph with --qb-icon.
 		 * Size/color come from inline style so it works without a stylesheet. */
 		icon: function (name) {
