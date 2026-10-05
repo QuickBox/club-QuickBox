@@ -1,0 +1,41 @@
+name: release
+
+on:
+  push:
+    branches:
+      - latest
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Publish a release when the version is new
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eu
+          version=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
+          tag="v$version"
+          notes="changelogs/$tag.md"
+          if git ls-remote --tags origin "refs/tags/$tag" | grep -q .; then
+            echo "tag $tag already exists; nothing to publish"
+            exit 0
+          fi
+          if [ ! -f "$notes" ]; then
+            echo "no $notes for version $version; nothing to publish"
+            exit 0
+          fi
+          if ! bash bin/stamp.sh --check; then
+            echo "asset cache stamp is stale; not publishing $tag"
+            exit 0
+          fi
+          gh release create "$tag" \
+            --target "$GITHUB_SHA" \
+            --title "club-QuickBox $tag" \
+            --notes-file "$notes"
