@@ -3,7 +3,7 @@
  *
  *  Loaded by init.js once theWebUI is ready. Runs in global scope with
  *  theDialogManager, theUILang, jQuery and window.cqb available. Three jobs,
- *  all reading from the theme's OWN repo so the skin stays portable on a stock
+ *  reading from the theme's OWN repo so the skin stays portable on a stock
  *  ruTorrent with no QuickBox present:
  *    1. show the installed theme version + a "What's new" link in the core
  *       Help dialog (the one the Help button opens);
@@ -15,6 +15,12 @@
  *       single fixed raw.githubusercontent URL with no credentials, deferred
  *       until idle and never blocking render. Any failure degrades silently to
  *       the bundled changelogs.
+ *
+ *  A known update shows a quiet dot on the Help button, an "Update vX.Y.Z" pill
+ *  beside it, and a one-time toast per version. On QuickBox (the qb_theme
+ *  cookie is present) the dashboard reports the latest version first and, for
+ *  an admin, runs the update from the toast or the update card; a stock
+ *  ruTorrent never sends a dashboard request.
  *
  *  The one opener window.cqb.openWhatsNew is shared by the Help-dialog link and
  *  the command palette, so there is a single entry point and no new nav item.
@@ -186,8 +192,14 @@
 		try { window.localStorage.setItem(CACHE_KEY, JSON.stringify(o)); } catch (e) { /* storage unavailable */ }
 	}
 
-	/* The known newer release, or null when the newest seen is not ahead of us. */
+	/* The known newer release, or null when the newest seen is not ahead of us.
+	 * When the dashboard answered, its latest version decides; the notes still
+	 * come from the theme's own changelog file for that version. */
 	function knownUpdate() {
+		if (dash) {
+			if (!dash.updateAvailable || !isNewer(dash.latest, VERSION)) return null;
+			return { version: dash.latest, file: "changelogs/v" + dash.latest + ".md" };
+		}
 		if (updateInfo && updateInfo.version && isNewer(updateInfo.version, VERSION)) return updateInfo;
 		return null;
 	}
@@ -197,7 +209,7 @@
 	}
 	function applyResult(version, file) {
 		updateInfo = (version && file) ? { version: version, file: file } : null;
-		markUpdateDot();
+		refreshUpdateUi();
 	}
 
 	function defer(fn) {
@@ -239,6 +251,270 @@
 			return;
 		}
 		defer(doRemoteCheck);
+	}
+
+	/* ============================================================
+	 * Dashboard status + update (QuickBox only). The qb_theme cookie is the
+	 * QuickBox signal; without it no /api request is ever made, so a stock
+	 * ruTorrent keeps the GitHub check above. Any dashboard error (signed out,
+	 * no such route, offline) falls back to that check silently.
+	 * ============================================================ */
+	var API_STATUS = "/api/apps/rutorrent/theme";
+	var API_UPDATE = "/api/apps/rutorrent/theme/update";
+	/* The job status URL comes from the dashboard; only a same-origin /api path
+	 * is ever polled. */
+	var STATUS_URL_RE = /^\/api\/[A-Za-z0-9._~\/-]+(\?[A-Za-z0-9._~=&%-]*)?$/;
+	var API_TIMEOUT = 8000;
+	var POLL_MS = 2000;
+	var POLL_LIMIT = 300000; // stop polling after 5 minutes
+	var dash = null; // { latest, updateAvailable, canUpdate } once the dashboard answers
+
+	function onQuickBox() { return /(?:^|;\s*)qb_theme=/.test(document.cookie || ""); }
+
+	/* Every dashboard request goes through here, so the request headers live in
+	 * one place. Resolves with the response's data object; rejects with the HTTP
+	 * status, or 0 on a network failure, timeout or a body that is not
+	 * { ok: true, data }. */
+	function dashRequest(method, path) {
+		if (typeof fetch !== "function") return Promise.reject(0);
+		var ctrl = (typeof AbortController === "function") ? new AbortController() : null;
+		var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) { /* ignore */ } }, API_TIMEOUT) : null;
+		function done() { if (timer) { clearTimeout(timer); timer = null; } }
+		var headers = { "Accept": "application/json" };
+		return fetch(path, {
+			method: method,
+			credentials: "same-origin",
+			cache: "no-store",
+			headers: headers,
+			signal: ctrl ? ctrl.signal : undefined
+		}).then(function (r) {
+			if (!r.ok) throw r.status;
+			return r.json();
+		}).then(function (j) {
+			done();
+			if (!j || j.ok !== true || !j.data || typeof j.data !== "object") throw 0;
+			return j.data;
+		}, function (err) {
+			done();
+			throw (typeof err === "number") ? err : 0;
+		});
+	}
+
+	function canUpdateNow() { return !!(dash && dash.canUpdate && knownUpdate()); }
+
+	/* QuickBox: ask the dashboard first; on any failure run the GitHub check. */
+	function startCheck() {
+		if (!onQuickBox()) { scheduleCheck(); return; }
+		defer(function () {
+			dashRequest("GET", API_STATUS).then(function (d) {
+				if (typeof d.latest !== "string" || !VER_RE.test(d.latest)) throw 0;
+				dash = { latest: d.latest, updateAvailable: d.updateAvailable === true, canUpdate: d.canUpdate === true };
+				refreshUpdateUi();
+			}).catch(function () { scheduleCheck(); });
+		});
+	}
+
+	/* ============================================================
+	 * Update job: start once, poll the status URL every 2 s for up to 5 min,
+	 * reload on success. job.state is idle | starting | queued | running |
+	 * succeeded | failed | timeout.
+	 * ============================================================ */
+	var job = { state: "idle", message: "" };
+	var jobUi = null; // { btn, status } of the rendered update card
+
+	function jobBusy() { return job.state === "starting" || job.state === "queued" || job.state === "running" || job.state === "succeeded"; }
+
+	function setJob(state, message) {
+		job = { state: state, message: message ? String(message).slice(0, 300) : "" };
+		renderJob();
+	}
+
+	function startUpdate() {
+		if (jobBusy() || !canUpdateNow()) return;
+		setJob("starting");
+		dashRequest("POST", API_UPDATE).then(function (d) {
+			var url = d.statusUrl;
+			if (typeof url !== "string" || !STATUS_URL_RE.test(url) || url.indexOf("..") !== -1) throw 0;
+			pollJob(url, Date.now() + POLL_LIMIT);
+		}).catch(function () { setJob("failed"); });
+	}
+
+	function pollJob(url, deadline) {
+		function next() {
+			if (Date.now() + POLL_MS > deadline) { setJob("timeout"); return; }
+			setTimeout(function () { pollJob(url, deadline); }, POLL_MS);
+		}
+		dashRequest("GET", url).then(function (d) {
+			if (d.status === "succeeded") {
+				setJob("succeeded");
+				setTimeout(function () { window.location.reload(); }, 1200);
+				return;
+			}
+			if (d.status === "failed") { setJob("failed", typeof d.message === "string" ? d.message : ""); return; }
+			setJob(d.status === "queued" ? "queued" : "running");
+			next();
+		}, function (err) {
+			/* A client error means the job is gone or access was lost; anything
+			 * else (offline, timeout, a restart) is retried until the deadline. */
+			if (typeof err === "number" && err >= 400 && err < 500) { setJob("failed"); return; }
+			next();
+		});
+	}
+
+	/* Paint the job state into the update card, when it is rendered. The button
+	 * stays focusable while busy (aria-disabled, not disabled), so keyboard
+	 * focus is never dropped mid-update. */
+	function renderJob() {
+		if (!jobUi) return;
+		var busy = jobBusy();
+		jobUi.btn.setAttribute("aria-disabled", busy ? "true" : "false");
+		jobUi.btn.textContent = busy ? t("cqb_upd_busy", "Updating…") : t("cqb_upd_now", "Update now");
+		var st = jobUi.status;
+		var text = "";
+		if (job.state === "starting" || job.state === "queued") text = t("cqb_upd_queued", "Update queued…");
+		else if (job.state === "running") text = t("cqb_upd_running", "Updating club-QuickBox…");
+		else if (job.state === "succeeded") text = t("cqb_upd_done", "Updated. Reloading…");
+		else if (job.state === "failed") text = t("cqb_upd_failed", "The update did not finish. You can run the command below instead.");
+		else if (job.state === "timeout") text = t("cqb_upd_timeout", "The update is taking longer than expected. Reload later to check, or run the command below.");
+		st.textContent = text;
+		st.classList.toggle("is-busy", busy && job.state !== "succeeded");
+		st.classList.toggle("is-error", job.state === "failed" || job.state === "timeout");
+		st.hidden = !text;
+		if (jobUi.detail) {
+			jobUi.detail.textContent = (job.state === "failed" && job.message) ? job.message : "";
+			jobUi.detail.hidden = !jobUi.detail.textContent;
+		}
+	}
+
+	/* ============================================================
+	 * Top-bar pill: "Update vX.Y.Z" just left of Help, only while an update is
+	 * known. It opens What's new at the update card.
+	 * ============================================================ */
+	var pill = null;
+	var barWait = 0;
+
+	function syncPill() {
+		var upd = knownUpdate();
+		var help = document.getElementById("mnu_help");
+		if (!upd || !help || !help.parentNode) {
+			if (pill && pill.parentNode) pill.parentNode.removeChild(pill);
+			return;
+		}
+		/* The topbar module rebuilds the right cluster once; wait for it (bounded)
+		 * so the pill is placed into the final bar, not the core one. */
+		if (!window.cqbTopbarInit && barWait < 20) {
+			barWait++;
+			setTimeout(syncPill, 250);
+			return;
+		}
+		if (!pill) {
+			pill = document.createElement("button");
+			pill.type = "button";
+			pill.className = "cqb-upd-pill";
+			pill.appendChild(document.createElement("span")).className = "cqb-upd-pill-dot";
+			var word = document.createElement("span");
+			word.className = "cqb-upd-pill-word";
+			word.textContent = t("cqb_upd_pill", "Update");
+			pill.appendChild(word);
+			pill.appendChild(document.createElement("span")).className = "cqb-upd-pill-ver";
+			pill.addEventListener("click", function () { cqb.openWhatsNew({ focusUpdate: true }); });
+		}
+		var ver = "v" + upd.version;
+		pill.querySelector(".cqb-upd-pill-ver").textContent = ver;
+		/* The word hides on narrow bars, so the accessible name carries both. */
+		pill.setAttribute("aria-label", t("cqb_upd_pill", "Update") + " " + ver);
+		cqb.tooltip(pill, t("cqb_wn_update", "Update available: v{version}").replace("{version}", upd.version));
+		if (pill.parentNode !== help.parentNode || pill.nextSibling !== help) help.parentNode.insertBefore(pill, help);
+	}
+
+	/* ============================================================
+	 * One-time toast per new version. The seen version is stored before the
+	 * toast shows; with storage unavailable the toast is skipped (the pill and
+	 * the dot still show) so it never repeats on every load.
+	 * ============================================================ */
+	var TOAST_KEY = "cqb-update-toast";
+	var toast = null;
+
+	function closeToast() {
+		if (toast && toast.parentNode) toast.parentNode.removeChild(toast);
+		toast = null;
+	}
+
+	function maybeToast() {
+		var upd = knownUpdate();
+		if (!upd || toast || !document.body) return;
+		try {
+			if (window.localStorage.getItem(TOAST_KEY) === upd.version) return;
+			window.localStorage.setItem(TOAST_KEY, upd.version);
+		} catch (e) { return; }
+		showToast(upd);
+	}
+
+	function toastButton(label, primary, onClick) {
+		var b = document.createElement("button");
+		b.type = "button";
+		b.className = "cqb-upd-act" + (primary ? " cqb-upd-act-primary" : "");
+		b.textContent = label;
+		b.addEventListener("click", onClick);
+		return b;
+	}
+
+	function showToast(upd) {
+		toast = document.createElement("div");
+		toast.className = "cqb-upd-toast";
+		toast.setAttribute("role", "region");
+		toast.setAttribute("aria-label", t("cqb_wn_update", "Update available: v{version}").replace("{version}", upd.version));
+		toast.appendChild(document.createElement("span")).className = "cqb-upd-toast-dot";
+		var main = document.createElement("div");
+		main.className = "cqb-upd-toast-main";
+		/* The live region exists before its text lands, so it is announced. */
+		var live = document.createElement("div");
+		live.className = "cqb-upd-toast-text";
+		live.setAttribute("role", "status");
+		main.appendChild(live);
+		var actions = document.createElement("div");
+		actions.className = "cqb-upd-toast-actions";
+		actions.appendChild(toastButton(t("cqb_wn_link", "What's new"), !canUpdateNow(), function () {
+			closeToast();
+			cqb.openWhatsNew({ focusUpdate: true });
+		}));
+		if (canUpdateNow()) {
+			actions.appendChild(toastButton(t("cqb_upd_go", "Update"), true, function () {
+				closeToast();
+				cqb.openWhatsNew({ focusUpdate: true });
+				startUpdate();
+			}));
+		}
+		main.appendChild(actions);
+		toast.appendChild(main);
+		var close = document.createElement("button");
+		close.type = "button";
+		close.className = "cqb-upd-toast-close";
+		cqb.tooltip(close, t("cqb_upd_dismiss", "Dismiss"));
+		close.addEventListener("click", closeToast);
+		toast.appendChild(close);
+		toast.addEventListener("keydown", function (e) {
+			if (e.key === "Escape" || e.keyCode === 27) { e.stopPropagation(); closeToast(); }
+		});
+		document.body.appendChild(toast);
+		setTimeout(function () {
+			if (!toast) return;
+			var title = document.createElement("div");
+			title.className = "cqb-upd-toast-title";
+			title.textContent = t("cqb_wn_update", "Update available: v{version}").replace("{version}", upd.version);
+			var body = document.createElement("div");
+			body.className = "cqb-upd-toast-body";
+			body.textContent = t("cqb_upd_current", "You are running v{version}.").replace("{version}", VERSION);
+			live.appendChild(title);
+			live.appendChild(body);
+		}, 60);
+	}
+
+	/* Dot, pill and toast all follow the one known-update state. */
+	function refreshUpdateUi() {
+		markUpdateDot();
+		syncPill();
+		maybeToast();
 	}
 
 	/* ============================================================
@@ -308,6 +584,25 @@
 		label.textContent = t("cqb_wn_update", "Update available: v{version}").replace("{version}", version);
 		head.appendChild(label);
 		sec.appendChild(head);
+		jobUi = null;
+		if (canUpdateNow()) {
+			/* QuickBox admin: one-click update, with its progress under the head.
+			 * The command lines below stay as the fallback. */
+			var btn = document.createElement("button");
+			btn.type = "button";
+			btn.className = "cqb-primary cqb-wn-update-now";
+			btn.addEventListener("click", startUpdate);
+			head.appendChild(btn);
+			var status = document.createElement("p");
+			status.className = "cqb-wn-p cqb-wn-job";
+			status.setAttribute("role", "status");
+			sec.appendChild(status);
+			var detail = document.createElement("p");
+			detail.className = "cqb-wn-p cqb-wn-job-detail";
+			sec.appendChild(detail);
+			jobUi = { btn: btn, status: status, detail: detail };
+			renderJob();
+		}
 		sec.appendChild(lineWithCmd(t("cqb_wn_update_qb", "QuickBox Pro: run {cmd} as an admin."), "qb update rutorrent -u <username>"));
 		sec.appendChild(lineWithCmd(t("cqb_wn_update_manual", "Manual install: run {cmd} in the theme folder."), "git pull"));
 		var slot = document.createElement("div");
@@ -373,6 +668,7 @@
 	function renderDialog() {
 		if (!wnBody) return;
 		wnBody.textContent = "";
+		jobUi = null;
 		var upd = knownUpdate();
 		if (upd) {
 			var built = buildUpdateSection(upd.version);
@@ -385,13 +681,21 @@
 		renderLocalChangelogs(local);
 	}
 
-	/* The one shared opener: the Help-dialog link and the palette both call it. */
-	cqb.openWhatsNew = function () {
+	/* The one shared opener: the Help-dialog link, the palette, the top-bar pill
+	 * and the toast all call it. { focusUpdate: true } lands on the update card
+	 * (scrolled to the top and focused) when one is shown. */
+	cqb.openWhatsNew = function (opts) {
 		if (!ensureDialog()) return;
 		if (!wnBody) wnBody = document.querySelector("#cqbWhatsNew .cqb-wn-body");
 		renderDialog();
 		try { theDialogManager.show("cqbWhatsNew"); } catch (e) { /* show is best-effort */ }
 		recenter();
+		var card = (opts && opts.focusUpdate && wnBody) ? wnBody.querySelector(".cqb-wn-update") : null;
+		if (card) {
+			wnBody.scrollTop = 0;
+			card.setAttribute("tabindex", "-1");
+			try { card.focus({ preventScroll: true }); } catch (e) { /* focus is best-effort */ }
+		}
 	};
 
 	/* ============================================================
@@ -435,5 +739,5 @@
 	}
 
 	decorateHelpWhenReady();
-	scheduleCheck();
+	startCheck();
 })(window.cqb);

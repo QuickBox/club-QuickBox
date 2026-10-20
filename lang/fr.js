@@ -271,3 +271,16 @@ theUILang.cqb_wn_update_qb     = "QuickBox Pro : exécutez {cmd} en tant qu'admi
 theUILang.cqb_wn_update_manual = "Installation manuelle : exécutez {cmd} dans le dossier du thème.";
 theUILang.cqb_wn_none          = "Pas encore de notes de version.";
 theUILang.qbPalHelp            = "Aide";
+
+/* Update pill, toast and Update now (js/about.js). */
+theUILang.cqb_upd_pill    = "Update";
+theUILang.cqb_upd_current = "You are running v{version}.";
+theUILang.cqb_upd_go      = "Update";
+theUILang.cqb_upd_dismiss = "Dismiss";
+theUILang.cqb_upd_now     = "Update now";
+theUILang.cqb_upd_busy    = "Updating…";
+theUILang.cqb_upd_queued  = "Update queued…";
+theUILang.cqb_upd_running = "Updating club-QuickBox…";
+theUILang.cqb_upd_done    = "Updated. Reloading…";
+theUILang.cqb_upd_failed  = "The update did not finish. You can run the command below instead.";
+theUILang.cqb_upd_timeout = "The update is taking longer than expected. Reload later to check, or run the command below.";

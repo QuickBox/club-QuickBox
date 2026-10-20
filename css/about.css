@@ -3,9 +3,10 @@
  *
  *  The version line + What's new link appended to the core Help dialog, the
  *  What's new dialog body (built on the shared .dlg-window chrome in
- *  dialogs.css), the update-available callout, and the quiet dot on the Help
- *  button. Every colour is a --qb-* token; radii use the shared tokens. The
- *  dialog body caps its height and scrolls so a long changelog never pushes the
+ *  dialogs.css), the update-available callout with its Update now progress,
+ *  the quiet dot on the Help button, the top-bar update pill and the one-time
+ *  update toast. Every colour is a --qb-* token; radii use the shared tokens.
+ *  The dialog body caps its height and scrolls so a long changelog never pushes the
  *  window off screen. All relative asset urls are ../images (one dir deeper
  *  than style.css), per the module convention.
  */
@@ -181,4 +182,257 @@
 	background-color: var(--qb-primary);
 	box-shadow: 0 0 0 2px var(--qb-surface);
 	pointer-events: none;
+}
+
+/* ============================================================
+ * Update now (QuickBox admin): a compact primary in the card head, with the
+ * job progress line under it. The base button chrome is .dlg-window button.
+ * ============================================================ */
+#cqbWhatsNew .cqb-wn-update:focus {
+	outline: none;
+}
+#cqbWhatsNew .cqb-wn-update:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 2px;
+}
+
+#cqbWhatsNew .cqb-wn-update-head .cqb-wn-update-now {
+	margin-left: auto;
+	min-width: 0;
+	min-height: 30px;
+	padding: 0 12px;
+	font-size: 12.5px;
+}
+
+/* Busy keeps focus (aria-disabled, not disabled) but reads as inert. */
+#cqbWhatsNew .cqb-wn-update-now[aria-disabled="true"],
+#cqbWhatsNew .cqb-wn-update-now[aria-disabled="true"]:hover {
+	background: var(--qb-muted, var(--qb-surface-2));
+	border-color: var(--qb-border);
+	color: var(--qb-fg-muted);
+	cursor: progress;
+	filter: none;
+}
+
+#cqbWhatsNew .cqb-wn-job {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+}
+#cqbWhatsNew .cqb-wn-job[hidden],
+#cqbWhatsNew .cqb-wn-job-detail[hidden] {
+	display: none;
+}
+#cqbWhatsNew .cqb-wn-job.is-error {
+	color: var(--qb-destructive-text, var(--qb-destructive));
+}
+
+/* Only an in-flight job animates; reduced motion keeps a static ring. */
+#cqbWhatsNew .cqb-wn-job.is-busy::before {
+	content: "";
+	flex: none;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	border: 2px solid color-mix(in srgb, var(--qb-primary) 30%, transparent);
+	border-top-color: var(--qb-primary);
+	animation: cqb-upd-spin 0.8s linear infinite;
+}
+
+#cqbWhatsNew .cqb-wn-job-detail {
+	color: var(--qb-fg-muted);
+	overflow-wrap: anywhere;
+}
+
+@keyframes cqb-upd-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+ * Top-bar update pill -- just left of Help, only while an update is known.
+ * A primary-tinted pill (the Add action owns the filled primary).
+ * ============================================================ */
+#t .cqb-upd-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	flex: none;
+	height: 28px;
+	margin: 0 2px;
+	padding: 0 11px 0 9px;
+	border: 1px solid color-mix(in srgb, var(--qb-primary) 45%, var(--qb-border));
+	border-radius: 999px;
+	background-color: color-mix(in srgb, var(--qb-primary) 14%, transparent);
+	color: var(--qb-primary-text, var(--qb-primary));
+	font-family: var(--qb-font);
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s ease-out;
+}
+#t .cqb-upd-pill:hover {
+	background-color: color-mix(in srgb, var(--qb-primary) 22%, transparent);
+}
+#t .cqb-upd-pill:focus {
+	outline: none;
+}
+#t .cqb-upd-pill:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+#t .cqb-upd-pill-dot {
+	width: 7px;
+	height: 7px;
+	flex: none;
+	border-radius: 50%;
+	background-color: var(--qb-primary);
+}
+
+#t .cqb-upd-pill-ver {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Narrow bars keep the dot + version; the accessible name keeps the word. */
+@media (max-width: 1500px) {
+	#t .cqb-upd-pill-word {
+		display: none;
+	}
+	#t .cqb-upd-pill {
+		padding: 0 10px 0 8px;
+	}
+}
+
+/* ============================================================
+ * One-time update toast -- top right under the bar (the noty toasts own the
+ * bottom-right corner), below every dialog (the core stacks dialogs from 2000).
+ * ============================================================ */
+.cqb-upd-toast {
+	position: fixed;
+	top: calc(var(--navbar-height, 56px) + 10px);
+	right: 16px;
+	z-index: 1100;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	width: min(340px, calc(100vw - 32px));
+	padding: 12px 36px 12px 14px;
+	background-color: var(--qb-surface);
+	border: 1px solid color-mix(in srgb, var(--qb-primary) 32%, var(--qb-border));
+	border-radius: var(--qb-radius-lg, var(--qb-radius));
+	box-shadow: var(--qb-shadow);
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	box-sizing: border-box;
+}
+
+.cqb-upd-toast-dot {
+	width: 8px;
+	height: 8px;
+	flex: none;
+	margin-top: 5px;
+	border-radius: 50%;
+	background-color: var(--qb-primary);
+}
+
+.cqb-upd-toast-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.cqb-upd-toast-title {
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.4;
+}
+
+.cqb-upd-toast-body {
+	margin-top: 2px;
+	font-size: 12.5px;
+	line-height: 1.45;
+	color: var(--qb-fg-muted);
+}
+
+.cqb-upd-toast-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+
+.cqb-upd-act {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 30px;
+	margin: 0;
+	padding: 0 12px;
+	border: 1px solid var(--qb-border);
+	border-radius: var(--qb-radius);
+	background: transparent;
+	color: var(--qb-foreground);
+	font-family: var(--qb-font);
+	font-size: 12.5px;
+	font-weight: 500;
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color 0.15s ease, filter 0.15s ease;
+}
+.cqb-upd-act:hover {
+	background: var(--qb-muted, var(--qb-surface-2));
+}
+.cqb-upd-act.cqb-upd-act-primary {
+	background: var(--qb-primary);
+	border-color: var(--qb-primary);
+	color: var(--qb-primary-fg);
+	font-weight: 600;
+}
+.cqb-upd-act.cqb-upd-act-primary:hover {
+	filter: brightness(1.08);
+}
+
+.cqb-upd-toast-close {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: var(--qb-radius);
+	background-color: transparent;
+	cursor: pointer;
+}
+.cqb-upd-toast-close::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-color: var(--qb-fg-muted);
+	-webkit-mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
+	transition: background-color 0.15s ease;
+}
+.cqb-upd-toast-close:hover::before {
+	background-color: var(--qb-foreground);
+}
+
+.cqb-upd-act:focus-visible,
+.cqb-upd-toast-close:focus-visible {
+	outline: 2px solid var(--qb-ring);
+	outline-offset: 1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#cqbWhatsNew .cqb-wn-job.is-busy::before {
+		animation: none;
+	}
+	#t .cqb-upd-pill,
+	.cqb-upd-act,
+	.cqb-upd-toast-close::before {
+		transition: none;
+	}
 }

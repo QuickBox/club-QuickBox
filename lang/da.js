@@ -271,3 +271,16 @@ theUILang.cqb_wn_update_qb     = "QuickBox Pro: kør {cmd} som administrator.";
 theUILang.cqb_wn_update_manual = "Manuel installation: kør {cmd} i tema-mappen.";
 theUILang.cqb_wn_none          = "Ingen udgivelsesnoter endnu.";
 theUILang.qbPalHelp            = "Hjælp";
+
+/* Update pill, toast and Update now (js/about.js). */
+theUILang.cqb_upd_pill    = "Update";
+theUILang.cqb_upd_current = "You are running v{version}.";
+theUILang.cqb_upd_go      = "Update";
+theUILang.cqb_upd_dismiss = "Dismiss";
+theUILang.cqb_upd_now     = "Update now";
+theUILang.cqb_upd_busy    = "Updating…";
+theUILang.cqb_upd_queued  = "Update queued…";
+theUILang.cqb_upd_running = "Updating club-QuickBox…";
+theUILang.cqb_upd_done    = "Updated. Reloading…";
+theUILang.cqb_upd_failed  = "The update did not finish. You can run the command below instead.";
+theUILang.cqb_upd_timeout = "The update is taking longer than expected. Reload later to check, or run the command below.";
