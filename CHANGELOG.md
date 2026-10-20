@@ -2,6 +2,12 @@
 
 Release notes for the club-QuickBox ruTorrent skin, newest first.
 
+## v2.6.1 (2026-10-20)
+
+### Fixed
+
+- Send label icon upload, delete and probe to the tracklabels endpoint
+
 ## v2.6.0 (2026-10-05)
 
 club-QuickBox v2.6.0 is a ground-up modernization of the skin, rebuilt around a shared design system that mirrors the QuickBox dashboard. It ships four color variants, Spectre, Smoked, Reel and Light, plus an Auto mode that follows your dashboard theme and switches with it, and reskins every surface of ruTorrent: a new top app bar and sidebar, a reworked torrent table and details drawer, redesigned dialogs, and a grouped, filterable Settings layout in one scroll region. New tools include a Ctrl K command palette, drag and drop to add torrents, a Chunks completion heatmap, smart label icons with a searchable picker, themed popover dropdowns, and a Media Info reader. The skin is translated into seven languages, follows the language you pick in ruTorrent, and carries a content cache key so an update never leaves your browser serving stale files.
