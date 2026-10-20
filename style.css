@@ -24,6 +24,9 @@
 	--qb-primary: #26ae7f;
 	--qb-primary-fg: #060818;
 	--qb-primary-text: #26ae7f;
+	/* Primary hover fill: moves AWAY from --qb-primary-fg (lighter under a dark
+	 * label, darker under a light one) so the label keeps its contrast. */
+	--qb-primary-hover: color-mix(in srgb, var(--qb-primary) 88%, white);
 	--qb-accent: #2aebcb;
 	--qb-accent-fg: #060818;
 	--qb-accent-text: #2aebcb;
@@ -71,6 +74,7 @@
 	--qb-primary: #f0a500;
 	--qb-primary-fg: #181614;
 	--qb-primary-text: #f0a500;
+	--qb-primary-hover: color-mix(in srgb, var(--qb-primary) 88%, white);
 	--qb-accent: #483d2c;
 	--qb-accent-fg: #e3e0db;
 	--qb-accent-text: #e8c582;
@@ -116,6 +120,7 @@
 	--qb-primary: #4361ee;
 	--qb-primary-fg: #fafafa;
 	--qb-primary-text: #60a5fa;
+	--qb-primary-hover: color-mix(in srgb, var(--qb-primary) 88%, black);
 	--qb-accent: #2aebcb;
 	--qb-accent-fg: #161c23;
 	--qb-accent-text: #2aebcb;
@@ -164,6 +169,7 @@
 	--qb-primary: #4361ee;
 	--qb-primary-fg: #ffffff;
 	--qb-primary-text: #1d4ed8;
+	--qb-primary-hover: color-mix(in srgb, var(--qb-primary) 88%, black);
 	--qb-accent: #0d6efd;
 	--qb-accent-fg: #ffffff;
 	--qb-accent-text: #0a58ca;

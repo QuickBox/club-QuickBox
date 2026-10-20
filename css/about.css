@@ -123,6 +123,16 @@
 	white-space: nowrap;
 }
 
+/* In the dialog a command may be longer than a narrow body: let the chip wrap
+ * at its spaces (then anywhere), each line fragment keeping its own padding
+ * and border. Short chips still sit on one line. */
+#cqbWhatsNew .cqb-wn-code {
+	white-space: normal;
+	overflow-wrap: anywhere;
+	-webkit-box-decoration-break: clone;
+	box-decoration-break: clone;
+}
+
 #cqbWhatsNew .cqb-wn-empty {
 	margin: 8px 0;
 	font-size: 12.5px;
@@ -253,12 +263,17 @@
  * Top-bar update pill -- just left of Help, only while an update is known.
  * A primary-tinted pill (the Add action owns the filled primary).
  * ============================================================ */
+/* width/min-height undo the core button{width:80px} and the base button
+ * min-height, so the pill sizes to its label at every bar width. */
 #t .cqb-upd-pill {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
 	flex: none;
-	height: 28px;
+	width: auto;
+	min-width: 0;
+	height: 36px;
+	min-height: 0;
 	margin: 0 2px;
 	padding: 0 11px 0 9px;
 	border: 1px solid color-mix(in srgb, var(--qb-primary) 45%, var(--qb-border));
@@ -306,6 +321,15 @@
 	}
 }
 
+/* Below the topbar's desktop breakpoint the right cluster is one row of the
+ * open mobile menu with no slot to spare; the Help dot and the toast carry the
+ * notice there. */
+@media (max-width: 767.98px) {
+	#t .cqb-upd-pill {
+		display: none;
+	}
+}
+
 /* ============================================================
  * One-time update toast -- top right under the bar (the noty toasts own the
  * bottom-right corner), below every dialog (the core stacks dialogs from 2000).
@@ -319,7 +343,7 @@
 	align-items: flex-start;
 	gap: 10px;
 	width: min(340px, calc(100vw - 32px));
-	padding: 12px 36px 12px 14px;
+	padding: 12px 42px 12px 14px;
 	background-color: var(--qb-surface);
 	border: 1px solid color-mix(in srgb, var(--qb-primary) 32%, var(--qb-border));
 	border-radius: var(--qb-radius-lg, var(--qb-radius));
@@ -363,13 +387,16 @@
 	margin-top: 10px;
 }
 
+/* width/min-width undo the core button{width:80px}, so the label sets the size. */
 .cqb-upd-act {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	width: auto;
+	min-width: 0;
 	min-height: 30px;
 	margin: 0;
-	padding: 0 12px;
+	padding: 0 14px;
 	border: 1px solid var(--qb-border);
 	border-radius: var(--qb-radius);
 	background: transparent;
@@ -381,47 +408,41 @@
 	cursor: pointer;
 	transition: background-color 0.15s ease, filter 0.15s ease;
 }
-.cqb-upd-act:hover {
+/* :not(:disabled) lifts these above the generic button:hover/:active washes
+ * in base.css, which would otherwise repaint the fill and the label. */
+.cqb-upd-act:not(:disabled):hover,
+.cqb-upd-act:not(:disabled):active {
 	background: var(--qb-muted, var(--qb-surface-2));
+	color: var(--qb-foreground);
 }
-.cqb-upd-act.cqb-upd-act-primary {
+.cqb-upd-act.cqb-upd-act-primary,
+.cqb-upd-act.cqb-upd-act-primary:not(:disabled):active {
 	background: var(--qb-primary);
 	border-color: var(--qb-primary);
 	color: var(--qb-primary-fg);
 	font-weight: 600;
 }
-.cqb-upd-act.cqb-upd-act-primary:hover {
-	filter: brightness(1.08);
+.cqb-upd-act.cqb-upd-act-primary:not(:disabled):hover {
+	background: var(--qb-primary-hover, var(--qb-primary));
+	border-color: var(--qb-primary-hover, var(--qb-primary));
+	color: var(--qb-primary-fg);
 }
 
-.cqb-upd-toast-close {
+/* The close is the shared square .cqb-icon-btn--md (28px); this only pins it
+ * to the corner and names its glyph. */
+.cqb-upd-toast .cqb-upd-toast-close {
 	position: absolute;
-	top: 10px;
-	right: 10px;
-	width: 22px;
-	height: 22px;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	border-radius: var(--qb-radius);
-	background-color: transparent;
-	cursor: pointer;
+	top: 8px;
+	right: 8px;
 }
-.cqb-upd-toast-close::before {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background-color: var(--qb-fg-muted);
-	-webkit-mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
-	mask: url(../images/icons/menu-close.svg) center / 12px no-repeat;
-	transition: background-color 0.15s ease;
-}
-.cqb-upd-toast-close:hover::before {
-	background-color: var(--qb-foreground);
+.cqb-upd-toast-close > .cqb-icon {
+	-webkit-mask-image: url(../images/icons/menu-close.svg);
+	mask-image: url(../images/icons/menu-close.svg);
+	-webkit-mask-size: 12px;
+	mask-size: 12px;
 }
 
-.cqb-upd-act:focus-visible,
-.cqb-upd-toast-close:focus-visible {
+.cqb-upd-act:focus-visible {
 	outline: 2px solid var(--qb-ring);
 	outline-offset: 1px;
 }
@@ -431,8 +452,7 @@
 		animation: none;
 	}
 	#t .cqb-upd-pill,
-	.cqb-upd-act,
-	.cqb-upd-toast-close::before {
+	.cqb-upd-act {
 		transition: none;
 	}
 }

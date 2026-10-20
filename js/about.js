@@ -521,7 +521,8 @@
 		toast.appendChild(main);
 		var close = document.createElement("button");
 		close.type = "button";
-		close.className = "cqb-upd-toast-close";
+		close.className = "cqb-upd-toast-close cqb-icon-btn cqb-icon-btn--md";
+		close.appendChild(document.createElement("span")).className = "cqb-icon";
 		cqb.tooltip(close, t("cqb_upd_dismiss", "Dismiss"));
 		close.addEventListener("click", closeToast);
 		toast.appendChild(close);

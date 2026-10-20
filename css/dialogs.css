@@ -401,12 +401,28 @@ div.dlg-window > .cont {
 	font-weight: 600;
 }
 
+/* Hover, press and keyboard focus restate the label colour: the generic
+ * button:hover/:active washes in base.css outrank .cqb-primary and the submit
+ * input otherwise, and repaint the label in --qb-foreground. The hover fill is
+ * --qb-primary-hover (never a brightness filter, which also dims the label). */
 .dlg-window button.OK:not(:disabled):hover,
 .dlg-window input[type="submit"]:not(:disabled):hover,
 .dlg-window .cqb-primary:not(:disabled):hover {
+	background: var(--qb-primary-hover, var(--qb-primary));
+	border-color: var(--qb-primary-hover, var(--qb-primary));
+	color: var(--qb-primary-fg);
+	filter: none;
+}
+
+.dlg-window button.OK:not(:disabled):active,
+.dlg-window input[type="submit"]:not(:disabled):active,
+.dlg-window .cqb-primary:not(:disabled):active,
+.dlg-window button.OK:focus-visible,
+.dlg-window input[type="submit"]:focus-visible,
+.dlg-window .cqb-primary:focus-visible {
 	background: var(--qb-primary);
 	border-color: var(--qb-primary);
-	filter: brightness(1.08);
+	color: var(--qb-primary-fg);
 }
 
 .dlg-window button.Cancel,
@@ -1141,7 +1157,9 @@ ul.CMenu li ul li a.dis:hover {
 }
 
 .dlg-window button#tskCancel.cqb-primary:not(:disabled):hover {
-	filter: brightness(1.08);
+	background: var(--qb-primary-hover, var(--qb-primary));
+	border-color: var(--qb-primary-hover, var(--qb-primary));
+	filter: none;
 }
 
 /* Formatted|Raw segmented control, parked in the dialog header. */
@@ -1935,9 +1953,17 @@ div.dlg-window[id^="flm_popup_"][id^="flm_popup_"] {
 }
 
 [id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start:not(:disabled):hover {
+	background: color-mix(in srgb, var(--qb-destructive) 88%, black);
+	border-color: color-mix(in srgb, var(--qb-destructive) 88%, black);
+	color: var(--qb-destructive-fg);
+	filter: none;
+}
+
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start:not(:disabled):active,
+[id^="flm_popup_"]:has(.sprite-delete) .flm-diag-start:focus-visible {
 	background: var(--qb-destructive);
 	border-color: var(--qb-destructive);
-	filter: brightness(1.08);
+	color: var(--qb-destructive-fg);
 }
 
 .dlg-window .checklist {
