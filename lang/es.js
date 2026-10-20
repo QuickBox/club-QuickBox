@@ -273,15 +273,15 @@ theUILang.cqb_wn_none          = "Aún no hay notas de la versión.";
 theUILang.qbPalHelp            = "Ayuda";
 
 /* Update pill, toast and Update now (js/about.js). */
-theUILang.cqb_upd_pill    = "Update";
-theUILang.cqb_upd_current = "You are running v{version}.";
-theUILang.cqb_upd_go      = "Update";
-theUILang.cqb_upd_dismiss = "Dismiss";
-theUILang.cqb_upd_now     = "Update now";
-theUILang.cqb_upd_busy    = "Updating…";
-theUILang.cqb_upd_queued  = "Update queued…";
-theUILang.cqb_upd_running = "Updating club-QuickBox…";
-theUILang.cqb_upd_done    = "Updated. Reloading…";
-theUILang.cqb_upd_failed  = "The update did not finish. You can run the command below instead.";
-theUILang.cqb_upd_timeout = "The update is taking longer than expected. Reload later to check, or run the command below.";
-theUILang.cqb_upd_conflict = "Another ruTorrent task is running. Try again in a moment.";
+theUILang.cqb_upd_pill    = "Actualización";
+theUILang.cqb_upd_current = "Estás usando v{version}.";
+theUILang.cqb_upd_go      = "Actualizar";
+theUILang.cqb_upd_dismiss = "Descartar";
+theUILang.cqb_upd_now     = "Actualizar ahora";
+theUILang.cqb_upd_busy    = "Actualizando…";
+theUILang.cqb_upd_queued  = "Actualización en cola…";
+theUILang.cqb_upd_running = "Actualizando club-QuickBox…";
+theUILang.cqb_upd_done    = "Actualizado. Recargando…";
+theUILang.cqb_upd_failed  = "La actualización no terminó. Puedes ejecutar el comando de abajo en su lugar.";
+theUILang.cqb_upd_timeout = "La actualización tarda más de lo esperado. Recarga más tarde para comprobarlo o ejecuta el comando de abajo.";
+theUILang.cqb_upd_conflict = "Hay otra tarea de ruTorrent en ejecución. Inténtalo de nuevo en un momento.";

@@ -273,15 +273,15 @@ theUILang.cqb_wn_none          = "暂无发行说明。";
 theUILang.qbPalHelp            = "帮助";
 
 /* Update pill, toast and Update now (js/about.js). */
-theUILang.cqb_upd_pill    = "Update";
-theUILang.cqb_upd_current = "You are running v{version}.";
-theUILang.cqb_upd_go      = "Update";
-theUILang.cqb_upd_dismiss = "Dismiss";
-theUILang.cqb_upd_now     = "Update now";
-theUILang.cqb_upd_busy    = "Updating…";
-theUILang.cqb_upd_queued  = "Update queued…";
-theUILang.cqb_upd_running = "Updating club-QuickBox…";
-theUILang.cqb_upd_done    = "Updated. Reloading…";
-theUILang.cqb_upd_failed  = "The update did not finish. You can run the command below instead.";
-theUILang.cqb_upd_timeout = "The update is taking longer than expected. Reload later to check, or run the command below.";
-theUILang.cqb_upd_conflict = "Another ruTorrent task is running. Try again in a moment.";
+theUILang.cqb_upd_pill    = "更新";
+theUILang.cqb_upd_current = "当前运行版本：v{version}。";
+theUILang.cqb_upd_go      = "更新";
+theUILang.cqb_upd_dismiss = "关闭";
+theUILang.cqb_upd_now     = "立即更新";
+theUILang.cqb_upd_busy    = "正在更新…";
+theUILang.cqb_upd_queued  = "更新已排队…";
+theUILang.cqb_upd_running = "正在更新 club-QuickBox…";
+theUILang.cqb_upd_done    = "已更新。正在重新加载…";
+theUILang.cqb_upd_failed  = "更新未完成。您也可以改为运行下方的命令。";
+theUILang.cqb_upd_timeout = "更新耗时比预期更长。请稍后重新加载以查看，或运行下方的命令。";
+theUILang.cqb_upd_conflict = "另一个 ruTorrent 任务正在运行。请稍后重试。";
