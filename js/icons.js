@@ -19,6 +19,7 @@
 	var cqb = window.cqb || {};
 	var PATH = cqb.path || "";
 	var STORE_KEY = "webui.cqb.icons";
+	/* Bare relative to the ruTorrent page (like core plugin URLs) -- never prefix with PATH, which is the theme dir. */
 	var ACTION = "plugins/tracklabels/action.php";
 
 	function t(key, fallback) { return (window.theUILang && theUILang[key]) || fallback; }
@@ -177,7 +178,7 @@
 		});
 	}
 	function imageUrl(kind, name) {
-		return PATH + ACTION + "?" + (kind === "tracker" ? "tracker" : "label") + "=" + encodeURIComponent(name);
+		return ACTION + "?" + (kind === "tracker" ? "tracker" : "label") + "=" + encodeURIComponent(name);
 	}
 	function detectImage(kind, name) {
 		var key = kind + ":" + name;
