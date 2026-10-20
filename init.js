@@ -19,7 +19,7 @@
 	/* Cache key for every theme asset URL. The build tool rewrites the value
 	 * whenever a theme file changes, so a changed file always resolves to a new
 	 * URL and no stale copy is served from the browser cache. */
-	var CQB_REV = "2c7275c307";
+	var CQB_REV = "3a4f379575";
 	/* The released theme version (major.minor.patch). The release tool rewrites
 	 * this value; it is surfaced on window.cqb.version for About/diagnostics. */
 	var CQB_VERSION = "2.6.1";

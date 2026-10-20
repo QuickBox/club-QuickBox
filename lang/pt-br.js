@@ -284,3 +284,4 @@ theUILang.cqb_upd_running = "Updating club-QuickBox…";
 theUILang.cqb_upd_done    = "Updated. Reloading…";
 theUILang.cqb_upd_failed  = "The update did not finish. You can run the command below instead.";
 theUILang.cqb_upd_timeout = "The update is taking longer than expected. Reload later to check, or run the command below.";
+theUILang.cqb_upd_conflict = "Another ruTorrent task is running. Try again in a moment.";

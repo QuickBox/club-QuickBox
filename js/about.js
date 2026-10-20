@@ -271,16 +271,29 @@
 
 	function onQuickBox() { return /(?:^|;\s*)qb_theme=/.test(document.cookie || ""); }
 
+	/* The dashboard's CSRF token: the qb_csrf cookie, which the status GET sets
+	 * when it is missing. Empty when absent or undecodable. */
+	function csrfToken() {
+		var m = (document.cookie || "").match(/(?:^|;\s*)qb_csrf=([^;]*)/);
+		if (!m) return "";
+		try { return decodeURIComponent(m[1]); } catch (e) { return ""; }
+	}
+
 	/* Every dashboard request goes through here, so the request headers live in
-	 * one place. Resolves with the response's data object; rejects with the HTTP
-	 * status, or 0 on a network failure, timeout or a body that is not
-	 * { ok: true, data }. */
+	 * one place; a state-changing request carries the CSRF token. Resolves with
+	 * the response's data object; rejects with { status, message }, where status
+	 * is the HTTP status (0 on a network failure, timeout or a body that is not
+	 * { ok: true, data }) and message is the dashboard's own error text, if any. */
 	function dashRequest(method, path) {
-		if (typeof fetch !== "function") return Promise.reject(0);
+		if (typeof fetch !== "function") return Promise.reject({ status: 0, message: "" });
 		var ctrl = (typeof AbortController === "function") ? new AbortController() : null;
 		var timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) { /* ignore */ } }, API_TIMEOUT) : null;
 		function done() { if (timer) { clearTimeout(timer); timer = null; } }
 		var headers = { "Accept": "application/json" };
+		if (method !== "GET") {
+			var token = csrfToken();
+			if (token) headers["x-csrf-token"] = token;
+		}
 		return fetch(path, {
 			method: method,
 			credentials: "same-origin",
@@ -288,15 +301,20 @@
 			headers: headers,
 			signal: ctrl ? ctrl.signal : undefined
 		}).then(function (r) {
-			if (!r.ok) throw r.status;
+			if (!r.ok) {
+				/* Keep the dashboard's { ok: false, message } text when it sends one. */
+				return r.json().then(function (j) {
+					throw { status: r.status, message: (j && typeof j.message === "string") ? j.message : "" };
+				}, function () { throw { status: r.status, message: "" }; });
+			}
 			return r.json();
 		}).then(function (j) {
 			done();
-			if (!j || j.ok !== true || !j.data || typeof j.data !== "object") throw 0;
+			if (!j || j.ok !== true || !j.data || typeof j.data !== "object") throw { status: 0, message: "" };
 			return j.data;
 		}, function (err) {
 			done();
-			throw (typeof err === "number") ? err : 0;
+			throw (err && typeof err.status === "number") ? err : { status: 0, message: "" };
 		});
 	}
 
@@ -306,11 +324,16 @@
 	function startCheck() {
 		if (!onQuickBox()) { scheduleCheck(); return; }
 		defer(function () {
-			dashRequest("GET", API_STATUS).then(function (d) {
-				if (typeof d.latest !== "string" || !VER_RE.test(d.latest)) throw 0;
-				dash = { latest: d.latest, updateAvailable: d.updateAvailable === true, canUpdate: d.canUpdate === true };
-				refreshUpdateUi();
-			}).catch(function () { scheduleCheck(); });
+			fetchStatus().catch(function () { scheduleCheck(); });
+		});
+	}
+
+	/* One status read; also (re)sets the qb_csrf cookie on the dashboard side. */
+	function fetchStatus() {
+		return dashRequest("GET", API_STATUS).then(function (d) {
+			if (typeof d.latest !== "string" || !VER_RE.test(d.latest)) throw { status: 0, message: "" };
+			dash = { latest: d.latest, updateAvailable: d.updateAvailable === true, canUpdate: d.canUpdate === true };
+			refreshUpdateUi();
 		});
 	}
 
@@ -332,11 +355,20 @@
 	function startUpdate() {
 		if (jobBusy() || !canUpdateNow()) return;
 		setJob("starting");
-		dashRequest("POST", API_UPDATE).then(function (d) {
+		/* No CSRF cookie yet: one status read sets it, then the POST goes out. */
+		var ready = csrfToken() ? Promise.resolve() : fetchStatus().catch(function () { /* the POST reports the failure */ });
+		ready.then(function () {
+			return dashRequest("POST", API_UPDATE);
+		}).then(function (d) {
 			var url = d.statusUrl;
-			if (typeof url !== "string" || !STATUS_URL_RE.test(url) || url.indexOf("..") !== -1) throw 0;
+			if (typeof url !== "string" || !STATUS_URL_RE.test(url) || url.indexOf("..") !== -1) throw { status: 0, message: "" };
 			pollJob(url, Date.now() + POLL_LIMIT);
-		}).catch(function () { setJob("failed"); });
+		}).catch(function (err) {
+			/* 409: another ruTorrent job holds the lock; anything else keeps the
+			 * dashboard's own message (e.g. 400 when no update is pending). */
+			if (err && err.status === 409) setJob("failed", t("cqb_upd_conflict", "Another ruTorrent task is running. Try again in a moment."));
+			else setJob("failed", err && err.message);
+		});
 	}
 
 	function pollJob(url, deadline) {
@@ -356,7 +388,7 @@
 		}, function (err) {
 			/* A client error means the job is gone or access was lost; anything
 			 * else (offline, timeout, a restart) is retried until the deadline. */
-			if (typeof err === "number" && err >= 400 && err < 500) { setJob("failed"); return; }
+			if (err && err.status >= 400 && err.status < 500) { setJob("failed", err.message); return; }
 			next();
 		});
 	}
@@ -603,7 +635,7 @@
 			jobUi = { btn: btn, status: status, detail: detail };
 			renderJob();
 		}
-		sec.appendChild(lineWithCmd(t("cqb_wn_update_qb", "QuickBox Pro: run {cmd} as an admin."), "qb update rutorrent -u <username>"));
+		sec.appendChild(lineWithCmd(t("cqb_wn_update_qb", "QuickBox Pro: run {cmd} as an admin."), "qb update rutorrent -u <username> --theme"));
 		sec.appendChild(lineWithCmd(t("cqb_wn_update_manual", "Manual install: run {cmd} in the theme folder."), "git pull"));
 		var slot = document.createElement("div");
 		slot.className = "cqb-wn-remote";
