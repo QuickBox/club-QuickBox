@@ -101,6 +101,24 @@
 	 * textContent / createTextNode, so fetched notes can never inject markup.
 	 * ============================================================ */
 
+	/* An inline <code> chip. Each space-separated word is its own no-wrap span
+	 * and the spaces stay real text nodes, so a long command breaks only between
+	 * words (never inside a flag like -u) and a copied command is exact. */
+	function codeChip(text) {
+		var code = document.createElement("code");
+		code.className = "cqb-wn-code";
+		var parts = String(text).split(/( +)/);
+		for (var i = 0; i < parts.length; i++) {
+			if (!parts[i]) continue;
+			if (i % 2 === 1) { code.appendChild(document.createTextNode(parts[i])); continue; }
+			var w = document.createElement("span");
+			w.className = "cqb-wn-code-word";
+			w.textContent = parts[i];
+			code.appendChild(w);
+		}
+		return code;
+	}
+
 	/* Inline: strip markdown links to their label text, then split on backticks
 	 * so `code` spans become <code>. An unterminated backtick is kept literal. */
 	function renderInline(parent, text) {
@@ -112,10 +130,7 @@
 			if (inCode && unterminated && i === parts.length - 1) {
 				parent.appendChild(document.createTextNode("`" + parts[i]));
 			} else if (inCode) {
-				var code = document.createElement("code");
-				code.className = "cqb-wn-code";
-				code.textContent = parts[i];
-				parent.appendChild(code);
+				parent.appendChild(codeChip(parts[i]));
 			} else if (parts[i]) {
 				parent.appendChild(document.createTextNode(parts[i]));
 			}
@@ -598,10 +613,7 @@
 		if (idx === -1) { p.textContent = template; return p; }
 		var before = template.slice(0, idx), after = template.slice(idx + 5);
 		if (before) p.appendChild(document.createTextNode(before));
-		var code = document.createElement("code");
-		code.className = "cqb-wn-code";
-		code.textContent = cmd;
-		p.appendChild(code);
+		p.appendChild(codeChip(cmd));
 		if (after) p.appendChild(document.createTextNode(after));
 		return p;
 	}

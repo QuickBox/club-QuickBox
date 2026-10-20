@@ -123,14 +123,16 @@
 	white-space: nowrap;
 }
 
-/* In the dialog a command may be longer than a narrow body: let the chip wrap
- * at its spaces (then anywhere), each line fragment keeping its own padding
- * and border. Short chips still sit on one line. */
+/* In the dialog a command may be longer than a narrow body: the chip wraps
+ * only at its spaces (each word is a no-wrap span built in js/about.js, so a
+ * flag like -u is never split). The default slice decoration is kept on
+ * purpose: a fragment ending at a break carries no end padding or border, so
+ * it can never run past the content edge. Short chips still sit on one line. */
 #cqbWhatsNew .cqb-wn-code {
 	white-space: normal;
-	overflow-wrap: anywhere;
-	-webkit-box-decoration-break: clone;
-	box-decoration-break: clone;
+}
+#cqbWhatsNew .cqb-wn-code-word {
+	white-space: nowrap;
 }
 
 #cqbWhatsNew .cqb-wn-empty {
