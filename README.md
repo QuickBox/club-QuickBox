@@ -76,29 +76,44 @@ Then set club-QuickBox as the active theme in the ruTorrent theme plugin, or in 
 
 ## Update
 
+On a manual install, update the clone:
+
 ```bash
 cd /path/to/rutorrent/plugins/theme/themes/club-QuickBox
 git checkout --force latest && git pull
 ```
 
-On QuickBox Pro an existing install picks up the latest club-QuickBox by updating ruTorrent as an admin, with your admin username: `qb update rutorrent -u <username>`.
+On QuickBox Pro, an admin can update the theme from the dashboard. When a newer release is out, either:
+
+- in ruTorrent, open What's new (the `Update` pill in the top bar, or the link in Help) and click `Update now`, or
+- on the App Dashboard, click the `Theme` badge on the ruTorrent row and choose `Update theme`.
+
+From the command line, as an admin with your admin username:
+
+```bash
+qb update rutorrent -u <username> --theme
+```
+
+That updates only the theme. A full `qb update rutorrent -u <username>` updates the theme too.
 
 ## Prefer the v1 look?
 
-The classic club-QuickBox v1 skin is still there if you like it better, and you can switch back any time. On QuickBox Pro, do it as root:
+The classic club-QuickBox v1 skin is still there if you like it better.
+
+On QuickBox Pro the theme folder holds release files, not a git clone. To switch, move the current theme out of the way and clone v1 in its place, as root:
 
 ```bash
-cd /srv/rutorrent/plugins/theme/themes/club-QuickBox
-git fetch origin v1
-git checkout v1
-chown -R www-data:www-data .
+cd /srv/rutorrent/plugins/theme/themes
+mv club-QuickBox /root/club-QuickBox-v2
+git clone -b v1 https://github.com/QuickBox/club-QuickBox.git club-QuickBox
+chown -R www-data:www-data club-QuickBox
 ```
 
-Then hard-refresh your browser.
+Move it outside `themes/` as shown, because a copy left inside `themes/` shows up as a second theme in ruTorrent. Then hard-refresh your browser.
 
 On a manual install, clone with `-b v1` instead of `-b latest` into ruTorrent's `plugins/theme/themes/`.
 
-One thing to know on QuickBox Pro: `qb update rutorrent` checks the theme back out to `latest`, so after a ruTorrent update you are on v2 again and need to repeat the switch.
+One thing to know on QuickBox Pro: any theme update replaces v1 with the latest v2 release. That means `Update now` in What's new, the `Theme` badge on the App Dashboard, `qb update rutorrent -u <username> --theme`, and a full `qb update rutorrent`. To stay on v1, repeat the switch after an update. To go back to v2, run `qb update rutorrent -u <username> --theme`.
 
 v1 is frozen now and will not get further updates, because all the new work goes into v2.
 
