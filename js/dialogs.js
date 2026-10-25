@@ -321,7 +321,7 @@
 		formFile.classList.add("cqb-file-tucked");
 
 		/* Drag/drop feeds the native FileList; chips reflect it; Add re-syncs. */
-		wireDropzone(zone, chips, fileInput, { multiple: true, onChange: function () { syncAdd(); } });
+		var dz = wireDropzone(zone, chips, fileInput, { multiple: true, onChange: function () { syncAdd(); } });
 
 		/* Segmented toggle: show one panel at a time, keeping the other's value. */
 		function setSrc(mode) {
@@ -373,6 +373,57 @@
 		}
 		urlArea && urlArea.addEventListener("input", syncAdd);
 		syncAdd();
+
+		/* Core empties #torrent_file and #url with .val(""), which fires no
+		 * event: on every open (beforeShow) and after a confirmed add
+		 * (addTorrentFinished). Re-read both so the chips and Add match. */
+		var opened = 0;
+		function resync() {
+			dz.renderChips();
+			syncAdd();
+		}
+		if (window.theDialogManager && theDialogManager.addHandler) {
+			theDialogManager.addHandler("tadd", "afterShow", function () { opened++; resync(); });
+		}
+
+		/* Close the dialog once an add is confirmed. Core answers an upload by
+		 * redirecting the hidden frame to addtorrent.php?result[]=<status>&...,
+		 * one final status per item (Success, Duplicate, Failed...), so the frame
+		 * URL says whether anything was added. The source field cannot: ruTorrent
+		 * 5.3.18 and earlier empty it after every answer, refusals included. Only
+		 * a load that follows a real submit counts (the frame also loads once,
+		 * blank, when core inserts it). Add stays disabled while the upload is in
+		 * flight, and an answer that lands after the dialog was closed or reopened
+		 * leaves the dialog alone. */
+		function addedAny(frame) {
+			try {
+				return new URLSearchParams(frame.contentWindow.location.search).getAll("result[]").indexOf("Success") >= 0;
+			} catch (e) {
+				return false;
+			}
+		}
+		function closeAfterAdd(form, frameName) {
+			var frame = document.querySelector('iframe[name="' + frameName + '"]');
+			if (!form || !frame) return;
+			var pending = false, sentIn = -1;
+			form.addEventListener("submit", function (e) {
+				if (e.defaultPrevented) return;
+				pending = true;
+				sentIn = opened;
+				add.disabled = true;
+			});
+			frame.addEventListener("load", function () {
+				if (!pending) return;
+				pending = false;
+				resync();
+				var dm = window.theDialogManager;
+				if (addedAny(frame) && sentIn === opened && dm && dm.visible && dm.visible.indexOf("tadd") >= 0) {
+					dm.hide("tadd");
+				}
+			});
+		}
+		closeAfterAdd(formFile, "uploadfrm");
+		closeAfterAdd(formUrl, "uploadfrmurl");
 	}
 
 	/* Parse MediaInfo "Key : Value" output into {name, rows:[{k,v}]} sections. */
