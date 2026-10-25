@@ -2,6 +2,20 @@
 
 Release notes for the club-QuickBox ruTorrent skin, newest first.
 
+## v2.7.0 (2026-10-25)
+
+### Added
+
+- Send the dashboard CSRF token and show theme-only update command
+- Update pill, one-time toast and Update now from the dashboard
+
+### Fixed
+
+- Close the Add Torrent dialog after a confirmed add
+- Wrap command chips only between words
+- Size the update pill and toast controls, wrap card commands
+- Translate the update pill, toast and Update now strings
+
 ## v2.6.1 (2026-10-20)
 
 ### Fixed
