@@ -23,6 +23,9 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Run the CI checks before anything is tagged or published
+        run: bash bin/ci-local.sh || { echo "::error::CI checks failed; nothing was tagged or published"; exit 1; }
+
       - name: Compute, write, tag and publish the release
         run: |
           set -eu
