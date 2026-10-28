@@ -56,21 +56,46 @@ highest_reachable_tag() { # <repo>
 	done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1
 }
 
-# Bump kind across commits in a range. Prints major|minor|patch|none.
+# A commit ships when it changes at least one path the release archive carries:
+# a path that neither .gitattributes export-ignores nor sits under an
+# export-ignored directory. check-attr does not carry a directory's attribute
+# down to the files inside it, so every leading directory is asked as well,
+# which is how git archive applies it. A tooling-only commit never ships.
+commit_ships() { # <repo> <sha>
+	local r=$1 sha=$2 files f d out
+	local -A ignored=()
+	files=$(git -C "$r" show --name-only --format= "$sha" 2>/dev/null | grep -v '^$' || true)
+	[ -n "$files" ] || return 1
+	out=$(printf '%s\n' "$files" | while IFS= read -r f; do
+		printf '%s\n' "$f"; d=$f
+		while [ "${d%/*}" != "$d" ]; do d=${d%/*}; printf '%s/\n' "$d"; done
+	done | git -C "$r" check-attr --stdin export-ignore | sed -nE 's/: export-ignore: set$//p')
+	while IFS= read -r f; do [ -n "$f" ] && ignored["$f"]=1; done <<<"$out"
+	while IFS= read -r f; do
+		[ -n "${ignored[$f]:-}" ] && continue
+		d=$f
+		while [ "${d%/*}" != "$d" ]; do d=${d%/*}; [ -n "${ignored[$d/]:-}" ] && continue 2; done
+		return 0
+	done <<<"$files"
+	return 1
+}
+
+# Bump kind across the shipping commits in a range. Prints major|minor|patch|none.
 bump_kind() { # <repo> <range>
-	local r=$1 range=$2 kind=none sub
-	if git -C "$r" log --no-merges --format='%b' "$range" 2>/dev/null | grep -q 'BREAKING CHANGE'; then
-		echo major; return
-	fi
-	while IFS= read -r sub; do
-		[ -n "$sub" ] || continue
+	local r=$1 range=$2 kind=none sha sub
+	while IFS=$'\t' read -r sha sub; do
+		[ -n "$sha" ] || continue
 		excluded_subject "$sub" && continue
-		if printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!:'; then echo major; return; fi
+		commit_ships "$r" "$sha" || continue
+		if printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!:' \
+			|| git -C "$r" show -s --format=%b "$sha" 2>/dev/null | grep -q 'BREAKING CHANGE'; then
+			echo major; return
+		fi
 		if printf '%s' "$sub" | grep -qE '^feat(\([^)]*\))?:'; then kind=minor; continue; fi
 		if printf '%s' "$sub" | grep -qE '^(fix|perf|refactor)(\([^)]*\))?:'; then
 			[ "$kind" = minor ] || kind="patch"
 		fi
-	done < <(git -C "$r" log --no-merges --format='%s' "$range" 2>/dev/null)
+	done < <(git -C "$r" log --no-merges --format='%H%x09%s' "$range" 2>/dev/null)
 	echo "$kind"
 }
 
@@ -102,6 +127,7 @@ gen_changelog_body() { # <repo> <version> <date> <range> <highlights>
 	while IFS=$'\t' read -r sha sub; do
 		printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!?:' || continue
 		excluded_subject "$sub" && continue
+		commit_ships "$r" "$sha" || continue
 		typ=$(printf '%s' "$sub" | sed -E 's/^([a-z]+).*/\1/')
 		scope=$(printf '%s' "$sub" | sed -nE 's/^[a-z]+\(([^)]*)\)!?:.*/\1/p')
 		desc=$(printf '%s' "$sub" | sed -E 's/^[a-z]+(\([^)]*\))?!?:[[:space:]]*//')
@@ -204,8 +230,8 @@ run_release() {
 		[ -n "$base_ver" ] || die "no vX.Y.Z tag reachable from HEAD; pass --version to seed"
 		kind=$(bump_kind "$repo" "$range")
 		if [ "$kind" = none ]; then
-			if [ "$ci" = 1 ]; then echo "nothing to release: no feat/fix/perf/refactor commits since v$base_ver"; exit 3; fi
-			die "nothing to release: only docs/chore/test/style/ci commits since v$base_ver (pass --version to override)"
+			if [ "$ci" = 1 ]; then echo "nothing to release: no shipping feat/fix/perf/refactor commits since v$base_ver"; exit 3; fi
+			die "nothing to release: only docs/chore/test/style/ci or tooling-only commits since v$base_ver (pass --version to override)"
 		fi
 		new_ver=$(apply_bump "$base_ver" "$kind")
 	fi
@@ -303,6 +329,31 @@ selftest() {
 		echo "selftest breaking-marked-in-notes: PASS"
 	else echo "selftest breaking-marked-in-notes: FAIL"; fail=1; fi
 	expect_refuse docsonly "docs-only-refused"
+
+	# tooling-only commits (every path export-ignored) never ship: no bump, no notes
+	d="$tmp/tool"; mkdir -p "$d/bin" "$d/.github/workflows" "$(dirname "$d/js/app.js")"; git -C "$d" init -q
+	git -C "$d" config user.email t@t; git -C "$d" config user.name t
+	printf 'version: 1.0.0\n' > "$d/plugin.info"; printf 'var CQB_REV = "dev";\n' > "$d/init.js"
+	printf '.github/ export-ignore\nbin/ export-ignore\n.gitattributes export-ignore\n' > "$d/.gitattributes"
+	echo 0 > "$d/js/app.js"; echo 0 > "$d/bin/tool.sh"
+	git -C "$d" add -A; git -C "$d" commit -qm 'chore: seed'; git -C "$d" tag v1.0.0
+	tc() { echo "$2" >> "$d/$1"; git -C "$d" add -A; git -C "$d" commit -qm "$3"; }
+	tc bin/tool.sh 1 'fix(release): tag the right commit'
+	tc .github/workflows/ci.yml 2 'feat(ci): pin node'
+	tc bin/tool.sh 3 'feat(release)!: new tool contract'
+	echo 4 >> "$d/bin/tool.sh"; git -C "$d" add -A; git -C "$d" commit -qm 'fix(release): body only' -m 'BREAKING CHANGE: tool flag renamed'
+	ci_expect_nothing tool "tooling-only-nothing-to-release-exit3"
+	# mixed range: only the shipping fix counts, so a patch despite the tooling feat and feat!
+	tc js/app.js 4 'fix(ui): a shipped fix'
+	expect tool 1.0.1 "mixed-range-bumps-from-shipping-only"
+	notes=$(CLUB_QB_REPO="$d" bash "$self" --dry-run 2>/dev/null)
+	if printf '%s\n' "$notes" | grep -qxF -- '- A shipped fix' \
+		&& ! printf '%s\n' "$notes" | grep -qiE 'tag the right commit|pin node|new tool contract|body only'; then
+		echo "selftest mixed-range-notes-shipping-only: PASS"
+	else echo "selftest mixed-range-notes-shipping-only: FAIL"; fail=1; fi
+	# a commit touching a shipped path and a tooling path still ships
+	echo 5 >> "$d/bin/tool.sh"; tc js/app.js 5 'feat(ui): a feature with its tool change'
+	expect tool 1.1.0 "mixed-commit-ships"
 	# --version override on a docs-only history still releases
 	ver=$(CLUB_QB_REPO="$tmp/docsonly" bash "$self" --dry-run --version 9.9.9 2>/dev/null | sed -nE 's/^next version:  //p')
 	if [ "$ver" = 9.9.9 ]; then echo "selftest version-override: PASS (9.9.9)"; else echo "selftest version-override: FAIL ($ver)"; fail=1; fi
