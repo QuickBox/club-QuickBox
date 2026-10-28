@@ -24,14 +24,29 @@ is_semver() { printf '%s' "$1" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; }
 higher() { printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1; }
 
 messages() { # <range>
-	local range=$1 bad=0 sha sub
+	local range=$1 bad=0 sha sub a b end log
+	# Fail closed: a range the clone cannot resolve checks nothing, so it never passes.
+	case "$range" in
+		*...*) a=${range%%...*}; b=${range#*...} ;;
+		*..*) a=${range%%..*}; b=${range#*..} ;;
+		*) a=""; b=$range ;;
+	esac
+	for end in "$a" "$b"; do
+		[ -n "$end" ] || continue
+		if ! git -C "$(repo_root)" rev-parse -q --verify "$end^{commit}" >/dev/null 2>&1; then
+			echo "commit-message gate: FAIL (cannot resolve '$end' in range '$range')"; return 1
+		fi
+	done
+	if ! log=$(git -C "$(repo_root)" log --no-merges --format='%H%x09%s' "$range" 2>/dev/null); then
+		echo "commit-message gate: FAIL (cannot read range '$range')"; return 1
+	fi
 	while IFS=$'\t' read -r sha sub; do
 		[ -n "$sha" ] || continue
 		printf '%s' "$sub" | grep -qE '^chore\(release\): ' && continue
 		if ! printf '%s' "$sub" | grep -qE "$CONV"; then
 			echo "  NONCONFORMING ${sha:0:10}  $sub"; bad=1
 		fi
-	done < <(git -C "$(repo_root)" log --no-merges --format='%H%x09%s' "$range" 2>/dev/null)
+	done <<<"$log"
 	if [ "$bad" = 1 ]; then echo "commit-message gate: FAIL (subjects must be conventional commits)"; return 1; fi
 	echo "commit-message gate: PASS"
 }
@@ -86,6 +101,10 @@ selftest() {
 	echo 1 > "$d/b/f"; git -C "$d/b" add -A; git -C "$d/b" commit -qm 'feat(api)!: new loader'
 	printf '2' > "$d/b/f"; git -C "$d/b" add -A; git -C "$d/b" commit -qm 'fix(core): guard' -m 'BREAKING CHANGE: cookie path removed'
 	LBL="messages-breaking-accepted"; ok msg "$d/b" "$bb..HEAD"
+	# an unresolvable range (force-pushed before-commit, unknown ref) checks nothing, so it fails
+	LBL="messages-unresolvable-range-rejected"; no msg "$d" "0123456789abcdef0123456789abcdef01234567..HEAD"
+	LBL="messages-unknown-ref-rejected"; no msg "$d" "no-such-ref..HEAD"
+	LBL="messages-empty-range-ok"; ok msg "$d" "HEAD..HEAD"
 
 	# --- consistency gate ---
 	mkver() { # <dir> <pluginver> <initver> <jsonver>

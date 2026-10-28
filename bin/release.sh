@@ -106,6 +106,11 @@ gen_changelog_body() { # <repo> <version> <date> <range> <highlights>
 		scope=$(printf '%s' "$sub" | sed -nE 's/^[a-z]+\(([^)]*)\)!?:.*/\1/p')
 		desc=$(printf '%s' "$sub" | sed -E 's/^[a-z]+(\([^)]*\))?!?:[[:space:]]*//')
 		desc=$(cap_first "$desc")
+		# A breaking change (a `!` subject or a BREAKING CHANGE body) is marked in its section.
+		if printf '%s' "$sub" | grep -qE '^[a-z]+(\([^)]*\))?!:' \
+			|| git -C "$r" show -s --format=%b "$sha" 2>/dev/null | grep -q 'BREAKING CHANGE'; then
+			desc="**Breaking:** $desc"
+		fi
 		sec=""
 		if [ "$scope" = i18n ] || is_lang_only "$r" "$sha"; then sec=trans
 		else case "$typ" in
@@ -289,6 +294,14 @@ selftest() {
 	expect feat 1.1.0 "feat-history-minor"
 	expect fixonly 1.0.1 "fix-only-patch"
 	expect breaking 2.0.0 "breaking-major"
+	# both breaking forms carry a visible marker in the notes; ordinary entries do not
+	d="$tmp/breaking"; printf '1' > "$d/g"; git -C "$d" add -A; git -C "$d" commit -qm 'fix(core): guard the loader' -m 'BREAKING CHANGE: the old option is gone'
+	notes=$(CLUB_QB_REPO="$d" bash "$self" --dry-run 2>/dev/null)
+	if printf '%s\n' "$notes" | grep -qxF -- '- **Breaking:** Drop the legacy cookie path' \
+		&& printf '%s\n' "$notes" | grep -qxF -- '- **Breaking:** Guard the loader' \
+		&& printf '%s\n' "$notes" | grep -qxF -- '- New loader'; then
+		echo "selftest breaking-marked-in-notes: PASS"
+	else echo "selftest breaking-marked-in-notes: FAIL"; fail=1; fi
 	expect_refuse docsonly "docs-only-refused"
 	# --version override on a docs-only history still releases
 	ver=$(CLUB_QB_REPO="$tmp/docsonly" bash "$self" --dry-run --version 9.9.9 2>/dev/null | sed -nE 's/^next version:  //p')

@@ -19,17 +19,32 @@ jobs:
         with:
           fetch-depth: 0
           fetch-tags: true
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+          package-manager-cache: false
 
       - name: Verify the pushed commit messages are conventional
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          SHA: ${{ github.sha }}
         run: |
           set -eu
           zero=0000000000000000000000000000000000000000
-          if [ "${{ github.event_name }}" = pull_request ]; then
-            range="${{ github.event.pull_request.base.sha }}..${{ github.sha }}"
-          elif [ "${{ github.event.before }}" = "$zero" ]; then
-            if git fetch -q origin latest 2>/dev/null; then range="FETCH_HEAD..${{ github.sha }}"; else range="${{ github.sha }}"; fi
+          if [ "$EVENT" = pull_request ]; then
+            range="$PR_BASE..$SHA"
+          elif [ "$BEFORE" != "$zero" ] && git rev-parse -q --verify "$BEFORE^{commit}" >/dev/null; then
+            range="$BEFORE..$SHA"
+          elif git fetch -q origin latest 2>/dev/null; then
+            # first push of a branch, or a before-commit this clone cannot see (force push)
+            range="FETCH_HEAD..$SHA"
           else
-            range="${{ github.event.before }}..${{ github.sha }}"
+            range="$SHA"
           fi
           echo "checking $range"
           bash bin/check-version.sh messages "$range"
