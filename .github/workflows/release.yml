@@ -27,6 +27,11 @@ jobs:
         run: |
           set -eu
 
+          # Every path below may commit or merge (release commit, back-merge), so
+          # the bot identity is set once up front.
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           tag_exists() { git ls-remote --tags origin "refs/tags/v$1" | grep -q .; }
           release_exists() { gh release view "v$1" >/dev/null 2>&1; }
 
@@ -81,8 +86,6 @@ jobs:
             fi
             [ "$rc" = 0 ] || { echo "release generation failed (rc=$rc)"; exit 1; }
             ver=$(sed -nE 's/^version:[[:space:]]*//p' plugin.info | head -1)
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             [ -f release-notes/next.md ] && git rm -q release-notes/next.md
             git add plugin.info init.js changelogs CHANGELOG.md
             git commit -q -m "chore(release): v$ver"
