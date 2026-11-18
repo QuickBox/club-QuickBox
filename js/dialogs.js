@@ -424,6 +424,33 @@
 		}
 		closeAfterAdd(formFile, "uploadfrm");
 		closeAfterAdd(formUrl, "uploadfrmurl");
+
+		/* ruTorrent 5.3.23+ has no frame: core posts the form with fetch() in
+		 * the global uploadTorrentForm(form, done), and done() gets one
+		 * {text, kind} per item, kind "success" for an added torrent. The
+		 * wrapper keeps core's callback first, then applies the same rule as the
+		 * frame path. Earlier versions have no uploadTorrentForm and keep the
+		 * frame path above. */
+		if (typeof window.uploadTorrentForm === "function" && !window.uploadTorrentForm.cqbWrapped) {
+			var coreUpload = window.uploadTorrentForm;
+			var wrappedUpload = function (form, done) {
+				if (form !== formFile && form !== formUrl) return coreUpload.apply(this, arguments);
+				var sentIn = opened;
+				add.disabled = true;
+				return coreUpload.call(this, form, function (results) {
+					var out = (typeof done === "function") ? done(results) : undefined;
+					resync();
+					var ok = Array.isArray(results) && results.some(function (r) { return r && r.kind === "success"; });
+					var dm = window.theDialogManager;
+					if (ok && sentIn === opened && dm && dm.visible && dm.visible.indexOf("tadd") >= 0) {
+						dm.hide("tadd");
+					}
+					return out;
+				});
+			};
+			wrappedUpload.cqbWrapped = true;
+			window.uploadTorrentForm = wrappedUpload;
+		}
 	}
 
 	/* Parse MediaInfo "Key : Value" output into {name, rows:[{k,v}]} sections. */
