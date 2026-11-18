@@ -204,6 +204,10 @@
 	var search = el("div", "cqb-search");
 	var mnuSearch = byId("mnu_search");
 	var query = byId("query");
+	/* ruTorrent 5.3.23+ shows and hides its clear button on every focus and
+	 * keypress, so the button must stay in the page when the bar is rebuilt.
+	 * Earlier versions have no button. */
+	var queryClear = byId("query_clear");
 	var go = byId("mnu_go");
 	var ind = byId("ind");
 	if (mnuSearch) { mark(mnuSearch); search.appendChild(mnuSearch); }
@@ -211,6 +215,7 @@
 		if (!query.getAttribute("placeholder")) query.setAttribute("placeholder", t("cqb_search", "Search"));
 		search.appendChild(query);
 	}
+	if (queryClear) search.appendChild(queryClear);
 	var kbd = el("span", "cqb-kbd");
 	kbd.setAttribute("aria-hidden", "true");
 	kbd.textContent = (navigator.platform && /mac/i.test(navigator.platform)) ? "⌘K" : "Ctrl K";
