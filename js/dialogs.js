@@ -305,7 +305,15 @@
 			var syncLabelMode = function () {
 				lblRow.setAttribute("data-mode", labelSel.selectedIndex === 1 ? "new" : "list");
 			};
-			labelSel.addEventListener("change", syncLabelMode);
+			/* Core resets the select on every open with jQuery .trigger("change"),
+			 * which runs only jQuery-bound handlers. Bound through jQuery, the row
+			 * follows that reset as well as a real change; it also re-syncs after
+			 * each open, so it never stays in "new" with the list hidden. */
+			if (window.jQuery) window.jQuery(labelSel).on("change", syncLabelMode);
+			else labelSel.addEventListener("change", syncLabelMode);
+			if (window.theDialogManager && theDialogManager.addHandler) {
+				theDialogManager.addHandler("tadd", "afterShow", syncLabelMode);
+			}
 			labelBack.addEventListener("click", function () { lblRow.setAttribute("data-mode", "list"); });
 			syncLabelMode();
 		}
