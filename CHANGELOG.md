@@ -2,6 +2,12 @@
 
 Release notes for the club-QuickBox ruTorrent skin, newest first.
 
+## v2.7.2 (2026-11-18)
+
+### Fixed
+
+- Show the Add Torrent label list again after a new label was used
+
 ## v2.7.1 (2026-11-18)
 
 ### Fixed
