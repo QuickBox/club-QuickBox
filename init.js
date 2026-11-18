@@ -22,7 +22,7 @@
 	var CQB_REV = "7b56ef56e8";
 	/* The released theme version (major.minor.patch). The release tool rewrites
 	 * this value; it is surfaced on window.cqb.version for About/diagnostics. */
-	var CQB_VERSION = "2.7.0";
+	var CQB_VERSION = "2.7.1";
 	var VARIANTS = ["spectre", "smoked", "reel", "defaulted"];
 	var OVERRIDE_KEY = "qb-rutorrent-variant";
 	var CSS_MODULES = ["base", "topbar", "sidebar", "table", "peers", "details", "chunks", "dialogs", "settings", "settings-plugins", "select", "statusbar", "extras", "about", "icons"];

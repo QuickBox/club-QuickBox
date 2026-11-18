@@ -2,6 +2,13 @@
 
 Release notes for the club-QuickBox ruTorrent skin, newest first.
 
+## v2.7.1 (2026-11-18)
+
+### Fixed
+
+- Close the Add Torrent dialog after a confirmed add on ruTorrent 5.3.23
+- Keep the ruTorrent search clear button in the top bar
+
 ## v2.7.0 (2026-10-25)
 
 ### Added
